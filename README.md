@@ -28,7 +28,11 @@ du calcul de base jusqu'à la transition énergétique.
   exercices composés qui enchaînent deux ou trois notions comme en examen.
 - **Contrôle noté sur 20** par module, et un **examen de palier** en fin de bloc :
   12 sur 20 pour ouvrir le bloc suivant.
-- **Calculatrice intégrée**, et surtout : chaque correction montre la **suite de
+- **Calculatrice scientifique** — sin, cos, tan et leurs inverses en seconde
+  fonction, bascule degrés/radians, racine, carré, puissance, EXP, π, ln, log,
+  exponentielle. Évaluateur écrit à la main (tokenisation puis notation
+  postfixée) : le mode degrés et les priorités sont maîtrisés, et les erreurs
+  de saisie sont nommées. Et surtout : chaque correction montre la **suite de
   touches** à enfoncer, avec le piège de frappe propre au calcul — parenthèse
   oubliée, touche EXP, seconde fonction, mode degrés.
 - **Démarrage en douceur** — la première rencontre d'une notion se fait avec des
