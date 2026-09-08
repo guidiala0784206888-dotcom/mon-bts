@@ -5394,7 +5394,26 @@ const SB={
   ok:null, session:null, user:null
 };
 const CLE_SESSION="mon-bts-session";
-async function sbFetch(chemin,opt={}){
+/* ⚠️ LE JETON EXPIRE AU BOUT D'UNE HEURE. Sans ce rafraîchissement, un
+   testeur qui laisse l'onglet ouvert continue de travailler pendant que
+   chaque enregistrement échoue en silence — et il perd tout au rechargement.
+   On rejoue donc UNE fois la requête après avoir renouvelé le jeton. */
+let rafraichissement=null;
+async function renouveler(){
+  if(rafraichissement)return rafraichissement;
+  const s=SB.session;
+  if(!s||!s.refresh_token)return Promise.resolve(false);
+  rafraichissement=(async()=>{
+    const r=await sbBrut("/auth/v1/token?grant_type=refresh_token",
+      {method:"POST",anon:true,body:{refresh_token:s.refresh_token}});
+    rafraichissement=null;
+    if(r.ok&&r.d&&r.d.access_token){poserSession(r.d);return true;}
+    if(r.status!==0)poserSession(null);
+    return false;
+  })();
+  return rafraichissement;
+}
+async function sbBrut(chemin,opt={}){
   const h=Object.assign({"apikey":SB.cle,"Content-Type":"application/json"},opt.headers||{});
   if(SB.session&&SB.session.access_token&&!opt.anon)h["Authorization"]="Bearer "+SB.session.access_token;
   const c=new AbortController();const t=setTimeout(()=>c.abort(),9000);
@@ -5406,6 +5425,14 @@ async function sbFetch(chemin,opt={}){
     let d=null;try{d=txt?JSON.parse(txt):null;}catch(e){d=txt;}
     return {ok:r.ok,status:r.status,d:d};
   }catch(e){clearTimeout(t);SB.ok=false;return {ok:false,status:0,d:{message:"réseau indisponible"}};}
+}
+async function sbFetch(chemin,opt={}){
+  let r=await sbBrut(chemin,opt);
+  if((r.status===401||r.status===403)&&!opt.anon&&SB.session){
+    if(await renouveler())r=await sbBrut(chemin,opt);
+    else if(r.status===401){majCompte();}
+  }
+  return r;
 }
 function messageAuth(d){
   const m=(d&&(d.msg||d.message||d.error_description||d.error))||"";
@@ -5466,7 +5493,9 @@ setInterval(()=>{
   etat.minutes+=1/6;                       /* appelé toutes les 10 s */
   if(Math.floor(etat.minutes)%5===0)sauver();
 },10000);
-document.addEventListener("visibilitychange",()=>{TEMPS.actif=!document.hidden;});
+document.addEventListener("visibilitychange",()=>{TEMPS.actif=!document.hidden;
+  if(!document.hidden&&SB.session)renouveler();});
+setInterval(()=>{if(SB.session)renouveler();},45*60*1000);
 
 /* --- le pronostic : une ESTIMATION, dite comme telle --- */
 function pronostic(){
