@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="description" content="Parcours d'électrotechnique pas à pas : 25 modules, des mathématiques de base à la transition énergétique, avec figures manipulables et exercices corrigés.">
+<meta name="description" content="Mon BTS — révision pas à pas : 25 modules d'électrotechnique, des mathématiques de base à la transition énergétique, avec figures manipulables et exercices corrigés.">
 <meta name="theme-color" content="#0b7a8c" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0a1519" media="(prefers-color-scheme: dark)">
 <meta name="color-scheme" content="light dark">
@@ -17,13 +17,13 @@ img{max-width:100%}
 </style>
 </head>
 <body>
-<title>Le Fil Conducteur</title>
+<title>Mon BTS</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <style>
 /* ============================================================
-   LE FIL CONDUCTEUR — charte reprise de MERKEZ.
+   MON BTS — charte reprise de MERKEZ.
    Clair, dominante blanche, verre dépoli. Le fond n'est jamais un
    aplat : trois halos violets très diffus donnent la profondeur,
    les surfaces sont translucides par-dessus. Le filigrane, lui,
@@ -438,7 +438,7 @@ kbd{border:1px solid var(--border);border-bottom-width:2px;border-radius:5px;pad
   <div class="barre-in">
     <button class="logo" id="accueil" title="Tableau de bord">
       <span class="sceau"><svg viewBox="0 0 24 24"><path d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg></span>
-      <span><b>Le Fil Conducteur</b><span>Électrotechnique · pas à pas</span></span>
+      <span><b>Mon BTS</b><span>Électrotechnique · pas à pas</span></span>
     </button>
     <div class="barre-actions">
       <span class="pastille" id="pastille-avance">Parcours <b>0 %</b></span>
@@ -2139,87 +2139,66 @@ const MODULES=[
  {k:"c",t:"Contrôle",gen:["prefixe","pourcent","scientifique"],n:6}
 ]},
 
-{id:"m02",num:"02",bloc:"Les maths d'abord",titre:"Manipuler une formule",duree:"25 min",
- resume:"Isoler une inconnue, résoudre une équation, croiser deux relations. C'est 80 % des calculs du métier.",
+{id:"m02",num:"02",bloc:"Les maths d'abord",titre:"Retourner une formule",duree:"16 min",
+ resume:"Un seul geste : faire traverser un terme. C'est ce que tu feras dans les vingt-trois modules suivants.",
  steps:[
- {k:"l",t:"Le geste fondamental",h:`
-  <p>Une égalité est une balance. Tout ce que tu fais d'un côté, tu dois le faire de l'autre. C'est la seule règle, et elle suffit.</p>
-  <div class="formule">ce qui MULTIPLIE d'un côté DIVISE de l'autre
-ce qui ADDITIONNE d'un côté SOUSTRAIT de l'autre
-ce qui est au CARRÉ passe en RACINE<span class="note">La formule ne change pas de sens, seulement d'écriture.</span></div>
-  <div class="resolu"><span class="chapo">Exemple résolu — isoler I dans P = U · I · cos φ</span>
+ {k:"l",t:"Le seul geste à connaître",h:`
+  <p>Une formule ne se retient pas dans les deux sens. On en retient <strong>une</strong>, et on la retourne.</p>
+  <figure data-anim="transposition"></figure>
+  <div class="formule">ce qui MULTIPLIE d'un côté   →   DIVISE de l'autre</div>
+  <div class="encart e-cle"><span class="chapo">Le contrôle qui ne trompe jamais</span><p>Remets les unités. Des watts divisés par des volts donnent bien des ampères. Si tu tombes sur autre chose, la formule est retournée à l'envers.</p></div>`},
+ {k:"a",t:"Atelier — retourner une formule",gen:["transpose"],but:3,h:`
+  <p>Trois d'affilée. On ne calcule rien ici : on repère seulement la bonne écriture.</p>`},
+ {k:"l",t:"Quand l'inconnue est un nombre",h:`
+  <p>Même geste, appliqué à un nombre plutôt qu'à une lettre.</p>
+  <div class="resolu"><span class="chapo">Un exemple</span>
+   <p>Un chauffage de 2000 W sous 230 V. Quelle est sa résistance ?</p>
    <ol>
-    <li>On veut I seul. Aujourd'hui, il est multiplié par U et par cos φ.<span class="op">P = U · I · cos φ</span></li>
-    <li>On divise les DEUX côtés par U.<span class="op">P / U = I · cos φ</span></li>
-    <li>On divise les deux côtés par cos φ.<span class="op">P / (U · cos φ) = I</span></li>
-   </ol>
-   <div class="final">I = P / (U · cos φ)</div></div>
-  <div class="encart e-cle"><span class="chapo">La vérification par les unités</span><p>Une transposition juste donne des unités justes. Ici : des watts divisés par des volts donnent des ampères — <span class="mono">W / V = A</span>. Si tu obtiens autre chose, la formule est fausse, sans même regarder les nombres.</p></div>`},
- {k:"l",t:"Résoudre une équation du premier degré",h:`
-  <p>Le même geste, appliqué à un nombre inconnu plutôt qu'à une lettre.</p>
-  <div class="resolu"><span class="chapo">Exemple résolu</span>
-   <p>Un chauffage de résistance R est alimenté sous 230 V et consomme 2000 W. Quelle est R ?</p>
-   <ol>
-    <li>On part de la relation qui contient les trois grandeurs connues.<span class="op">P = U² / R</span></li>
-    <li>R est au dénominateur : on multiplie les deux côtés par R.<span class="op">P · R = U²</span></li>
-    <li>On divise les deux côtés par P.<span class="op">R = U² / P = 230² / 2000 = 52 900 / 2000</span></li>
+    <li>On part de la relation qui contient les trois grandeurs.<span class="op">P = U² / R</span></li>
+    <li>R est en bas : on le fait traverser, il monte de l'autre côté.<span class="op">R = U² / P</span></li>
+    <li>On remplace.<span class="op">R = 230² / 2000 = 52 900 / 2000 = 26,45 Ω</span></li>
    </ol>
    <div class="final">R = 26,45 Ω</div></div>
-  <h3>Quand l'inconnue est au carré</h3>
-  <div class="formule">P = R · I²   ⟹   I² = P / R   ⟹   I = √(P / R)<span class="note">La racine s'applique à TOUT le rapport, pas seulement au numérateur.</span></div>
-  <div class="encart e-piege"><span class="chapo">L'erreur la plus fréquente</span><p><span class="mono">√(P/R)</span> n'est pas <span class="mono">√P / R</span>. Sur la calculatrice, calcule d'abord le rapport entre parenthèses, PUIS la racine. C'est la même erreur qui fait rater les calculs d'impédance en régime alternatif.</p></div>`},
- {k:"l",t:"Deux équations, deux inconnues",h:`
-  <p>Cela arrive dès qu'un circuit a deux mailles ou qu'on cherche à répartir un courant. Deux méthodes existent ; retiens celle par addition, elle est plus rapide.</p>
-  <div class="resolu"><span class="chapo">Exemple résolu</span>
-   <p>Deux récepteurs en parallèle absorbent ensemble 24 A. Le premier consomme 6 A de plus que le second. Combien chacun ?</p>
+  <div class="encart e-piege"><span class="chapo">Le carré et la racine</span><p>Si l'inconnue est au carré, la racine s'applique à <strong>tout le rapport</strong> : <span class="mono">I = √(P / R)</span>, jamais <span class="mono">√P / R</span>. Sur la calculatrice, on calcule d'abord la parenthèse.</p></div>`},
+ {k:"a",t:"Atelier — équations",gen:["equation1","proportion"],but:3,h:`
+  <p>On commence par des solutions entières.</p>`},
+ {k:"l",t:"Deux inconnues à la fois",h:`
+  <p>Ça arrive dès qu'un circuit a deux branches. La méthode la plus rapide est l'addition.</p>
+  <div class="resolu"><span class="chapo">Un exemple</span>
+   <p>Deux récepteurs en parallèle absorbent 24 A ensemble. Le premier consomme 6 A de plus que le second.</p>
    <ol>
-    <li>On traduit l'énoncé en deux lignes.<span class="op">I₁ + I₂ = 24
+    <li>On écrit les deux lignes.<span class="op">I₁ + I₂ = 24
 I₁ − I₂ = 6</span></li>
-    <li>On additionne les deux lignes membre à membre : I₂ s'élimine.<span class="op">2·I₁ = 30</span></li>
-    <li>On divise.<span class="op">I₁ = 15 A</span></li>
-    <li>On revient à la première ligne pour l'autre inconnue.<span class="op">I₂ = 24 − 15 = 9 A</span></li>
+    <li>On les additionne : I₂ disparaît.<span class="op">2 · I₁ = 30   ⟹   I₁ = 15 A</span></li>
+    <li>On revient à la première ligne.<span class="op">I₂ = 24 − 15 = 9 A</span></li>
    </ol>
-   <div class="final">I₁ = 15 A et I₂ = 9 A — contrôle : 15 + 9 = 24 ✓ et 15 − 9 = 6 ✓</div></div>
-  <div class="encart e-math"><span class="chapo">Le réflexe du contrôle</span><p>Une fois les deux valeurs trouvées, remets-les dans les DEUX équations de départ. Si une seule tombe juste, tu as une erreur. Ce contrôle prend dix secondes et rattrape la moitié des étourderies d'examen.</p></div>`},
- {k:"a",t:"Atelier — transposer et résoudre",gen:["transpose","equation1","proportion","systeme2"],but:4,h:`
-  <p>Quatre bonnes réponses de suite. Ce sont exactement les gestes que tu répéteras dans tous les modules suivants.</p>`},
- {k:"c",t:"Contrôle",gen:["transpose","equation1","proportion","systeme2","prefixe"],n:8}
+   <div class="final">15 A et 9 A — contrôle : 15 + 9 = 24 ✓ et 15 − 9 = 6 ✓</div></div>`},
+ {k:"c",t:"Contrôle",gen:["transpose","equation1","proportion","systeme2"],n:6}
 ]},
 
-{id:"m03",num:"03",bloc:"Les maths d'abord",titre:"Carrés, racines et proportions",duree:"20 min",
- resume:"Pourquoi doubler le courant quadruple la chaleur : la loi la plus rentable du métier.",
+{id:"m03",num:"03",bloc:"Les maths d'abord",titre:"Le carré, la racine, le pourcentage",duree:"15 min",
+ resume:"Pourquoi doubler le courant quadruple la chaleur. La loi la plus rentable du métier.",
  steps:[
- {k:"l",t:"Le carré change tout",h:`
-  <p>Beaucoup de relations en électrotechnique sont proportionnelles : double la longueur du câble, double sa résistance. Simple. Mais trois relations majeures sont <strong>quadratiques</strong>, et elles se comportent tout autrement.</p>
+ {k:"l",t:"Doubler n'est pas doubler",h:`
+  <p>Certaines relations sont proportionnelles : deux fois plus long, deux fois plus résistant. D'autres passent par un <strong>carré</strong>, et là tout change.</p>
+  <div class="formule">si x devient 2·x   alors   x² devient 4·x²<span class="note">×2 donne ×4 · ×3 donne ×9 · ×0,9 donne ×0,81, soit −19 %</span></div>
   <div class="tabl"><table>
-   <tr><th>Relation</th><th>Si on double…</th><th>Alors…</th></tr>
-   <tr><td class="mono">P = R · I²</td><td>le courant</td><td>la puissance dissipée est ×4</td></tr>
-   <tr><td class="mono">W = ½ · C · U²</td><td>la tension</td><td>l'énergie stockée est ×4</td></tr>
-   <tr><td class="mono">T ∝ U²</td><td>la tension moteur</td><td>le couple est ×4</td></tr>
-   <tr><td class="mono">Q = C · U² · ω</td><td>la tension</td><td>le réactif produit est ×4</td></tr>
+   <tr><th>Relation</th><th>Si on double…</th><th>Alors</th></tr>
+   <tr><td class="mono">P = R · I²</td><td>le courant</td><td>la chaleur est <b>×4</b></td></tr>
+   <tr><td class="mono">W = ½ · C · U²</td><td>la tension</td><td>l'énergie stockée est <b>×4</b></td></tr>
+   <tr><td class="mono">T ∝ U²</td><td>la tension moteur</td><td>le couple est <b>×4</b></td></tr>
   </table></div>
-  <div class="formule">si x devient k · x   alors   x² devient k² · x²<span class="note">×2 donne ×4 · ×3 donne ×9 · ×0,9 donne ×0,81 (soit −19 %)</span></div>
-  <div class="resolu"><span class="chapo">Exemple résolu — le cas qui explique la haute tension</span>
-   <p>On transporte 100 kW. En doublant la tension, que deviennent les pertes en ligne ?</p>
-   <ol>
-    <li>À puissance constante, si U est multipliée par 2, alors I est divisé par 2.<span class="op">P = U · I  ⟹  I = P / U</span></li>
-    <li>Les pertes suivent le carré du courant.<span class="op">pertes = R · I²</span></li>
-    <li>I divisé par 2 donne des pertes divisées par 2² = 4.<span class="op">pertes ÷ 4</span></li>
-   </ol>
-   <div class="final">Tension ×2 ⟹ pertes ÷4. C'est toute la raison d'être des lignes à 400 000 V.</div></div>`},
- {k:"l",t:"Racines et pourcentages",h:`
-  <p>La racine carrée est simplement l'opération inverse du carré. Elle apparaît partout où l'on remonte d'une puissance vers un courant, ou d'une somme de carrés vers une longueur.</p>
-  <div class="formule">√(a²) = a          (√a)² = a          √(a · b) = √a · √b<span class="note">Mais attention : √(a + b) ≠ √a + √b. Jamais.</span></div>
-  <h3>Deux racines à connaître par cœur</h3>
-  <div class="formule">√2 ≈ 1,414   →   le lien entre valeur crête et valeur efficace
-√3 ≈ 1,732   →   le lien entre tension simple et tension composée en triphasé</div>
-  <h3>Les pourcentages, dans les deux sens</h3>
-  <div class="formule">pourcentage = partie / total × 100
-partie = total × pourcentage / 100<span class="note">Une chute de 3 % sur 400 V, c'est 400 × 3 / 100 = 12 V.</span></div>
-  <div class="encart e-piege"><span class="chapo">Piège des pourcentages successifs</span><p>Une baisse de 10 % suivie d'une hausse de 10 % ne ramène PAS au point de départ : 100 → 90 → 99. En rendement, cela compte : deux machines en cascade à 90 % ne donnent pas 90 % mais 0,90 × 0,90 = 81 %.</p></div>`},
- {k:"a",t:"Atelier — carrés, racines, proportions",gen:["carre","pythagore","proportion","pourcent"],but:4,h:`
-  <p>Tu vas retrouver Pythagore ici. Ce n'est pas de la géométrie décorative : c'est exactement le calcul d'une impédance et d'une puissance apparente, que tu verras au bloc alternatif.</p>`},
- {k:"c",t:"Contrôle",gen:["carre","pythagore","proportion","pourcent","scientifique"],n:8}
+  <div class="encart e-cle"><span class="chapo">Ce que ça explique</span><p>Un câble trop fin ne chauffe pas « un peu plus » : il chauffe beaucoup plus. Et transporter en haute tension divise les pertes par cent quand on multiplie la tension par dix. Toute la logique du dimensionnement tient dans ce carré.</p></div>`},
+ {k:"a",t:"Atelier — effet du carré",gen:["carre","pourcent"],but:3,h:`
+  <p>Deux notions seulement, en douceur.</p>`},
+ {k:"l",t:"Les deux racines à connaître",h:`
+  <p>La racine est l'opération inverse du carré. Deux valeurs reviennent en permanence, autant les connaître par cœur.</p>
+  <div class="formule">√2 ≈ 1,414   →   entre valeur crête et valeur efficace
+√3 ≈ 1,732   →   entre tension simple et tension composée en triphasé</div>
+  <div class="encart e-piege"><span class="chapo">Piège des pourcentages</span><p>Une baisse de 10 % suivie d'une hausse de 10 % ne revient pas au départ : 100 → 90 → 99. Deux machines à 90 % de rendement en cascade ne font pas 90 % mais <strong>81 %</strong>.</p></div>`},
+ {k:"a",t:"Atelier — racines et proportions",gen:["pythagore","proportion"],but:3,h:`
+  <p>Pythagore n'est pas de la géométrie décorative : c'est exactement le calcul d'une impédance et d'une puissance apparente, que tu verras plus loin.</p>`},
+ {k:"c",t:"Contrôle",gen:["carre","pythagore","proportion","pourcent"],n:6}
 ]},
 
 {id:"m04",num:"04",bloc:"Les maths d'abord",titre:"Trigonométrie utile",duree:"28 min",
@@ -3457,6 +3436,53 @@ Object.assign(ANIM,{
   const ref=e.i===4?null:"c'est exactement la même chose que "+ecrit(base*1000)+" m"+U;
   txt(c,ref||"la valeur de base, sans préfixe",w*0.5,h*0.90,12,CM(),"center");
   txt(c,"une seule valeur physique, sept façons de l'écrire",w*0.5,h*0.10,12,CM(),"center");
+ }}
+});
+
+/* ---- La transposition, vue comme une balance ---- */
+Object.assign(ANIM,{
+"transposition":{t:"Isoler une inconnue, sans réfléchir",ratio:2.1,main:true,
+ note:"Choisis la relation et ce que tu cherches. Le terme traverse le signe égal et change d'opération : c'est le seul geste à connaître.",
+ regl:[{id:"f",lib:"Relation",choix:["P = U · I","U = R · I","P = R · I²"],val:0},
+       {id:"q",lib:"Ce que tu cherches",choix:["1ʳᵉ lettre","2ᵉ lettre","3ᵉ lettre"],val:2}],
+ FORM:[
+  {g:"P",d:[["U","·"],["I","·"]],n:["P","U","I"],
+   sol:["P = U · I","U = P / I","I = P / U"],
+   dit:["c'est déjà isolé","I multipliait à droite, il divise à gauche","U multipliait à droite, il divise à gauche"]},
+  {g:"U",d:[["R","·"],["I","·"]],n:["U","R","I"],
+   sol:["U = R · I","R = U / I","I = U / R"],
+   dit:["c'est déjà isolé","I multipliait à droite, il divise à gauche","R multipliait à droite, il divise à gauche"]},
+  {g:"P",d:[["R","·"],["I²","·"]],n:["P","R","I"],
+   sol:["P = R · I²","R = P / I²","I = √(P / R)"],
+   dit:["c'est déjà isolé","I² multipliait à droite, il divise à gauche","R divise, puis le carré devient une racine"]}],
+ dessin(c,w,h,t,p){
+  const F=this.FORM[p.f], k=p.q;
+  const y1=h*0.30, y2=h*0.66, cx=w*0.5;
+  /* la relation de départ */
+  c.font='600 26px "IBM Plex Mono", monospace';c.textAlign="center";c.textBaseline="middle";
+  c.fillStyle=CM();c.fillText(F.sol[0],cx,y1);
+  txt(c,"la relation",cx,y1-30,11,CM(),"center");
+  /* la flèche de passage, avec le terme qui traverse */
+  const ph=(t*0.55)%1, ex=cx-w*0.16+w*0.32*ph;
+  c.strokeStyle=CB();c.lineWidth=1.6;
+  c.beginPath();c.moveTo(cx,y1+22);c.lineTo(cx,y2-32);c.stroke();
+  c.fillStyle=CB();c.beginPath();
+  c.moveTo(cx-6,y2-32);c.lineTo(cx+6,y2-32);c.lineTo(cx,y2-24);c.closePath();c.fill();
+  if(k>0){
+   c.globalAlpha=0.30+0.6*Math.sin(ph*Math.PI);
+   c.fillStyle=C1();c.beginPath();c.arc(ex,(y1+y2)/2,7,0,TAU);c.fill();c.globalAlpha=1;
+   txt(c,"le terme traverse",cx+w*0.12,(y1+y2)/2,11,C1(),"left");
+  }
+  /* le résultat */
+  c.font='700 30px "IBM Plex Mono", monospace';c.textAlign="center";c.textBaseline="middle";
+  c.fillStyle=C1();c.fillText(F.sol[k],cx,y2);
+  /* l'explication */
+  txt(c,F.dit[k],cx,y2+34,13,CI(),"center",true);
+  const regle=k===0?"":"ce qui MULTIPLIE d'un côté DIVISE de l'autre";
+  if(regle)txt(c,regle,cx,h*0.93,11.5,CM(),"center");
+  /* le contrôle par les unités */
+  const un=[["W","V","A"],["V","Ω","A"],["W","Ω","A"]][p.f];
+  txt(c,"contrôle des unités : "+un[k]+" attendu",w*0.03,h*0.10,11,CM());
  }}
 });
 
@@ -4905,7 +4931,7 @@ function carnet(){
   exp.textContent="Exporter ma progression";
   exp.addEventListener("click",async()=>{
     const j=JSON.stringify({...etat,exporte:new Date().toISOString()},null,1);
-    const nom="fil-conducteur-progression.json";
+    const nom="mon-bts-progression.json";
     try{const dl=await window.claude?.use?.("downloads");
       if(dl){await dl.save({filename:nom,data:j});return;}}catch(e){}
     try{const b=new Blob([j],{type:"application/json"}),u=URL.createObjectURL(b);
@@ -4923,7 +4949,7 @@ function carnet(){
         if(!v||typeof v!=="object"||!v.faits)throw new Error("fichier inattendu");
         etat.faits=v.faits||{};etat.notes=v.notes||{};etat.essais=v.essais||{};
         etat.pos=v.pos||etat.pos;etat.vuGuide=1;sauver();carnet();}
-        catch(e){alert("Ce fichier n'est pas une sauvegarde du Fil Conducteur.");}};
+        catch(e){alert("Ce fichier n'est pas une sauvegarde de Mon BTS.");}};
       r.readAsText(fi);});
     f.click();});
   out.appendChild(exp);out.appendChild(imp);

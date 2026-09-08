@@ -1,7 +1,7 @@
-# Le Fil Conducteur
+# Mon BTS
 
-Parcours d'apprentissage en **électrotechnique**, pas à pas, du calcul de base
-jusqu'à la transition énergétique.
+Révision d'un BTS, pas à pas. Première spécialité couverte : **l'électrotechnique**,
+du calcul de base jusqu'à la transition énergétique.
 
 - **25 modules** — on commence par les mathématiques (unités, transposition,
   trigonométrie, vecteurs, exponentielle), puis toute l'électrotechnique.
@@ -12,6 +12,10 @@ jusqu'à la transition énergétique.
   déclenche une correction fléchée, étape par étape, avec une couleur par
   grandeur.
 - **Contrôle noté sur 20** par module. En dessous de 12, retour à l'atelier.
+- **Démarrage en douceur** — la première rencontre d'une notion se fait avec des
+  nombres ronds ; les valeurs de terrain viennent ensuite.
+- **Mémoire des erreurs** — l'app retient les notions qui résistent, les repropose
+  en révision ciblée, et les explique d'une seconde façon.
 
 Aligné sur le référentiel du BTS Électrotechnique en vigueur depuis
 septembre 2025 (RNCP41007, cinq blocs de compétences).
