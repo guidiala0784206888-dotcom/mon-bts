@@ -3529,6 +3529,8 @@ triphasé :  ΔU = √3 · ρ · L · I · cos φ / S<span class="note">ρ = 0,0
    <tr><td class="mono">ST</td><td>texte structuré</td><td>calculs, boucles, traitements complexes</td></tr>
   </table></div>
   <div class="encart e-piege"><span class="chapo">L'arrêt d'urgence ne passe pas par le programme</span><p>Il coupe la puissance par une chaîne <strong>câblée</strong> — relais de sécurité ou automate de sécurité certifié. Un API standard n'a pas le niveau de fiabilité requis : un plantage du processeur ne doit pas pouvoir laisser la machine en marche.</p></div>`},
+ {k:"f",t:"Ranger la chaîne fonctionnelle",chaine:"portail",h:`
+  <p>Avant le GRAFCET, il faut savoir de quoi une machine est faite. Deux chaînes se répondent : l'une décide, l'autre agit.</p>`},
  {k:"l",t:"Le GRAFCET",h:`
   <figure data-anim="grafcet"></figure>
   <p>Le GRAFCET (NF EN 60848) décrit un fonctionnement séquentiel par des <strong>étapes</strong>, des <strong>transitions</strong> et des <strong>réceptivités</strong>. C'est le langage commun entre l'automaticien, l'électricien et le mécanicien.</p>
@@ -3550,6 +3552,8 @@ triphasé :  ΔU = √3 · ρ · L · I · cos φ / S<span class="note">ρ = 0,0
   <div class="encart e-cle"><span class="chapo">Le réflexe de lecture</span><p>Sur une divergence en <strong>OU</strong>, les réceptivités doivent être <strong>exclusives</strong>. Sur une divergence en <strong>ET</strong>, la convergence attend toutes les branches. Un GRAFCET bloqué, c'est presque toujours une réceptivité jamais vraie, ou une convergence ET dont une branche n'aboutit pas.</p></div>`},
  {k:"w",t:"Câbler le circuit de commande",cab:"commande-moteur",h:`
   <p>C'est LE circuit à savoir dessiner de mémoire. Tu vas le poser fil par fil, puis le mettre sous tension.</p>`},
+ {k:"g",t:"Faire tourner un cycle",auto:"percage",quiz:true,h:`
+  <p>Un GRAFCET n'est pas un dessin, c'est un programme. Celui-ci pilote une vraie machine, et les capteurs de fin de course lui répondent. À toi de compléter les réceptivités : tant qu'une seule est fausse, le cycle ne part pas.</p>`},
  {k:"a",t:"Atelier — automatismes",gen:["grafcet","securite","transpose"],but:4,h:`<p>Les règles du GRAFCET sont normatives : elles ne se devinent pas, elles se connaissent.</p>`},
  {k:"c",t:"Contrôle",gen:["grafcet","securite","transpose","equation1"],n:8}
 ]},
@@ -3620,6 +3624,8 @@ triphasé :  ΔU = √3 · ρ · L · I · cos φ / S<span class="note">ρ = 0,0
    <tr><td>Contacteur qui vibre</td><td>tension de commande faible · bague de déphasage cassée · bobine mauvais calibre</td></tr>
    <tr><td>Entrée analogique qui dérive au démarrage d'un variateur</td><td>blindage non repris à 360° · câble de commande le long du câble moteur</td></tr>
   </table></div>`},
+ {k:"f",t:"La chaîne d'un convoyeur",chaine:"convoyeur",h:`
+  <p>Même exercice sur une machine de production. Le piège reste le même : distinguer le préactionneur de l'actionneur.</p>`},
  {k:"z",t:"Banc libre",h:`
   <p>Pas de consigne ici : monte ce que tu veux, en continu ou en alternatif, et mesure. C'est l'outil pour vérifier une intuition ou refaire un exercice de cours en vrai.</p>`},
  {k:"a",t:"Atelier — terrain",gen:["cube","chute-tension","courant-moteur","neutre","securite"],but:5,h:`<p>Dernier atelier du parcours. Cinq bonnes réponses d'affilée, tous domaines mélangés.</p>`},
@@ -5471,6 +5477,260 @@ function rendreSimu(hote,mi,pi,pas){
 }
 
 /* =========================================================================
+   LA CHAÎNE FONCTIONNELLE
+   Deux chaînes qui se répondent : l'information décide, l'énergie agit.
+   Savoir ranger un composant dans la bonne case, c'est savoir lire une
+   machine — et c'est la première question de tout dossier de 2ᵉ année.
+   ========================================================================= */
+const CHAINES={
+ "portail":{t:"Un portail coulissant",
+  c:"Range chaque élément dans sa fonction. Deux chaînes : celle qui informe, celle qui agit.",
+  cases:[
+   {k:"acq",ch:"info",lib:"ACQUÉRIR",aide:"ce qui renseigne l'automate sur l'état du système"},
+   {k:"tra",ch:"info",lib:"TRAITER",aide:"ce qui décide"},
+   {k:"com",ch:"info",lib:"COMMUNIQUER",aide:"ce qui informe l'utilisateur"},
+   {k:"ali",ch:"ener",lib:"ALIMENTER",aide:"ce qui apporte et protège l'énergie"},
+   {k:"dis",ch:"ener",lib:"DISTRIBUER",aide:"le préactionneur : il aiguille l'énergie"},
+   {k:"con",ch:"ener",lib:"CONVERTIR",aide:"l'actionneur : il transforme l'énergie en mouvement"},
+   {k:"tsm",ch:"ener",lib:"TRANSMETTRE",aide:"ce qui adapte le mouvement"},
+   {k:"agi",ch:"ener",lib:"AGIR",aide:"l'effecteur : ce qui fait le travail attendu"}],
+  pieces:[
+   {n:"Cellule photoélectrique",k:"acq"},{n:"Fin de course portail ouvert",k:"acq"},
+   {n:"Automate programmable",k:"tra"},{n:"Feu orange clignotant",k:"com"},
+   {n:"Disjoncteur et alimentation 24 V",k:"ali"},{n:"Variateur de vitesse",k:"dis"},
+   {n:"Moteur asynchrone",k:"con"},{n:"Réducteur et pignon",k:"tsm"},
+   {n:"Vantail du portail",k:"agi"}]},
+ "convoyeur":{t:"Un convoyeur de tri",
+  c:"Même exercice sur une machine de production.",
+  cases:[
+   {k:"acq",ch:"info",lib:"ACQUÉRIR",aide:"ce qui renseigne l'automate"},
+   {k:"tra",ch:"info",lib:"TRAITER",aide:"ce qui décide"},
+   {k:"com",ch:"info",lib:"COMMUNIQUER",aide:"ce qui informe l'opérateur"},
+   {k:"ali",ch:"ener",lib:"ALIMENTER",aide:"apporter et protéger l'énergie"},
+   {k:"dis",ch:"ener",lib:"DISTRIBUER",aide:"le préactionneur"},
+   {k:"con",ch:"ener",lib:"CONVERTIR",aide:"l'actionneur"},
+   {k:"tsm",ch:"ener",lib:"TRANSMETTRE",aide:"adapter le mouvement"},
+   {k:"agi",ch:"ener",lib:"AGIR",aide:"l'effecteur"}],
+  pieces:[
+   {n:"Détecteur inductif de présence",k:"acq"},{n:"Codeur incrémental",k:"acq"},
+   {n:"Automate et son programme",k:"tra"},{n:"Pupitre tactile",k:"com"},
+   {n:"Sectionneur porte-fusibles",k:"ali"},{n:"Distributeur pneumatique 5/2",k:"dis"},
+   {n:"Vérin double effet",k:"con"},{n:"Guidage et tige",k:"tsm"},
+   {n:"Poussoir d'éjection",k:"agi"}]}
+};
+
+function rendreChaine(hote,mi,pi,pas){
+  const ex=CHAINES[pas.chaine];if(!ex)return;
+  let place={},sel=null,verifie=false;
+  const box=document.createElement("div");box.className="verre chaine";hote.appendChild(box);
+  const dessine=()=>{
+    const restant=ex.pieces.filter(p=>!Object.values(place).flat().includes(p.n));
+    box.innerHTML='<div class="cab-tete"><span class="t">'+ex.t+'</span>'+
+      '<span class="cab-compte">'+(ex.pieces.length-restant.length)+" / "+ex.pieces.length+" placés</span></div>"+
+      '<p class="cab-consigne">'+ex.c+"</p>"+
+      '<div class="ch-pieces">'+restant.map(p=>'<button type="button" class="ch-piece'+(sel===p.n?" sel":"")+'" data-n="'+p.n+'">'+p.n+"</button>").join("")+
+      (restant.length?"":'<span class="ch-vide">Tout est placé — vérifie.</span>')+"</div>"+
+      ["info","ener"].map(ch=>'<div class="ch-bloc"><span class="ch-titre">'+
+        (ch==="info"?"Chaîne d'information — elle décide":"Chaîne d'énergie — elle agit")+"</span>"+
+        '<div class="ch-cases">'+ex.cases.filter(c=>c.ch===ch).map(c=>{
+          const dedans=place[c.k]||[];
+          return '<div class="ch-case'+(verifie?(dedans.length&&dedans.every(n=>ex.pieces.find(p=>p.n===n).k===c.k)&&dedans.length===ex.pieces.filter(p=>p.k===c.k).length?" ok":" ko"):"")+
+            '" data-k="'+c.k+'"><span class="ch-lib">'+c.lib+"</span>"+
+            '<span class="ch-aide">'+c.aide+"</span>"+
+            dedans.map(n=>'<button type="button" class="ch-mis'+
+              (verifie?(ex.pieces.find(p=>p.n===n).k===c.k?" bon":" faux"):"")+'" data-r="'+n+'">'+n+"</button>").join("")+
+            "</div>";}).join("")+"</div></div>").join("")+
+      '<div class="outils cab-outils"></div><div class="cab-msg" data-e="'+(msgE||"")+'">'+(msgH||"")+"</div>";
+    box.querySelectorAll(".ch-piece").forEach(b=>b.addEventListener("click",()=>{
+      sel=sel===b.dataset.n?null:b.dataset.n;dessine();}));
+    box.querySelectorAll(".ch-case").forEach(d=>d.addEventListener("click",e=>{
+      if(e.target.closest(".ch-mis"))return;
+      if(!sel)return;
+      (place[d.dataset.k]=place[d.dataset.k]||[]).push(sel);sel=null;verifie=false;msgE="";msgH="";dessine();}));
+    box.querySelectorAll(".ch-mis").forEach(b=>b.addEventListener("click",()=>{
+      for(const k in place)place[k]=place[k].filter(n=>n!==b.dataset.r);
+      verifie=false;msgE="";msgH="";dessine();}));
+    const o=box.querySelector(".cab-outils");
+    const bt=(cl,l,f)=>{const b=document.createElement("button");b.className="btn "+cl;b.textContent=l;
+      b.addEventListener("click",f);o.appendChild(b);};
+    bt("btn-principal","Vérifier",()=>{
+      verifie=true;
+      const faux=[],manque=[];
+      ex.cases.forEach(c=>{
+        const att=ex.pieces.filter(p=>p.k===c.k).map(p=>p.n).sort().join("|");
+        const eff=(place[c.k]||[]).slice().sort().join("|");
+        if(att!==eff){if((place[c.k]||[]).some(n=>ex.pieces.find(p=>p.n===n).k!==c.k))faux.push(c.lib);
+          else manque.push(c.lib);}});
+      if(!faux.length&&!manque.length){msgE="ok";
+        msgH="<b>Chaîne complète.</b> Retiens l'ordre : la chaîne d'information ACQUIERT, TRAITE, COMMUNIQUE ; la chaîne d'énergie ALIMENTE, DISTRIBUE, CONVERTIT, TRANSMET, AGIT. Le préactionneur distribue, l'actionneur convertit — c'est la confusion la plus fréquente.";
+        if(mi>=0)marquer(mi,pi);}
+      else{msgE="ko";
+        msgH="<b>Pas encore.</b> "+(faux.length?"Mal rangé dans : <span class='cab-rouge'>"+faux.join(", ")+"</span>. ":"")+
+          (manque.length?"Incomplet dans : "+manque.join(", ")+".":"");}
+      dessine();});
+    bt("btn-secondaire btn-fin","Indice",()=>{msgE="aide";
+      msgH="<b>Repère</b> Le <b>préactionneur</b> (contacteur, distributeur, variateur) DISTRIBUE l'énergie sur ordre de l'automate. L'<b>actionneur</b> (moteur, vérin) la CONVERTIT en mouvement. L'<b>effecteur</b> est la pièce qui touche le produit.";
+      dessine();});
+    bt("btn-secondaire btn-fin","Tout retirer",()=>{place={};sel=null;verifie=false;msgE="";msgH="";dessine();});
+  };
+  let msgE="",msgH="";
+  dessine();
+}
+
+/* =========================================================================
+   L'AUTOMATE QUI TOURNE
+   Le GRAFCET n'est pas un dessin : c'est un programme. Ici il pilote une
+   vraie machine, dont les capteurs de fin de course renvoient l'information
+   à l'automate. La boucle est fermée — c'est exactement ce qu'on met en
+   service en deuxième année.
+   ========================================================================= */
+const AUTOMATES={
+ "percage":{
+  t:"Poste de perçage",
+  c:"Appuie sur Départ cycle. Le vérin de serrage sort, la broche descend, perce, remonte, puis le serrage se relâche. Chaque étape attend SON capteur.",
+  etapes:[{lib:"Attente",act:[]},{lib:"Serrer la pièce",act:["A+"]},
+    {lib:"Percer",act:["B+","broche"]},{lib:"Remonter",act:["B−","broche"]},
+    {lib:"Desserrer",act:["A−"]}],
+  trans:[
+   {rec:"dcy · a0 · b0",f:e=>e.dcy&&e.a0&&e.b0,
+    faux:["dcy seul","a1 · b1"],expl:"On ne démarre que si la machine est au repos : vérin rentré ET broche en haut. Sinon le cycle part sur une position inconnue."},
+   {rec:"a1",f:e=>e.a1,faux:["a0","dcy"],
+    expl:"On ne perce pas tant que la pièce n'est pas serrée : on attend le capteur de fin de course SORTIE du vérin A."},
+   {rec:"b1",f:e=>e.b1,faux:["b0","a1"],
+    expl:"La broche doit être arrivée en bas — perçage terminé — avant de remonter."},
+   {rec:"b0",f:e=>e.b0,faux:["b1","a0"],
+    expl:"On ne desserre qu'une fois la broche remontée. Desserrer avec l'outil dans la pièce casserait le foret."},
+   {rec:"a0",f:e=>e.a0,faux:["a1","dcy"],
+    expl:"Le cycle ne se referme que lorsque le vérin est complètement rentré : la machine est de nouveau au repos."}],
+  init:{A:0,B:0}}
+};
+
+function rendreAutomate(hote,mi,pi,pas){
+  const ex=AUTOMATES[pas.auto];if(!ex)return;
+  const quiz=!!pas.quiz;
+  let etape=0,A=0,B=0,dcy=false,marche=true,vitesse=1,choix=ex.trans.map(()=>quiz?-1:0),valide=!quiz;
+  const box=document.createElement("div");box.className="verre automate";hote.appendChild(box);
+  box.innerHTML='<div class="cab-tete"><span class="t">'+ex.t+'</span>'+
+    '<span class="cab-compte" id="au-etat">étape 0</span></div>'+
+    '<p class="cab-consigne">'+(quiz?"Complète d'abord les réceptivités : chaque transition attend le bon capteur. Le cycle ne tournera qu'une fois toutes justes.":ex.c)+"</p>";
+  const zone=document.createElement("div");zone.className="cab-zone";box.appendChild(zone);
+  const qz=document.createElement("div");qz.className="au-quiz";box.appendChild(qz);
+  const outils=document.createElement("div");outils.className="outils cab-outils";box.appendChild(outils);
+  const msg=document.createElement("div");msg.className="cab-msg";box.appendChild(msg);
+
+  const capteurs=()=>({dcy:dcy,a0:A<=0.02,a1:A>=0.98,b0:B<=0.02,b1:B>=0.98});
+
+  const rendu=toile(zone,1.85,(c,w,h)=>{
+    const gx=w*0.22,y0=h*0.10,dy=(h*0.80)/ex.etapes.length;
+    /* le GRAFCET */
+    ex.etapes.forEach((e,i)=>{
+      const y=y0+i*dy,on=i===etape,sz=Math.min(30,dy*0.42);
+      c.strokeStyle=on?C1():CB();c.lineWidth=on?2.8:1.6;
+      c.beginPath();c.rect(gx-sz/2,y-sz/2,sz,sz);c.stroke();
+      if(i===0){c.beginPath();c.rect(gx-sz/2-4,y-sz/2-4,sz+8,sz+8);c.stroke();}
+      mono(c,String(i),gx,y,12.5,on?C1():CM(),"center");
+      if(on){c.fillStyle=C1();c.beginPath();c.arc(gx,y,5,0,TAU);c.fill();}
+      c.strokeStyle=on?C1():CB();c.lineWidth=1.6;
+      c.beginPath();c.moveTo(gx+sz/2,y);c.lineTo(gx+sz/2+18,y);c.stroke();
+      c.beginPath();c.rect(gx+sz/2+18,y-12,w*0.19,24);c.stroke();
+      txt(c,e.lib,gx+sz/2+26,y,11.5,on?CI():CM(),"left",on);
+      if(e.act.length)txt(c,e.act.join(" · "),gx+sz/2+18+w*0.19+7,y,10.5,on?C2():CM(),"left");
+      /* la transition vers la suivante */
+      const t=ex.trans[i];if(!t)return;
+      const my=y+dy/2, franchissable=on&&(!quiz||valide)&&t.f(capteurs());
+      c.strokeStyle=CB();c.lineWidth=1.6;
+      c.beginPath();c.moveTo(gx,y+sz/2);c.lineTo(gx,my+dy/2-sz/2>h?y+sz/2:y0+((i+1)%ex.etapes.length)*dy-sz/2);c.stroke();
+      c.strokeStyle=franchissable?C2():CM();c.lineWidth=franchissable?3:2;
+      c.beginPath();c.moveTo(gx-12,my);c.lineTo(gx+12,my);c.stroke();
+      const lib=quiz&&choix[i]<0?"?":(quiz?[t.rec].concat(t.faux)[choix[i]]:t.rec);
+      txt(c,lib,gx+17,my,11,franchissable?C2():CM(),"left",franchissable);
+    });
+    /* la boucle de retour */
+    c.strokeStyle=CB();c.lineWidth=1.6;
+    const yl=y0+(ex.etapes.length-1)*dy+16;
+    c.beginPath();c.moveTo(gx,yl);c.lineTo(gx,yl+14);c.lineTo(gx-w*0.11,yl+14);
+    c.lineTo(gx-w*0.11,y0);c.lineTo(gx-16,y0);c.stroke();
+
+    /* la machine */
+    const mx=w*0.72,my0=h*0.14,mw=w*0.24,mh=h*0.72;
+    c.strokeStyle=CB();c.lineWidth=1.5;
+    c.beginPath();c.roundRect(mx-mw/2,my0,mw,mh,10);c.stroke();
+    txt(c,"la machine",mx,my0-10,11,CM(),"center",true);
+    const solY=my0+mh*0.78;
+    c.strokeStyle=CM();c.lineWidth=2.5;
+    c.beginPath();c.moveTo(mx-mw*0.42,solY);c.lineTo(mx+mw*0.42,solY);c.stroke();
+    /* la pièce */
+    c.fillStyle=CB();c.beginPath();c.rect(mx-mw*0.16,solY-26,mw*0.32,26);c.fill();
+    /* le mors de serrage, piloté par A */
+    const morsX=mx-mw*0.42+A*(mw*0.24);
+    c.fillStyle=C1();c.beginPath();c.rect(morsX,solY-30,mw*0.06,30);c.fill();
+    txt(c,"vérin A",mx-mw*0.30,solY+16,10,C1(),"center");
+    mono(c,A>=0.98?"a1":A<=0.02?"a0":"—",mx-mw*0.30,solY+30,11,A>=0.98||A<=0.02?C2():CM(),"center");
+    /* la broche, pilotée par B */
+    const brY=my0+mh*0.10+B*(mh*0.52);
+    c.strokeStyle=CI();c.lineWidth=6;
+    c.beginPath();c.moveTo(mx+mw*0.16,my0+mh*0.06);c.lineTo(mx+mw*0.16,brY);c.stroke();
+    c.fillStyle=ex.etapes[etape].act.indexOf("broche")>=0?C2():CM();
+    c.beginPath();c.moveTo(mx+mw*0.16-7,brY);c.lineTo(mx+mw*0.16+7,brY);c.lineTo(mx+mw*0.16,brY+16);c.closePath();c.fill();
+    if(ex.etapes[etape].act.indexOf("broche")>=0){
+      const a=performance.now()/60;
+      c.strokeStyle=C2();c.lineWidth=1.6;
+      for(let k=0;k<3;k++){c.beginPath();
+        c.arc(mx+mw*0.16,brY+8,10,a+k*2.1,a+k*2.1+0.9);c.stroke();}}
+    txt(c,"broche",mx+mw*0.16,solY+16,10,CI(),"center");
+    mono(c,B>=0.98?"b1":B<=0.02?"b0":"—",mx+mw*0.16,solY+30,11,B>=0.98||B<=0.02?C2():CM(),"center");
+  });
+
+  /* le questionnaire des réceptivités */
+  const majQuiz=()=>{
+    if(!quiz){qz.innerHTML="";return;}
+    qz.innerHTML=ex.trans.map((t,i)=>{
+      const opts=[t.rec].concat(t.faux);
+      const ordre=opts.map((o,k)=>[o,k]);
+      return '<div class="au-tr"><span class="au-num">'+i+" → "+((i+1)%ex.etapes.length)+"</span>"+
+        '<div class="au-opts" data-i="'+i+'">'+ordre.map(([o,k])=>
+          '<button type="button" data-k="'+k+'" class="'+(choix[i]===k?(k===0?"bon":"faux"):"")+'">'+o+"</button>").join("")+
+        "</div></div>";}).join("")+
+      '<p class="au-aide">Une réceptivité est la condition à remplir pour franchir la transition. Ici, ce sont les capteurs de la machine.</p>';
+    qz.querySelectorAll(".au-opts").forEach(d=>d.addEventListener("click",e=>{
+      const b=e.target.closest("button");if(!b)return;
+      const i=+d.dataset.i;choix[i]=+b.dataset.k;
+      valide=choix.every(c=>c===0);
+      if(valide){msg.dataset.e="ok";
+        msg.innerHTML="<b>Toutes les réceptivités sont justes.</b> Le cycle peut tourner : appuie sur Départ cycle.";
+        if(mi>=0)marquer(mi,pi);}
+      else if(b.dataset.k!=="0"){msg.dataset.e="ko";
+        msg.innerHTML="<b>Non.</b> "+ex.trans[i].expl;}
+      majQuiz();rendu();}));
+  };
+
+  /* l'évolution du GRAFCET, deux fois par image */
+  const pas2=()=>{
+    if(!marche)return;
+    const v=0.012*vitesse;
+    const act=ex.etapes[etape].act;
+    if(act.indexOf("A+")>=0)A=Math.min(1,A+v);
+    if(act.indexOf("A−")>=0)A=Math.max(0,A-v);
+    if(act.indexOf("B+")>=0)B=Math.min(1,B+v*0.8);
+    if(act.indexOf("B−")>=0)B=Math.max(0,B-v*1.4);
+    if(valide){
+      const t=ex.trans[etape];
+      if(t&&t.f(capteurs())){etape=(etape+1)%ex.etapes.length;dcy=false;
+        const e=$("#au-etat");if(e)e.textContent="étape "+etape+" · "+ex.etapes[etape].lib;}
+    }
+  };
+  anims.push({t:0,jouer:true,rendu:()=>{pas2();rendu();}});
+
+  const bt=(cl,l,f)=>{const b=document.createElement("button");b.className="btn "+cl;b.textContent=l;
+    b.addEventListener("click",f);outils.appendChild(b);return b;};
+  bt("btn-principal","Départ cycle",()=>{dcy=true;setTimeout(()=>{dcy=false;},900);});
+  const bm=bt("btn-secondaire btn-fin","Pause",()=>{marche=!marche;bm.textContent=marche?"Pause":"Reprendre";});
+  bt("btn-secondaire btn-fin","Ralentir",()=>{vitesse=vitesse>0.5?0.4:1;});
+  bt("btn-secondaire btn-fin","Remettre au repos",()=>{etape=0;A=0;B=0;dcy=false;});
+  majQuiz();
+}
+
+/* =========================================================================
    9. CONTRÔLE NOTÉ — et la boucle de remédiation
    ========================================================================= */
 function rendreControle(hote,mi,pi,pas){
@@ -5608,7 +5868,7 @@ function voir(m,p,silencieux){
     o.appendChild(ba);o.appendChild(bf);v.appendChild(o);
     sc.appendChild(v);majRail();majGlobal();window.scrollTo({top:0});return;
   }
-  const et=pas.k==="c"?(mod.examen?"Examen de palier":"Contrôle noté"):pas.k==="a"?"Atelier d'exercices":pas.k==="s"?"Banc d'essai":pas.k==="w"?"Câblage à faire":pas.k==="z"?"Simulateur":"Leçon";
+  const et=pas.k==="c"?(mod.examen?"Examen de palier":"Contrôle noté"):pas.k==="a"?"Atelier d'exercices":pas.k==="s"?"Banc d'essai":pas.k==="w"?"Câblage à faire":pas.k==="z"?"Simulateur":pas.k==="f"?"Chaîne fonctionnelle":pas.k==="g"?"Automate":"Leçon";
   const feuille=document.createElement("section");feuille.className="verre feuille monte";
   feuille.innerHTML='<span class="etiquette">'+et+"</span>"+
     (pas.t?"<h2>"+pas.t+"</h2>":"<h2>Contrôle du module</h2>")+(pas.h||"");
@@ -5618,9 +5878,11 @@ function voir(m,p,silencieux){
   if(pas.k==="a")rendreAtelier(sc,m,p,pas);
   if(pas.k==="w")rendreCablage(sc,m,p,pas);
   if(pas.k==="z")rendreSimu(sc,m,p,pas);
+  if(pas.k==="f")rendreChaine(sc,m,p,pas);
+  if(pas.k==="g")rendreAutomate(sc,m,p,pas);
   if(pas.k==="c")rendreControle(sc,m,p,pas);
 
-  if(pas.k==="l"||pas.k==="s"||pas.k==="w"||pas.k==="z"){
+  if(pas.k==="l"||pas.k==="s"||pas.k==="w"||pas.k==="z"||pas.k==="f"||pas.k==="g"){
     const pied=document.createElement("nav");pied.className="verre pied";
     const prec=document.createElement("button");prec.className="btn btn-secondaire";prec.textContent="← Précédent";
     prec.disabled=(m===0&&p===0);prec.addEventListener("click",reculer);
@@ -5952,6 +6214,40 @@ canvas.manip:active{cursor:grabbing}
 .atelier{overflow:hidden}
 .cablage{overflow:hidden}
 .simu{overflow:hidden}
+.chaine,.automate{overflow:hidden}
+.ch-pieces{display:flex;flex-wrap:wrap;gap:8px;padding:15px 22px 0}
+.ch-piece{padding:8px 13px;border-radius:9px;border:1px solid var(--border);background:var(--surface);
+  cursor:pointer;font-size:13px;transition:.15s}
+.ch-piece:hover{border-color:var(--primary);background:var(--surface-2)}
+.ch-piece.sel{background:var(--primary);border-color:var(--primary);color:var(--on-primary)}
+.ch-vide{font-size:13px;color:var(--muted);align-self:center}
+.ch-bloc{padding:18px 22px 0}
+.ch-titre{display:block;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--primary);margin-bottom:9px}
+.ch-cases{display:grid;gap:9px;grid-template-columns:repeat(auto-fit,minmax(155px,1fr))}
+.ch-case{border-radius:11px;padding:11px 13px;background:var(--surface-2);cursor:pointer;
+  box-shadow:inset 0 0 0 1px var(--border);min-height:78px;transition:.15s}
+.ch-case:hover{box-shadow:inset 0 0 0 1.5px var(--primary)}
+.ch-case.ok{background:color-mix(in srgb,var(--success) 11%,var(--surface));
+  box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--success) 34%,transparent)}
+.ch-case.ko{box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--danger) 34%,transparent)}
+.ch-lib{display:block;font-size:11px;font-weight:700;letter-spacing:.07em;color:var(--text)}
+.ch-aide{display:block;font-size:11px;color:var(--muted);margin:3px 0 7px;line-height:1.35}
+.ch-mis{display:block;width:100%;text-align:left;margin-top:5px;padding:6px 9px;border-radius:7px;
+  border:1px solid var(--border);background:var(--surface);font-size:12.3px;cursor:pointer}
+.ch-mis.bon{border-color:var(--success);color:var(--success)}
+.ch-mis.faux{border-color:var(--danger);color:var(--danger)}
+.au-quiz{padding:16px 22px 0;display:grid;gap:10px}
+.au-tr{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.au-num{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--muted);width:52px;flex:none}
+.au-opts{display:flex;gap:6px;flex-wrap:wrap}
+.au-opts button{padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface);
+  cursor:pointer;font-family:"IBM Plex Mono",monospace;font-size:12.5px;transition:.15s}
+.au-opts button:hover{border-color:var(--primary)}
+.au-opts button.bon{border-color:var(--success);background:color-mix(in srgb,var(--success) 12%,var(--surface));color:var(--success)}
+.au-opts button.faux{border-color:var(--danger);background:color-mix(in srgb,var(--danger) 10%,var(--surface));color:var(--danger)}
+.au-aide{margin:4px 0 0;font-size:12.5px;color:var(--muted)}
+
 .simu-palette{display:flex;flex-wrap:wrap;gap:7px;padding:15px 22px 0}
 .simu-piece{padding:7px 12px;border-radius:9px;border:1px solid var(--border);background:var(--surface);
   cursor:pointer;font-size:12.8px;font-weight:500;transition:.15s;white-space:nowrap}

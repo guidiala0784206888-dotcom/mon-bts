@@ -15,6 +15,10 @@ du calcul de base jusqu'à la transition énergétique.
   circuit est réellement résolu (analyse nodale modifiée, complexe) : continu et
   alternatif, tensions, courants, puissances, déphasages, en direct. Cinq défis
   guidés se valident tout seuls.
+- **Automatismes de 2ᵉ année** — ranger la chaîne fonctionnelle (information et
+  énergie) sur deux machines réelles, et un **GRAFCET qui pilote vraiment** un
+  poste de perçage : les capteurs de fin de course répondent à la machine, la
+  boucle est fermée. Les réceptivités sont à compléter avant que le cycle parte.
 - **Câblage à faire soi-même** — quatre bancs : circuit de commande à
   auto-maintien, circuit de puissance, inversion de sens, tableau divisionnaire.
   On relie les bornes, l'app vérifie, puis on met sous tension.
