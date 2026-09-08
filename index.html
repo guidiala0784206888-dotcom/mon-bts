@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="description" content="Mon BTS — révision pas à pas : 25 modules d'électrotechnique, des mathématiques de base à la transition énergétique, avec figures manipulables et exercices corrigés.">
+<meta name="description" content="Mon BTS — réviser son BTS pas à pas : électrotechnique et assistance technique d'ingénieur, des mathématiques de base à la transition énergétique, avec figures manipulables et exercices corrigés.">
 <meta name="theme-color" content="#0b7a8c" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0a1519" media="(prefers-color-scheme: dark)">
 <meta name="color-scheme" content="light dark">
@@ -203,6 +203,9 @@ button,input,select{font:inherit;color:inherit}
 
 /* ---- Rail ---- */
 .rail{position:sticky;top:88px;padding:16px 12px 12px}
+.rail-annee{padding:0 6px 10px}
+.rail-annee .segm{width:100%}
+.rail-annee .segm button{font-size:11.5px;padding:6px 2px}
 .rail-tete{display:flex;align-items:center;justify-content:space-between;padding:0 8px 12px;
   border-bottom:1px solid var(--border);margin-bottom:8px}
 .rail-tete h2{font-size:13px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
@@ -444,11 +447,15 @@ kbd{border:1px solid var(--border);border-bottom-width:2px;border-radius:5px;pad
   <div class="barre-in">
     <button class="logo" id="accueil" title="Tableau de bord">
       <span class="sceau"><svg viewBox="0 0 24 24"><path d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg></span>
-      <span><b>Mon BTS</b><span>Électrotechnique · pas à pas</span></span>
+      <span><b>Mon BTS</b><span id="sous-titre">Choisis ton BTS</span></span>
     </button>
     <div class="barre-actions">
       <span class="pastille" id="pastille-avance">Parcours <b>0 %</b></span>
       <span class="pastille" id="pastille-note">Moyenne <b>—</b></span>
+      <span class="pastille" id="pastille-heures">Travail <b>0 h</b></span>
+      <button class="ic" id="compte" data-e="off" title="Se connecter" aria-label="Compte">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>
+      </button>
       <button class="ic" id="voir-guide" title="Comment ça marche" aria-label="Comment ça marche">
         <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.4 2.3c-.6.3-.9.8-.9 1.4v.6"/><path d="M12 17h.01"/></svg>
       </button>
@@ -1028,6 +1035,185 @@ Object.assign(GEN,{
 });
 
 /* =========================================================================
+   LES EXERCICES DU BTS ATI
+   Mécanique, énergétique, automatique et mesures. Même moteur que
+   l'électrotechnique : tirage au sort, correction fléchée, trois paliers.
+   ========================================================================= */
+const G_=9.81;
+Object.assign(GEN,{
+"unite-meca":{t:"Les unités de la mécanique",qcm:true,rappel:"force N · moment N·m · pression Pa · énergie J · puissance W",
+ tirer(){return {c:P([
+   {q:"En quelle unité s'exprime un moment (ou couple) ?",b:"le newton-mètre (N·m)",f:["le newton (N)","le joule (J)"]},
+   {q:"En quelle unité s'exprime une contrainte dans une pièce ?",b:"le mégapascal (MPa), soit N/mm²",f:["le newton (N)","le newton-mètre (N·m)"]},
+   {q:"Un poids de 1 kg attire vers le bas avec une force de…",b:"environ 9,81 N",f:["1 N","9,81 kg"]},
+   {q:"Une puissance mécanique s'exprime en…",b:"watt (W), soit N·m/s",f:["newton-mètre (N·m)","joule (J)"]},
+   {q:"Une pression de 1 bar vaut…",b:"100 000 Pa, soit 0,1 MPa",f:["1000 Pa","1 MPa"]},
+   {q:"Le module d'Young E d'un acier vaut environ…",b:"210 000 MPa",f:["210 MPa","21 MPa"]}])};},
+ enonce(p){return p.c.q;},opts(p){return [p.c.b,...p.c.f];},
+ pas(p){return [{t:"Réponse.",op:p.c.b},
+  {t:"Les unités mécaniques se dérivent toutes du newton : une force en N, multipliée par une longueur donne un moment (N·m), divisée par une surface donne une pression (N/mm² = MPa)."}];}},
+
+"poids":{t:"Du kilogramme au newton",u:"N",tol:0.02,rappel:"P = m · g, avec g = 9,81 m/s²",
+ tirer(){return {m:R(2,500,0.5)};},
+ enonce(p){return "Une pièce de <span class='val'>"+F(p.m)+" kg</span> est suspendue. Quelle force exerce-t-elle vers le bas, en newtons ?";},
+ rep(p){return p.m*G_;},
+ pas(p){return [
+  {t:"La masse et le poids ne sont pas la même chose : la masse est en kilogrammes, le poids est une FORCE, en newtons.",op:"P = m · g"},
+  {t:"On remplace, avec g = 9,81 m/s².",op:F(p.m)+" × 9,81 = "+F(p.m*G_,1)+" N"},
+  {t:"Repère utile : 1 kg ≈ 10 N. Une charge de 100 kg tire à peu près 1000 N, soit 1 kN."}];}},
+
+"moment":{t:"Moment d'une force",u:"N·m",tol:0.02,rappel:"M = F · d, avec d la distance PERPENDICULAIRE à la force",
+ tirer(){return {f:R(20,900,10),d:R(0.1,2.5,0.05)};},
+ enonce(p){return "Une force de <span class='val'>"+p.f+" N</span> s'applique au bout d'un bras de <span class='val'>"+F(p.d,2)+" m</span>. Quel moment autour de l'axe ?";},
+ rep(p){return p.f*p.d;},
+ pas(p){return [
+  {t:"Le moment mesure l'effet de rotation d'une force.",op:"M = F · d"},
+  {t:"On remplace.",op:p.f+" × "+F(p.d,2)+" = "+F(p.f*p.d,1)+" N·m"},
+  {t:"La distance est celle PERPENDICULAIRE à la force. Si la force n'est pas perpendiculaire au bras, il faut d'abord la projeter — c'est là que la trigonométrie sert."}];}},
+
+"levier":{t:"Équilibre d'un levier",u:"N",tol:0.02,rappel:"à l'équilibre : F₁ · d₁ = F₂ · d₂",
+ tirer(){return {f1:R(50,600,10),d1:R(0.2,1.5,0.1),d2:R(0.2,2,0.1)};},
+ enonce(p){return "Un levier est en équilibre. D'un côté, <span class='val'>"+p.f1+" N</span> à <span class='val'>"+F(p.d1,1)+" m</span> de l'axe. De l'autre, une force à <span class='val'>"+F(p.d2,1)+" m</span>. Quelle est cette force ?";},
+ rep(p){return p.f1*p.d1/p.d2;},
+ pas(p){return [
+  {t:"À l'équilibre, la somme des moments est nulle : les deux moments s'égalent.",op:"F₁ · d₁ = F₂ · d₂"},
+  {t:"On isole la force cherchée.",op:"F₂ = F₁ · d₁ / d₂"},
+  {t:"On remplace.",op:p.f1+" × "+F(p.d1,1)+" / "+F(p.d2,1)+" = "+F(p.f1*p.d1/p.d2,1)+" N"},
+  {t:"Plus le bras est long, moins la force nécessaire est grande. C'est tout le principe du levier — et celui de la clé longue pour desserrer un écrou."}];}},
+
+"contrainte":{t:"Contrainte de traction",u:"MPa",tol:0.02,rappel:"σ = F / S, en N/mm² c'est-à-dire en MPa",
+ tirer(){return {f:R(500,60000,500),s:P([20,50,78.5,100,113,200,314])};},
+ enonce(p){return "Une barre de section <span class='val'>"+F(p.s,1)+" mm²</span> supporte une traction de <span class='val'>"+p.f+" N</span>. Quelle contrainte, en MPa ?";},
+ rep(p){return p.f/p.s;},
+ pas(p){return [
+  {t:"La contrainte est la force RAPPORTÉE à la section : c'est ce que ressent chaque millimètre carré de matière.",op:"σ = F / S"},
+  {t:"On remplace, force en N et section en mm².",op:p.f+" / "+F(p.s,1)+" = "+F(p.f/p.s,2)},
+  {t:"Résultat.",op:"σ = "+F(p.f/p.s,2)+" MPa"},
+  {t:"1 N/mm² = 1 MPa exactement : c'est pourquoi on garde toujours les newtons et les millimètres carrés, jamais les mètres carrés."}];}},
+
+"securite":{t:"Contrainte admissible",u:"MPa",tol:0.02,rappel:"R_pe = R_e / s, avec s le coefficient de sécurité",
+ tirer(){return {re:P([185,235,275,355,420]),s:P([2,2.5,3,4])};},
+ enonce(p){return "Un acier a une limite élastique de <span class='val'>"+p.re+" MPa</span>. Avec un coefficient de sécurité de <span class='val'>"+F(p.s,1)+"</span>, quelle contrainte admissible ?";},
+ rep(p){return p.re/p.s;},
+ pas(p){return [
+  {t:"On ne dimensionne jamais à la limite de la matière : on garde une marge.",op:"R_pe = R_e / s"},
+  {t:"On remplace.",op:p.re+" / "+F(p.s,1)+" = "+F(p.re/p.s,1)+" MPa"},
+  {t:"La pièce est correcte tant que la contrainte réelle σ reste SOUS cette valeur. Le coefficient de sécurité couvre ce qu'on ne sait pas : défauts de matière, surcharges, fatigue."}];}},
+
+"allongement":{t:"Allongement sous charge",u:"mm",tol:0.03,rappel:"ΔL = F · L / (E · S)",
+ tirer(){return {f:R(1000,40000,500),l:R(200,3000,50),s:P([50,100,200,314,500]),e:210000};},
+ enonce(p){return "Une barre d'acier (E = <span class='val'>210 000 MPa</span>) de <span class='val'>"+p.l+" mm</span> de long et <span class='val'>"+p.s+" mm²</span> de section subit <span class='val'>"+p.f+" N</span>. De combien s'allonge-t-elle ?";},
+ rep(p){return p.f*p.l/(p.e*p.s);},
+ pas(p){return [
+  {t:"La loi de Hooke relie la déformation à la contrainte tant qu'on reste élastique.",op:"ΔL = F · L / (E · S)"},
+  {t:"On remplace, tout en newtons et en millimètres.",op:p.f+" × "+p.l+" / (210000 × "+p.s+")"},
+  {t:"On calcule le dénominateur d'abord.",op:"210000 × "+p.s+" = "+F(p.e*p.s,0)},
+  {t:"Résultat.",op:"ΔL = "+F(p.f*p.l/(p.e*p.s),4)+" mm"},
+  {t:"L'allongement d'une pièce métallique se compte en fractions de millimètre : c'est pour cela qu'on ne le voit pas, et qu'il faut le calculer."}];}},
+
+"pression":{t:"Pression d'un vérin",u:"bar",tol:0.03,rappel:"p = F / S, et 1 bar = 10 N/cm²",
+ tirer(){return {f:R(500,20000,100),d:P([32,40,50,63,80,100])};},
+ enonce(p){return "Un vérin de <span class='val'>"+p.d+" mm</span> d'alésage doit pousser <span class='val'>"+p.f+" N</span>. Quelle pression, en bars ?";},
+ rep(p){const S=Math.PI*p.d*p.d/4;return p.f/S*10;},
+ pas(p){const S=Math.PI*p.d*p.d/4;return [
+  {t:"On calcule d'abord la surface du piston.",op:"S = π · d² / 4 = 3,1416 × "+p.d+"² / 4 = "+F(S,1)+" mm²"},
+  {t:"La pression est la force divisée par la surface.",op:"p = "+p.f+" / "+F(S,1)+" = "+F(p.f/S,3)+" N/mm² (MPa)"},
+  {t:"On convertit : 1 MPa = 10 bars.",op:F(p.f/S,3)+" × 10 = "+F(p.f/S*10,2)+" bars"},
+  {t:"Ordre de grandeur : un réseau d'air comprimé d'atelier travaille à 6 ou 7 bars. Au-delà, il faut du multiplicateur ou un vérin plus gros."}];}},
+
+"reduction":{t:"Rapport de réduction",u:"",tol:0.02,rappel:"n₂ = n₁ / i, et le couple est multiplié par i · η",
+ tirer(){return {n:P([1450,2890,960,1500]),i:P([3,5,10,15,20,30]),q:P(["n","c"]),c:R(5,80,1),e:P([0.92,0.95,0.97])};},
+ enonce(p){return p.q==="n"
+   ?"Un moteur tourne à <span class='val'>"+p.n+" tr/min</span> et entraîne un réducteur de rapport <span class='val'>"+p.i+"</span>. Quelle vitesse en sortie, en <b>tr/min</b> ?"
+   :"Un réducteur de rapport <span class='val'>"+p.i+"</span> et de rendement <span class='val'>"+F(p.e,2)+"</span> reçoit un couple de <span class='val'>"+p.c+" N·m</span>. Quel couple en sortie, en N·m ?";},
+ rep(p){return p.q==="n"?p.n/p.i:p.c*p.i*p.e;},
+ pas(p){return p.q==="n"?[
+  {t:"Un réducteur divise la vitesse par son rapport.",op:"n₂ = n₁ / i = "+p.n+" / "+p.i},
+  {t:"Résultat.",op:"n₂ = "+F(p.n/p.i,1)+" tr/min"},
+  {t:"Et il multiplie le couple d'autant, aux pertes près. C'est le même compromis que le transformateur : ce qu'on gagne d'un côté, on le perd de l'autre."}]:[
+  {t:"Ce qu'on perd en vitesse, on le gagne en couple — moins le rendement.",op:"C₂ = C₁ · i · η"},
+  {t:"On remplace.",op:p.c+" × "+p.i+" × "+F(p.e,2)},
+  {t:"Résultat.",op:"C₂ = "+F(p.c*p.i*p.e,1)+" N·m"},
+  {t:"Contrôle : la puissance de sortie doit être PLUS PETITE que celle d'entrée. Si tu trouves plus, tu as multiplié par le rendement au lieu de… non : tu as oublié qu'un rendement est toujours inférieur à 1."}];}},
+
+"puissance-meca":{t:"Puissance mécanique",u:"W",tol:0.02,rappel:"P = C · Ω avec Ω = 2πn/60, ou P = F · v",
+ tirer(){const q=P(["rot","lin"]);return {q:q,c:R(5,300,1),n:P([750,960,1450,2890]),f:R(100,5000,50),v:R(0.05,3,0.05)};},
+ enonce(p){return p.q==="rot"
+   ?"Un arbre transmet <span class='val'>"+p.c+" N·m</span> à <span class='val'>"+p.n+" tr/min</span>. Quelle puissance ?"
+   :"Un chariot est tiré avec <span class='val'>"+p.f+" N</span> à <span class='val'>"+F(p.v,2)+" m/s</span>. Quelle puissance ?";},
+ rep(p){return p.q==="rot"?p.c*2*Math.PI*p.n/60:p.f*p.v;},
+ pas(p){return p.q==="rot"?[
+  {t:"On passe d'abord la vitesse en radians par seconde.",op:"Ω = 2π · "+p.n+" / 60 = "+F(2*Math.PI*p.n/60,2)+" rad/s"},
+  {t:"La puissance est le produit du couple par la vitesse angulaire.",op:"P = "+p.c+" × "+F(2*Math.PI*p.n/60,2)+" = "+F(p.c*2*Math.PI*p.n/60,0)+" W"},
+  {t:"En mouvement de rotation comme en translation, la puissance est toujours « l'effort multiplié par la vitesse »."}]:[
+  {t:"En translation, la puissance est la force multipliée par la vitesse.",op:"P = F · v"},
+  {t:"On remplace.",op:p.f+" × "+F(p.v,2)+" = "+F(p.f*p.v,1)+" W"},
+  {t:"Même logique qu'en rotation : effort × vitesse. Seules les unités changent."}];}},
+
+"rendement-chaine":{t:"Rendement d'une chaîne",u:"",tol:0.02,rappel:"les rendements se MULTIPLIENT",
+ tirer(){return {a:P([0.9,0.92,0.95]),b:P([0.85,0.9,0.96]),c:P([0.75,0.8,0.88])};},
+ enonce(p){return "Une chaîne comporte trois éléments de rendements <span class='val'>"+F(p.a,2)+"</span>, <span class='val'>"+F(p.b,2)+"</span> et <span class='val'>"+F(p.c,2)+"</span>. Quel rendement global ?";},
+ rep(p){return p.a*p.b*p.c;},
+ pas(p){return [
+  {t:"Les rendements ne s'additionnent pas et ne se moyennent pas : ils se multiplient.",op:"η = η₁ · η₂ · η₃"},
+  {t:"On remplace.",op:F(p.a,2)+" × "+F(p.b,2)+" × "+F(p.c,2)},
+  {t:"Résultat.",op:"η = "+F(p.a*p.b*p.c,4)+" soit "+F(p.a*p.b*p.c*100,1)+" %"},
+  {t:"Conséquence importante : trois éléments à 90 % ne donnent pas 90 % mais 73 %. Chaque maillon coûte, et le plus mauvais pèse lourd."}];}},
+
+"chaleur":{t:"Énergie pour chauffer",u:"kJ",tol:0.02,rappel:"Q = m · c · ΔT",
+ tirer(){return {m:R(1,200,1),c:P([4185,900,460,385]),d:R(10,80,5)};},
+ enonce(p){return "On chauffe <span class='val'>"+p.m+" kg</span> d'un corps de chaleur massique <span class='val'>"+p.c+" J/(kg·K)</span> de <span class='val'>"+p.d+" °C</span>. Quelle énergie, en kilojoules ?";},
+ rep(p){return p.m*p.c*p.d/1000;},
+ pas(p){return [
+  {t:"L'énergie dépend de la masse, de la nature du corps et de l'écart de température.",op:"Q = m · c · ΔT"},
+  {t:"On remplace.",op:p.m+" × "+p.c+" × "+p.d+" = "+F(p.m*p.c*p.d,0)+" J"},
+  {t:"En kilojoules.",op:"Q = "+F(p.m*p.c*p.d/1000,1)+" kJ"},
+  {t:"Repère : l'eau a une chaleur massique de 4185 J/(kg·K), bien plus que les métaux. C'est pour cela qu'elle sert de fluide caloporteur."}];}},
+
+"conduction":{t:"Flux à travers une paroi",u:"W",tol:0.03,rappel:"Φ = λ · S · ΔT / e",
+ tirer(){return {l:P([0.04,0.15,1.2,45]),s:R(2,50,1),d:R(5,40,1),e:P([20,50,100,200,300])};},
+ enonce(p){return "Une paroi de <span class='val'>"+p.s+" m²</span> et <span class='val'>"+p.e+" mm</span> d'épaisseur, de conductivité <span class='val'>"+F(p.l,2)+" W/(m·K)</span>, sépare deux ambiances distantes de <span class='val'>"+p.d+" °C</span>. Quel flux thermique ?";},
+ rep(p){return p.l*p.s*p.d/(p.e/1000);},
+ pas(p){return [
+  {t:"On convertit l'épaisseur en mètres — c'est là que se logent les erreurs.",op:p.e+" mm = "+F(p.e/1000,3)+" m"},
+  {t:"On applique la loi de la conduction.",op:"Φ = λ · S · ΔT / e"},
+  {t:"On remplace.",op:F(p.l,2)+" × "+p.s+" × "+p.d+" / "+F(p.e/1000,3)},
+  {t:"Résultat.",op:"Φ = "+F(p.l*p.s*p.d/(p.e/1000),0)+" W"},
+  {t:"Plus la paroi est épaisse, moins il passe. Plus λ est petit, mieux ça isole : un isolant a λ ≈ 0,04, un acier λ ≈ 45, mille fois plus."}];}},
+
+"incertitude":{t:"Incertitude d'une mesure",u:"%",tol:0.03,rappel:"incertitudes relatives : on les compose en quadrature",
+ tirer(){return {a:R(0.5,4,0.1),b:R(0.5,4,0.1)};},
+ enonce(p){return "Une puissance est obtenue en multipliant deux mesures, l'une à <span class='val'>"+F(p.a,1)+" %</span> près, l'autre à <span class='val'>"+F(p.b,1)+" %</span> près. Quelle incertitude relative sur le résultat ?";},
+ rep(p){return Math.hypot(p.a,p.b);},
+ pas(p){return [
+  {t:"Pour un produit, les incertitudes RELATIVES se composent — et comme elles sont indépendantes, en quadrature.",op:"u = √(u₁² + u₂²)"},
+  {t:"On remplace.",op:"√("+F(p.a,1)+"² + "+F(p.b,1)+"²) = √"+F(p.a*p.a+p.b*p.b,2)},
+  {t:"Résultat.",op:"u = "+F(Math.hypot(p.a,p.b),2)+" %"},
+  {t:"On ne les additionne pas : ce serait "+F(p.a+p.b,1)+" %, une surestimation. Et c'est encore Pythagore — décidément."}];}},
+
+"tolerance":{t:"Cote tolérancée",u:"mm",tol:1e-6,rappel:"cote maxi = nominale + écart supérieur",
+ tirer(){const n=P([20,25,30,40,50]),es=P([0.021,0.033,0.052]),ei=P([0,-0.013,-0.021]);
+  return {n:n,es:es,ei:ei,q:P(["max","min","it"])};},
+ enonce(p){return "Une cote vaut <span class='val'>"+p.n+" mm</span> avec un écart supérieur de <span class='val'>+"+F3(p.es)+"</span> et un écart inférieur de <span class='val'>"+F3(p.ei)+"</span>. Donne "+
+   (p.q==="max"?"la cote <b>maximale</b>":p.q==="min"?"la cote <b>minimale</b>":"l'<b>intervalle de tolérance</b>")+", en mm.";},
+ rep(p){return p.q==="max"?p.n+p.es:p.q==="min"?p.n+p.ei:p.es-p.ei;},
+ pas(p){return [
+  {t:"Les écarts s'ajoutent ALGÉBRIQUEMENT à la cote nominale.",op:"maxi = "+p.n+" + "+F3(p.es)+" = "+F(p.n+p.es,3)+"\nmini = "+p.n+" + ("+F3(p.ei)+") = "+F(p.n+p.ei,3)},
+  {t:"L'intervalle de tolérance est l'écart entre les deux.",op:"IT = "+F3(p.es)+" − ("+F3(p.ei)+") = "+F(p.es-p.ei,3)+" mm"},
+  {t:"Une pièce est bonne si sa cote mesurée tombe entre le mini et le maxi. L'IT dit la marge de fabrication : plus il est petit, plus la pièce coûte cher."}];}},
+
+"cout":{t:"Coût de revient",u:"€",tol:0.02,rappel:"coût = matière + (heures × taux) + charges",
+ tirer(){return {m:R(20,400,5),h:R(1,20,0.5),t:P([38,45,52,60]),c:R(5,40,5)};},
+ enonce(p){return "Une pièce demande <span class='val'>"+p.m+" €</span> de matière, <span class='val'>"+F(p.h,1)+" h</span> d'usinage à <span class='val'>"+p.t+" €/h</span>, et <span class='val'>"+p.c+" %</span> de charges sur le total. Quel coût de revient ?";},
+ rep(p){return (p.m+p.h*p.t)*(1+p.c/100);},
+ pas(p){return [
+  {t:"On calcule d'abord le coût direct : matière plus main-d'œuvre.",op:p.m+" + ("+F(p.h,1)+" × "+p.t+") = "+p.m+" + "+F(p.h*p.t,2)+" = "+F(p.m+p.h*p.t,2)+" €"},
+  {t:"On applique les charges.",op:F(p.m+p.h*p.t,2)+" × (1 + "+F(p.c/100,2)+")"},
+  {t:"Résultat.",op:F((p.m+p.h*p.t)*(1+p.c/100),2)+" €"},
+  {t:"C'est le calcul qui décide d'un devis. L'heure d'usinage pèse souvent plus lourd que la matière : gagner une passe vaut mieux que négocier l'acier."}];}}
+});
+
+/* =========================================================================
    EXERCICES COMPOSÉS — le troisième palier
    Ceux-là enchaînent DEUX ou TROIS notions : c'est le format des sujets
    d'examen, et c'est là qu'on voit si une notion est vraiment acquise ou
@@ -1419,6 +1605,226 @@ function simuler(circuit){
   });
   return {ok:true,res:res,ac:acPresent,f:w/(2*Math.PI),nb:N.n};
 }
+
+/* =========================================================================
+   LE PARCOURS DU BTS ATI
+   Cinq blocs, alignés sur le référentiel : concevoir un cahier des charges,
+   vérifier des performances mécaniques et électriques, constituer un
+   dossier, assister techniquement, mesurer et contrôler.
+   ========================================================================= */
+const MODULES_ATI=[
+{id:"a01",num:"01",bloc:"Les bases",an:1,titre:"Les grandeurs de la mécanique",duree:"16 min",
+ resume:"Force, moment, pression, énergie : ce que mesure chaque unité, et pourquoi on garde les millimètres.",
+ steps:[
+ {k:"l",t:"Du kilogramme au newton",h:`
+  <p>Première confusion à lever : la <strong>masse</strong> et le <strong>poids</strong> ne sont pas la même chose. La masse est une quantité de matière, en kilogrammes. Le poids est une <strong>force</strong>, en newtons.</p>
+  <div class="formule">P = m · g        avec g = 9,81 m/s²<span class="note">Repère de tête : 1 kg pèse environ 10 N.</span></div>
+  <div class="tabl"><table>
+   <tr><th>On mesure</th><th>Unité</th><th>Symbole</th><th>Ce que c'est</th></tr>
+   <tr><td><b>une force</b></td><td>le newton</td><td class="mono">N</td><td>ce qui pousse ou tire</td></tr>
+   <tr><td><b>un moment</b></td><td>le newton-mètre</td><td class="mono">N·m</td><td>ce qui fait tourner</td></tr>
+   <tr><td><b>une contrainte</b></td><td>le mégapascal</td><td class="mono">MPa</td><td>ce que ressent 1 mm² de matière</td></tr>
+   <tr><td><b>une énergie</b></td><td>le joule</td><td class="mono">J</td><td>un travail accompli</td></tr>
+   <tr><td><b>une puissance</b></td><td>le watt</td><td class="mono">W</td><td>un travail par seconde</td></tr>
+  </table></div>
+  <div class="encart e-cle"><span class="chapo">La règle qui évite les facteurs mille</span><p>En mécanique on travaille en <strong>newtons et en millimètres</strong>. Une force en N divisée par une section en mm² donne directement des <strong>MPa</strong> : <span class="mono">1 N/mm² = 1 MPa</span>. Passer par les mètres carrés introduit un facteur un million, et c'est l'erreur la plus fréquente.</p></div>`},
+ {k:"a",t:"Atelier — unités et poids",gen:["unite-meca","poids","prefixe"],but:3,h:`<p>On commence par les nombres ronds.</p>`},
+ {k:"c",t:"Contrôle",gen:["unite-meca","poids","prefixe","proportion"],n:6}
+]},
+
+{id:"a02",num:"02",bloc:"Mécanique",an:1,titre:"Statique : forces et moments",duree:"22 min",
+ resume:"Ce qui pousse, ce qui fait tourner, et la condition d'équilibre d'un solide.",
+ steps:[
+ {k:"l",t:"Le moment, ou l'effet de rotation",h:`
+  <p>Une force qui s'applique loin de l'axe fait tourner davantage. C'est tout ce que dit le moment.</p>
+  <div class="formule">M = F · d<span class="note">d est la distance PERPENDICULAIRE entre l'axe et la ligne d'action de la force.</span></div>
+  <figure data-anim="levier-meca"></figure>
+  <p>Déplace la charge dans la figure : quand tu l'éloignes de l'axe, la force nécessaire de l'autre côté diminue. C'est le levier, et c'est aussi pourquoi une clé longue desserre mieux.</p>
+  <div class="encart e-cle"><span class="chapo">Les deux conditions d'équilibre</span><p>Un solide est en équilibre si <strong>la somme des forces est nulle</strong> (il ne part pas) <strong>et</strong> si <strong>la somme des moments est nulle</strong> (il ne tourne pas). Les deux, toujours — oublier la seconde est l'erreur classique.</p></div>`},
+ {k:"a",t:"Atelier — moments et leviers",gen:["moment","levier","poids"],but:4,h:`
+  <p>Quatre d'affilée. Attention au bras : c'est la distance perpendiculaire, pas la longueur de la pièce.</p>`},
+ {k:"l",t:"Quand la force n'est pas perpendiculaire",h:`
+  <p>Si la force fait un angle avec le bras, seule sa composante perpendiculaire fait tourner. On la projette — exactement comme on projette S sur P en électrotechnique.</p>
+  <div class="formule">M = F · d · sin α<span class="note">α : angle entre la force et le bras. À 90°, sin α = 1 et on retrouve M = F · d.</span></div>
+  <div class="resolu"><span class="chapo">Un exemple</span>
+   <p>Une force de 400 N s'applique à 0,5 m de l'axe, à 30° du bras.</p>
+   <ol>
+    <li>On projette la force perpendiculairement au bras.<span class="op">F⊥ = 400 × sin 30° = 400 × 0,5 = 200 N</span></li>
+    <li>On applique le moment.<span class="op">M = 200 × 0,5 = 100 N·m</span></li>
+   </ol>
+   <div class="final">100 N·m, et non 200. Tirer de travers, c'est perdre la moitié de l'effort.</div></div>`},
+ {k:"a",t:"Atelier — projections",gen:["trigo-cote","moment","vecteur-somme"],but:4,h:`<p>La trigonométrie sert ici exactement comme en électricité.</p>`},
+ {k:"c",t:"Contrôle",gen:["moment","levier","trigo-cote","poids","vecteur-somme"],n:8}
+]},
+
+{id:"a03",num:"03",bloc:"Mécanique",an:1,titre:"Résistance des matériaux",duree:"24 min",
+ resume:"Contrainte, limite élastique, coefficient de sécurité, allongement : dimensionner une pièce.",
+ steps:[
+ {k:"l",t:"La contrainte, ou l'effort par millimètre carré",h:`
+  <p>Deux barres qui supportent la même charge ne travaillent pas pareil si elles n'ont pas la même section. Ce qui compte n'est pas la force, c'est la force <strong>rapportée à la matière</strong>.</p>
+  <div class="formule">σ = F / S<span class="note">F en newtons, S en mm², σ en MPa. 1 N/mm² = 1 MPa.</span></div>
+  <figure data-anim="traction"></figure>
+  <p>Augmente l'effort dans la figure : la barre s'allonge, la contrainte monte, et la jauge se rapproche de la limite élastique. Au-delà, la pièce ne revient plus à sa forme.</p>`},
+ {k:"l",t:"La sécurité et l'allongement",h:`
+  <div class="formule">R<sub>pe</sub> = R<sub>e</sub> / s<span class="note">R_e : limite élastique du matériau · s : coefficient de sécurité (2 à 4 en général)</span></div>
+  <p>La pièce est correcte tant que <span class="mono">σ ≤ R<sub>pe</sub></span>. Le coefficient couvre ce qu'on ne sait pas : défauts de matière, surcharges imprévues, fatigue.</p>
+  <div class="formule">ΔL = F · L / (E · S)<span class="note">E : module d'Young — 210 000 MPa pour l'acier, 70 000 pour l'aluminium.</span></div>
+  <div class="encart e-piege"><span class="chapo">Ce que le calcul ne dit pas</span><p>Une pièce peut tenir en contrainte et casser quand même : par <strong>flambage</strong> si elle est longue et comprimée, par <strong>fatigue</strong> si l'effort est répété des millions de fois. La traction simple est le premier calcul, jamais le seul.</p></div>`},
+ {k:"a",t:"Atelier — dimensionner",gen:["contrainte","securite","allongement"],but:4,h:`
+  <p>Les trois calculs qui décident d'une section. Garde les newtons et les millimètres.</p>`},
+ {k:"c",t:"Contrôle",gen:["contrainte","securite","allongement","poids","carre"],n:8}
+]},
+
+{id:"a04",num:"04",bloc:"Mécanique",an:1,titre:"Transmettre le mouvement",duree:"22 min",
+ resume:"Réducteurs, couple, vitesse, puissance : ce qui se conserve et ce qui se transforme.",
+ steps:[
+ {k:"l",t:"Réduire la vitesse, multiplier le couple",h:`
+  <figure data-anim="engrenages"></figure>
+  <div class="formule">i = Z₂ / Z₁        n₂ = n₁ / i        C₂ = C₁ · i · η</div>
+  <p>Fais varier le nombre de dents : la vitesse tombe, le couple monte. Mais regarde les deux puissances affichées — celle de sortie ne dépasse <strong>jamais</strong> celle d'entrée. Un réducteur ne crée rien, il échange.</p>
+  <div class="formule">P = C · Ω        avec Ω = 2 · π · n / 60<span class="note">La puissance est toujours « effort × vitesse », en rotation comme en translation.</span></div>`},
+ {k:"a",t:"Atelier — transmission",gen:["reduction","puissance-meca","couple"],but:4,h:`
+  <p>Contrôle systématique : la puissance de sortie doit être plus petite que celle d'entrée.</p>`},
+ {k:"l",t:"Les rendements se multiplient",h:`
+  <p>Une chaîne de transmission enchaîne les organes, et chacun prend sa part.</p>
+  <div class="formule">η<sub>total</sub> = η₁ · η₂ · η₃ · …<span class="note">Jamais une moyenne, jamais une somme.</span></div>
+  <div class="resolu"><span class="chapo">Un exemple qui surprend</span>
+   <p>Un moteur (0,90), un réducteur (0,95) et une courroie (0,92).</p>
+   <ol>
+    <li>On multiplie.<span class="op">0,90 × 0,95 × 0,92 = 0,786</span></li>
+   </ol>
+   <div class="final">78,6 %, et non 92 %. Trois « bons » rendements donnent un ensemble médiocre : c'est pourquoi on cherche à supprimer des maillons.</div></div>`},
+ {k:"a",t:"Atelier — rendements",gen:["rendement-chaine","puissance-meca","pourcent"],but:4,h:`<p>Attention : jamais de moyenne.</p>`},
+ {k:"c",t:"Contrôle",gen:["reduction","puissance-meca","rendement-chaine","couple","moment"],n:8}
+]},
+
+{id:"a05",num:"05",bloc:"Électricité appliquée",an:1,titre:"L'électricité dont l'ATI a besoin",duree:"26 min",
+ resume:"Ohm, puissance, triphasé, moteur : de quoi lire un schéma et dimensionner un départ.",
+ steps:[
+ {k:"l",t:"Les quatre grandeurs et la loi d'Ohm",h:`
+  <figure data-anim="ohm-flux"></figure>
+  <div class="formule">U = R · I        P = U · I = R · I² = U² / R</div>
+  <p>La forme <span class="mono">P = R·I²</span> est celle qui compte : elle explique l'échauffement des câbles, des bornes et des moteurs. Doubler le courant quadruple la chaleur.</p>`},
+ {k:"z",t:"Monte un circuit",defi:"ohm",h:`<p>Le simulateur est le même que celui du parcours électrotechnique : pose, relie, mesure.</p>`},
+ {k:"l",t:"Le triphasé et le moteur",h:`
+  <div class="formule">U = √3 · V        P = √3 · U · I · cos φ
+I = P / (√3 · U · cos φ · η)<span class="note">U composée, I de ligne. En 400 V, un moteur consomme environ 2 A par kW.</span></div>
+  <figure data-anim="champ-tournant"></figure>
+  <div class="encart e-cle"><span class="chapo">Le lien avec la mécanique</span><p>La plaque donne une puissance <strong>utile</strong>, sur l'arbre. C'est elle qui entre dans <span class="mono">P = C · Ω</span>. La puissance <strong>absorbée</strong> au réseau est plus grande : elle se divise par le rendement. Confondre les deux fausse tout le dimensionnement.</p></div>`},
+ {k:"a",t:"Atelier — électricité",gen:["ohm","puis-tri","courant-moteur","couple"],but:4,h:`<p>Ces quatre calculs suffisent à dimensionner un départ moteur.</p>`},
+ {k:"c",t:"Contrôle",gen:["ohm","puissance-dc","puis-tri","courant-moteur","tri-uv"],n:8}
+]},
+
+{id:"a06",num:"06",bloc:"Énergétique",an:2,titre:"Énergie et thermique",duree:"24 min",
+ resume:"Chauffer, isoler, échanger : les calculs d'un bilan thermique.",
+ steps:[
+ {k:"l",t:"L'énergie pour chauffer",h:`
+  <div class="formule">Q = m · c · ΔT<span class="note">m en kg · c en J/(kg·K) · ΔT en kelvins ou en degrés, c'est le même écart.</span></div>
+  <div class="tabl"><table>
+   <tr><th>Corps</th><th>c en J/(kg·K)</th><th>Ce que ça implique</th></tr>
+   <tr><td>Eau</td><td class="mono">4185</td><td>excellente pour transporter la chaleur</td></tr>
+   <tr><td>Acier</td><td class="mono">460</td><td>chauffe et refroidit vite</td></tr>
+   <tr><td>Aluminium</td><td class="mono">900</td><td>intermédiaire, très bon conducteur</td></tr>
+  </table></div>
+  <div class="encart e-cle"><span class="chapo">Le lien avec la puissance</span><p>Une énergie divisée par une durée donne une puissance : <span class="mono">P = Q / t</span>. Chauffer 100 litres d'eau de 40 °C demande 16,7 MJ ; en une heure, cela fait 4,6 kW.</p></div>`},
+ {k:"a",t:"Atelier — chaleur",gen:["chaleur","rendement-chaine","joule"],but:4,h:`<p>Attention aux unités : des joules, pas des kilojoules, avant de diviser.</p>`},
+ {k:"l",t:"Ce qui traverse une paroi",h:`
+  <div class="formule">Φ = λ · S · ΔT / e<span class="note">λ : conductivité en W/(m·K) · e : épaisseur en MÈTRES</span></div>
+  <div class="tabl"><table>
+   <tr><th>Matériau</th><th>λ</th><th></th></tr>
+   <tr><td>Laine minérale</td><td class="mono">0,04</td><td>isolant</td></tr>
+   <tr><td>Béton</td><td class="mono">1,2</td><td>trente fois plus conducteur</td></tr>
+   <tr><td>Acier</td><td class="mono">45</td><td>mille fois plus</td></tr>
+  </table></div>
+  <div class="encart e-piege"><span class="chapo">Le piège des millimètres</span><p>L'épaisseur doit être en <strong>mètres</strong> dans cette formule, alors que tout le reste de la mécanique se fait en millimètres. Un facteur mille attend celui qui ne convertit pas.</p></div>`},
+ {k:"a",t:"Atelier — thermique",gen:["conduction","chaleur","prefixe"],but:4,h:`<p>Convertis l'épaisseur avant tout le reste.</p>`},
+ {k:"c",t:"Contrôle",gen:["chaleur","conduction","rendement-chaine","cube"],n:8}
+]},
+
+{id:"a07",num:"07",bloc:"Automatique",an:2,titre:"Systèmes asservis",duree:"22 min",
+ resume:"Boucle ouverte, boucle fermée, réponse dans le temps : ce que fait une régulation.",
+ steps:[
+ {k:"l",t:"Pourquoi boucler",h:`
+  <p>En <strong>boucle ouverte</strong>, on commande sans vérifier : un four réglé sur « 7 » chauffe, mais personne ne mesure la température. En <strong>boucle fermée</strong>, un capteur mesure et le système corrige l'écart.</p>
+  <div class="formule">écart = consigne − mesure        commande = correcteur(écart)</div>
+  <div class="tabl"><table>
+   <tr><th></th><th>Boucle ouverte</th><th>Boucle fermée</th></tr>
+   <tr><td>Perturbation</td><td>subie</td><td>corrigée</td></tr>
+   <tr><td>Précision</td><td>dépend du réglage</td><td>dépend du capteur</td></tr>
+   <tr><td>Risque</td><td>dérive silencieuse</td><td>oscillation si mal réglée</td></tr>
+  </table></div>`},
+ {k:"l",t:"La réponse dans le temps",h:`
+  <figure data-anim="rc-charge"></figure>
+  <p>Un système du premier ordre répond comme un condensateur qui se charge : vite au début, de plus en plus lentement. Trois repères suffisent à lire une réponse.</p>
+  <div class="tabl"><table>
+   <tr><th>Grandeur</th><th>Ce qu'elle dit</th></tr>
+   <tr><td>Gain statique</td><td>de combien la sortie monte pour une consigne donnée</td></tr>
+   <tr><td>Constante de temps τ</td><td>la rapidité : 63 % à 1τ, terminé à 5τ</td></tr>
+   <tr><td>Erreur statique</td><td>l'écart qui subsiste une fois stabilisé</td></tr>
+  </table></div>
+  <div class="encart e-cle"><span class="chapo">Le compromis permanent</span><p>Augmenter le gain rend le système plus <strong>rapide</strong> et plus <strong>précis</strong>, mais moins <strong>stable</strong> : trop de gain et il oscille, voire diverge. Régler un correcteur, c'est arbitrer entre ces trois-là — jamais les avoir tous les trois au maximum.</p></div>`},
+ {k:"a",t:"Atelier — réponse temporelle",gen:["expo-tau","rc-tau","periode"],but:4,h:`<p>Les mêmes repères qu'en électricité : 63 %, 95 %, 99 %.</p>`},
+ {k:"c",t:"Contrôle",gen:["expo-tau","rc-tau","pourcent","rendement-chaine"],n:8}
+]},
+
+{id:"a08",num:"08",bloc:"Mesures et contrôle",an:2,titre:"Métrologie et cotation",duree:"22 min",
+ resume:"Tolérances, incertitudes, ajustements : décider si une pièce est bonne.",
+ steps:[
+ {k:"l",t:"Une cote n'est jamais exacte",h:`
+  <p>Aucune pièce ne mesure exactement 20 mm. Le dessin donne donc une cote nominale et deux écarts entre lesquels la pièce est acceptée.</p>
+  <div class="formule">cote maxi = nominale + écart supérieur
+cote mini = nominale + écart inférieur
+IT = écart supérieur − écart inférieur</div>
+  <div class="encart e-cle"><span class="chapo">Ce que coûte un IT serré</span><p>Diviser l'intervalle de tolérance par deux ne double pas le prix : il explose. Une cote au centième demande une rectification, un contrôle et un rebut. On ne serre que ce qui doit l'être — les portées de roulement, les ajustements.</p></div>`},
+ {k:"a",t:"Atelier — cotation",gen:["tolerance","prefixe","proportion"],but:4,h:`<p>Attention aux signes : un écart inférieur est souvent négatif.</p>`},
+ {k:"l",t:"L'incertitude d'une mesure",h:`
+  <p>Une mesure sans incertitude n'a pas de sens. Et quand on combine plusieurs mesures, les incertitudes se combinent — mais pas en s'additionnant.</p>
+  <div class="formule">pour un produit ou un quotient :  u = √(u₁² + u₂²)<span class="note">Incertitudes RELATIVES, en pourcentage.</span></div>
+  <div class="encart e-piege"><span class="chapo">Encore Pythagore</span><p>Deux mesures à 2 % et 3 % donnent 3,6 % et non 5 %. Additionner surestime : c'est prudent, mais c'est faux, et cela conduit à refuser des pièces bonnes.</p></div>`},
+ {k:"a",t:"Atelier — incertitudes",gen:["incertitude","tolerance","pythagore"],but:4,h:`<p>La même composition en quadrature que pour les impédances.</p>`},
+ {k:"c",t:"Contrôle",gen:["tolerance","incertitude","pythagore","pourcent"],n:8}
+]},
+
+{id:"a09",num:"09",bloc:"Mesures et contrôle",an:2,titre:"Vérifier une performance",duree:"20 min",
+ resume:"Mesurer sur une installation réelle : pression, effort, débit, puissance.",
+ steps:[
+ {k:"l",t:"Du vérin à la pression",h:`
+  <p>Un vérin pousse d'autant plus fort que sa section et sa pression sont grandes. C'est la même relation que la contrainte, lue dans l'autre sens.</p>
+  <div class="formule">F = p · S        S = π · d² / 4<span class="note">1 MPa = 10 bars. Un réseau d'atelier travaille vers 6 à 7 bars.</span></div>
+  <div class="resolu"><span class="chapo">Un exemple</span>
+   <p>Vérin de 63 mm d'alésage sous 6 bars.</p>
+   <ol>
+    <li>Section du piston.<span class="op">S = 3,1416 × 63² / 4 = 3117 mm²</span></li>
+    <li>Pression en MPa.<span class="op">6 bars = 0,6 MPa = 0,6 N/mm²</span></li>
+    <li>Effort.<span class="op">F = 0,6 × 3117 = 1870 N</span></li>
+   </ol>
+   <div class="final">Environ 1870 N, soit la poussée d'une masse de 190 kg.</div></div>`},
+ {k:"a",t:"Atelier — pression et effort",gen:["pression","contrainte","poids"],but:4,h:`<p>Passe toujours par la section avant tout le reste.</p>`},
+ {k:"c",t:"Contrôle",gen:["pression","contrainte","puissance-meca","incertitude"],n:8}
+]},
+
+{id:"a10",num:"10",bloc:"Dossier et coûts",an:2,titre:"Chiffrer et argumenter",duree:"18 min",
+ resume:"Coût de revient, comparaison de solutions, justification technique : le cœur du métier d'ATI.",
+ steps:[
+ {k:"l",t:"Ce que coûte une pièce",h:`
+  <div class="formule">coût = matière + (heures × taux horaire) + charges</div>
+  <p>L'heure d'atelier pèse souvent plus lourd que la matière. Gagner une passe d'usinage rapporte davantage que négocier l'acier — c'est le genre d'argument qu'on attend d'un assistant technique.</p>
+  <div class="encart e-cle"><span class="chapo">Comparer deux solutions</span><p>Une solution plus chère à l'achat peut être moins chère à l'usage : consommation, maintenance, durée de vie. Le bon calcul est celui du <strong>coût global</strong> sur la durée de vie, pas celui du devis d'achat.</p></div>`},
+ {k:"a",t:"Atelier — coûts",gen:["cout","pourcent","rendement-chaine"],but:4,h:`<p>Les charges s'appliquent au total, pas seulement à la main-d'œuvre.</p>`},
+ {k:"l",t:"Le dossier d'assistance technique",h:`
+  <p>Tout ce que tu as calculé finit dans un dossier qui doit convaincre un ingénieur ou un client. Il tient en cinq pièces.</p>
+  <div class="tabl"><table>
+   <tr><th>Pièce</th><th>Ce qu'elle démontre</th></tr>
+   <tr><td>Cahier des charges</td><td>le besoin, traduit en exigences mesurables</td></tr>
+   <tr><td>Notes de calcul</td><td>que la solution tient : efforts, contraintes, puissances</td></tr>
+   <tr><td>Schémas et plans</td><td>ce qu'il faut réaliser, sans ambiguïté</td></tr>
+   <tr><td>Chiffrage</td><td>ce que ça coûte, et pourquoi c'est justifié</td></tr>
+   <tr><td>Protocole d'essai</td><td>comment on vérifiera que ça marche</td></tr>
+  </table></div>
+  <div class="encart e-terrain"><span class="chapo">Ce qui fait la différence à l'oral</span><p>Un calcul juste sans unité, sans hypothèse écrite et sans conclusion ne vaut rien. Écris toujours : ce que tu cherches, ce que tu supposes, le calcul, le résultat AVEC son unité, et la phrase qui répond à la question posée.</p></div>`},
+ {k:"c",t:"Contrôle",gen:["cout","incertitude","tolerance","rendement-chaine","pression"],n:8}
+]}
+];
 
 /* =========================================================================
    PREMIER CONTACT AVEC UNE NOTION : DES NOMBRES RONDS
@@ -2532,10 +2938,10 @@ Object.assign(ANIM,{
    k:'l' leçon · k:'a' atelier (exercices tirés au sort) · k:'s' banc
    d'essai · k:'c' contrôle noté
    ========================================================================= */
-const MODULES=[
+const MODULES_ELEC=[
 
 /* ═══════════════ BLOC 1 — LES MATHS DONT TU AS BESOIN ═══════════════ */
-{id:"m01",num:"01",bloc:"Les maths d'abord",titre:"Lire un nombre et son unité",duree:"16 min",
+{id:"m01",num:"01",bloc:"Les maths d'abord",an:1,titre:"Lire un nombre et son unité",duree:"16 min",
  resume:"Une seule idée : un préfixe déplace la virgule. C'est le point de départ de tout le reste.",
  steps:[
  {k:"l",t:"De quoi on parle",h:`
@@ -2577,7 +2983,7 @@ const MODULES=[
  {k:"c",t:"Contrôle",gen:["prefixe","pourcent","scientifique"],n:6}
 ]},
 
-{id:"m02",num:"02",bloc:"Les maths d'abord",titre:"Retourner une formule",duree:"16 min",
+{id:"m02",num:"02",bloc:"Les maths d'abord",an:1,titre:"Retourner une formule",duree:"16 min",
  resume:"Un seul geste : faire traverser un terme. C'est ce que tu feras dans les vingt-trois modules suivants.",
  steps:[
  {k:"l",t:"Le seul geste à connaître",h:`
@@ -2614,7 +3020,7 @@ I₁ − I₂ = 6</span></li>
  {k:"c",t:"Contrôle",gen:["transpose","equation1","proportion","systeme2"],n:6}
 ]},
 
-{id:"m03",num:"03",bloc:"Les maths d'abord",titre:"Le carré, la racine, le pourcentage",duree:"15 min",
+{id:"m03",num:"03",bloc:"Les maths d'abord",an:1,titre:"Le carré, la racine, le pourcentage",duree:"15 min",
  resume:"Pourquoi doubler le courant quadruple la chaleur. La loi la plus rentable du métier.",
  steps:[
  {k:"l",t:"Doubler n'est pas doubler",h:`
@@ -2639,7 +3045,7 @@ I₁ − I₂ = 6</span></li>
  {k:"c",t:"Contrôle",gen:["carre","pythagore","proportion","pourcent"],n:6}
 ]},
 
-{id:"m04",num:"04",bloc:"Les maths d'abord",titre:"La trigonométrie utile",duree:"18 min",
+{id:"m04",num:"04",bloc:"Les maths d'abord",an:1,titre:"La trigonométrie utile",duree:"18 min",
  resume:"Trois rapports dans un triangle. Tout le régime alternatif en découle.",
  steps:[
  {k:"l",t:"Cosinus et sinus sont des projections",h:`
@@ -2666,7 +3072,7 @@ tan φ = opposé / adjacent</div>
  {k:"c",t:"Contrôle",gen:["trigo-cote","trigo-angle","radian","pythagore"],n:6}
 ]},
 
-{id:"m05",num:"05",bloc:"Les maths d'abord",titre:"Vecteurs et nombres complexes",duree:"18 min",
+{id:"m05",num:"05",bloc:"Les maths d'abord",an:1,titre:"Vecteurs et nombres complexes",duree:"18 min",
  resume:"Additionner deux grandeurs déphasées. Le pivot de tout le parcours.",
  steps:[
  {k:"l",t:"Pourquoi 60 + 80 ne font pas 140",h:`
@@ -2695,7 +3101,7 @@ tan φ = opposé / adjacent</div>
  {k:"c",t:"Contrôle",gen:["vecteur-somme","complexe-module","trigo-angle","pythagore"],n:6}
 ]},
 
-{id:"m06",num:"06",bloc:"Les maths d'abord",titre:"Ce qui varie dans le temps",duree:"17 min",
+{id:"m06",num:"06",bloc:"Les maths d'abord",an:1,titre:"Ce qui varie dans le temps",duree:"17 min",
  resume:"Période, fréquence, pulsation, et l'exponentielle qui décrit toute mise en route.",
  steps:[
  {k:"l",t:"Trois façons de dire la même chose",h:`
@@ -2722,7 +3128,7 @@ tan φ = opposé / adjacent</div>
  {k:"c",t:"Contrôle",gen:["periode","expo-tau","rc-tau","radian","prefixe"],n:8}
 ]},
 
-{id:"m07",num:"07",bloc:"Socle électrique",titre:"Grandeurs et loi d'Ohm",duree:"26 min",
+{id:"m07",num:"07",bloc:"Socle électrique",an:1,titre:"Grandeurs et loi d'Ohm",duree:"26 min",
  resume:"Tension, courant, résistance, puissance : ce qu'elles sont vraiment, et la relation qui les lie.",
  steps:[
  {k:"l",t:"Les quatre grandeurs, expliquées",h:`
@@ -2761,7 +3167,7 @@ tan φ = opposé / adjacent</div>
  {k:"c",t:"Contrôle",gen:["ohm","puissance-dc","joule","transpose","carre"],n:8}
 ]},
 
-{id:"m08",num:"08",bloc:"Socle électrique",titre:"Associer, répartir, calculer un réseau",duree:"28 min",
+{id:"m08",num:"08",bloc:"Socle électrique",an:1,titre:"Associer, répartir, calculer un réseau",duree:"28 min",
  resume:"Série, parallèle, lois de Kirchhoff, ponts diviseurs : réduire un circuit jusqu'à savoir le résoudre.",
  steps:[
  {k:"l",t:"Série et parallèle : ce qui est commun",h:`
@@ -2813,7 +3219,7 @@ courant : I₁ = I · R₂ / (R₁ + R₂)<span class="note">Pour le courant, c'
  {k:"c",t:"Contrôle",gen:["serie-par","diviseur","ohm","puissance-dc","systeme2"],n:8}
 ]},
 
-{id:"m09",num:"09",bloc:"Socle électrique",titre:"Conducteurs, résistivité et échauffement",duree:"22 min",
+{id:"m09",num:"09",bloc:"Socle électrique",an:1,titre:"Conducteurs, résistivité et échauffement",duree:"22 min",
  resume:"Pourquoi une section de câble se calcule, et pourquoi une borne mal serrée finit par brûler.",
  steps:[
  {k:"l",t:"La résistance d'un câble",h:`
@@ -2852,7 +3258,7 @@ courant : I₁ = I · R₂ / (R₁ + R₂)<span class="note">Pour le courant, c'
  {k:"c",t:"Contrôle",gen:["resistivite","joule","carre","ohm","serie-par"],n:8}
 ]},
 
-{id:"m10",num:"10",bloc:"Socle électrique",titre:"Condensateur et bobine",duree:"28 min",
+{id:"m10",num:"10",bloc:"Socle électrique",an:1,titre:"Condensateur et bobine",duree:"28 min",
  resume:"Les deux composants qui refusent le changement — et les dangers qui vont avec.",
  steps:[
  {k:"l",t:"Le condensateur s'oppose aux variations de TENSION",h:`
@@ -2888,7 +3294,7 @@ courant : I₁ = I · R₂ / (R₁ + R₂)<span class="note">Pour le courant, c'
 ]},
 
 /* ═══════════════ BLOC 3 — LE RÉGIME ALTERNATIF ═══════════════ */
-{id:"m11",num:"11",bloc:"Régime alternatif",titre:"La sinusoïde",duree:"26 min",
+{id:"m11",num:"11",bloc:"Régime alternatif",an:1,titre:"La sinusoïde",duree:"26 min",
  resume:"D'où vient la sinusoïde, ce qu'est vraiment une valeur efficace, et pourquoi 230 V font 325 V de crête.",
  steps:[
  {k:"l",t:"Un vecteur qui tourne, et rien d'autre",h:`
@@ -2915,7 +3321,7 @@ U<sub>max</sub> = U<sub>eff</sub> · √2 ≈ 1,414 · U<sub>eff</sub><span clas
  {k:"c",t:"Contrôle",gen:["eff-max","periode","radian","trigo-cote","pourcent"],n:8}
 ]},
 
-{id:"m12",num:"12",bloc:"Régime alternatif",titre:"Impédances et déphasage",duree:"30 min",
+{id:"m12",num:"12",bloc:"Régime alternatif",an:1,titre:"Impédances et déphasage",duree:"30 min",
  resume:"Résistance, bobine, condensateur en alternatif : trois comportements, un seul outil pour les combiner.",
  steps:[
  {k:"l",t:"Ce que chaque composant fait au courant",h:`
@@ -2967,7 +3373,7 @@ X<sub>C</sub> = 1 / (C · ω) = 1 / (2 · π · f · C)<span class="note">Toutes
  {k:"c",t:"Contrôle",gen:["reactance","impedance-rl","complexe-module","eff-max","periode"],n:9}
 ]},
 
-{id:"m13",num:"13",bloc:"Régime alternatif",titre:"Puissances et facteur de puissance",duree:"30 min",
+{id:"m13",num:"13",bloc:"Régime alternatif",an:1,titre:"Puissances et facteur de puissance",duree:"30 min",
  resume:"P, Q, S : ce qui travaille, ce qui circule pour rien, et ce qu'il faut dimensionner.",
  steps:[
  {k:"l",t:"Trois puissances, un seul triangle",h:`
@@ -3024,7 +3430,7 @@ triangle : C = Q<sub>c</sub> / (3 · U² · ω)<span class="note">U : tension co
  {k:"c",t:"Contrôle",gen:["triangle-pqs","puis-mono","compensation","capacite-comp","trigo-angle"],n:9}
 ]},
 
-{id:"m14",num:"14",bloc:"Régime alternatif",titre:"Le triphasé",duree:"34 min",
+{id:"m14",num:"14",bloc:"Régime alternatif",an:1,titre:"Le triphasé",duree:"34 min",
  resume:"Trois tensions à 120°, le champ tournant, les couplages, et le rôle du neutre.",
  steps:[
  {k:"l",t:"Pourquoi trois phases",h:`
@@ -3080,7 +3486,7 @@ S = √3 · U · I<span class="note">U : tension COMPOSÉE — I : courant de LI
 ]},
 
 /* ═══════════════ BLOC 4 — LES MACHINES ═══════════════ */
-{id:"m15",num:"15",bloc:"Machines",titre:"Le transformateur",duree:"28 min",
+{id:"m15",num:"15",bloc:"Machines",an:2,titre:"Le transformateur",duree:"28 min",
  resume:"Rapport, essais à vide et en court-circuit, rendement, couplages et courant de court-circuit.",
  steps:[
  {k:"l",t:"Le principe, en image",h:`
@@ -3129,7 +3535,7 @@ S = √3 · U · I<span class="note">U : tension COMPOSÉE — I : courant de LI
  {k:"c",t:"Contrôle",gen:["transfo-rapport","transfo-rendement","icc","tri-uv","puis-tri"],n:9}
 ]},
 
-{id:"m16",num:"16",bloc:"Machines",titre:"La machine asynchrone",duree:"36 min",
+{id:"m16",num:"16",bloc:"Machines",an:2,titre:"La machine asynchrone",duree:"36 min",
  resume:"La machine la plus répandue du monde industriel : glissement, plaque, couple, démarrages, protections.",
  steps:[
  {k:"l",t:"Le glissement, vu de l'intérieur",h:`
@@ -3203,7 +3609,7 @@ S = √3 · U · I<span class="note">U : tension COMPOSÉE — I : courant de LI
  {k:"c",t:"Contrôle",gen:["synchronisme","glissement","couple","courant-moteur","couplage","puis-tri"],n:10}
 ]},
 
-{id:"m17",num:"17",bloc:"Machines",titre:"Machines à courant continu et synchrones",duree:"22 min",
+{id:"m17",num:"17",bloc:"Machines",an:2,titre:"Machines à courant continu et synchrones",duree:"22 min",
  resume:"La MCC pour comprendre le pilotage du couple, la synchrone pour produire, le brushless pour l'avenir.",
  steps:[
  {k:"l",t:"La machine à courant continu",h:`
@@ -3240,7 +3646,7 @@ S = √3 · U · I<span class="note">U : tension COMPOSÉE — I : courant de LI
 ]},
 
 /* ═══════════════ BLOC 5 — LA CONVERSION D'ÉNERGIE ═══════════════ */
-{id:"m18",num:"18",bloc:"Conversion",titre:"Électronique de puissance",duree:"30 min",
+{id:"m18",num:"18",bloc:"Conversion",an:2,titre:"Électronique de puissance",duree:"30 min",
  resume:"Redresser, hacher, onduler : les quatre conversions et les composants qui les réalisent.",
  steps:[
  {k:"l",t:"Les quatre conversions",h:`
@@ -3287,7 +3693,7 @@ PD3 triphasé : U<sub>moy</sub> = 3·√2·U/π ≈ 1,35 · U<sub>composée</sub
  {k:"c",t:"Contrôle",gen:["hacheur","pd3","eff-max","periode","rc-tau"],n:8}
 ]},
 
-{id:"m19",num:"19",bloc:"Conversion",titre:"La variation de vitesse",duree:"28 min",
+{id:"m19",num:"19",bloc:"Conversion",an:2,titre:"La variation de vitesse",duree:"28 min",
  resume:"MLI, loi U/f, structure d'un variateur, et le gisement d'économie le plus rentable du métier.",
  steps:[
  {k:"l",t:"La MLI : fabriquer une sinusoïde avec un interrupteur",h:`
@@ -3343,7 +3749,7 @@ PD3 triphasé : U<sub>moy</sub> = 3·√2·U/π ≈ 1,35 · U<sub>composée</sub
 ]},
 
 /* ═══════════════ BLOC 6 — L'INSTALLATION ═══════════════ */
-{id:"m20",num:"20",bloc:"Installation",titre:"Régimes de neutre et protections",duree:"34 min",
+{id:"m20",num:"20",bloc:"Installation",an:2,titre:"Régimes de neutre et protections",duree:"34 min",
  resume:"TT, TN, IT : où passe le courant de défaut, et quel appareil doit couper.",
  steps:[
  {k:"l",t:"Voir le courant de défaut",h:`
@@ -3404,7 +3810,7 @@ PD3 triphasé : U<sub>moy</sub> = 3·√2·U/π ≈ 1,35 · U<sub>composée</sub
  {k:"c",t:"Contrôle",gen:["ddr","icc","courant-moteur","puis-tri","transfo-rapport"],n:9}
 ]},
 
-{id:"m21",num:"21",bloc:"Installation",titre:"Câbles, chute de tension et schémas",duree:"30 min",
+{id:"m21",num:"21",bloc:"Installation",an:2,titre:"Câbles, chute de tension et schémas",duree:"30 min",
  resume:"Dimensionner une ligne selon trois contraintes, et lire les quatre types de schémas du métier.",
  steps:[
  {k:"l",t:"Trois contraintes, la plus exigeante l'emporte",h:`
@@ -3452,7 +3858,7 @@ triphasé :  ΔU = √3 · ρ · L · I · cos φ / S<span class="note">ρ = 0,0
  {k:"c",t:"Contrôle",gen:["chute-tension","resistivite","courant-moteur","ddr","joule"],n:9}
 ]},
 
-{id:"m22",num:"22",bloc:"Installation",titre:"Sécurité électrique et habilitation",duree:"26 min",
+{id:"m22",num:"22",bloc:"Installation",an:1,titre:"Sécurité électrique et habilitation",duree:"26 min",
  resume:"Ce que le courant fait au corps, décoder un titre d'habilitation, et la consignation dans le bon ordre.",
  steps:[
  {k:"l",t:"Ce que fait le courant au corps",h:`
@@ -3509,7 +3915,7 @@ triphasé :  ΔU = √3 · ρ · L · I · cos φ / S<span class="note">ρ = 0,0
 ]},
 
 /* ═══════════════ BLOC 7 — AUTOMATISMES ET TERRAIN ═══════════════ */
-{id:"m23",num:"23",bloc:"Automatismes et terrain",titre:"Logique, schémas de commande et GRAFCET",duree:"30 min",
+{id:"m23",num:"23",bloc:"Automatismes et terrain",an:2,titre:"Logique, schémas de commande et GRAFCET",duree:"30 min",
  resume:"L'auto-maintien, l'automate, et le langage qui décrit le cycle d'une machine.",
  steps:[
  {k:"l",t:"Logique combinatoire et sécurité positive",h:`
@@ -3599,7 +4005,7 @@ triphasé :  ΔU = √3 · ρ · L · I · cos φ / S<span class="note">ρ = 0,0
  {k:"c",t:"Contrôle",gen:["grafcet","securite","transpose","equation1"],n:8}
 ]},
 
-{id:"m24",num:"24",bloc:"Automatismes et terrain",titre:"Qualité de l'énergie, mesure et diagnostic",duree:"32 min",
+{id:"m24",num:"24",bloc:"Automatismes et terrain",an:2,titre:"Qualité de l'énergie, mesure et diagnostic",duree:"32 min",
  resume:"Harmoniques, CEM, appareils de mesure et méthode de dépannage. Le module qui fait la différence sur le terrain.",
  steps:[
  {k:"l",t:"Les harmoniques, vues sur l'onde",h:`
@@ -3677,7 +4083,7 @@ triphasé :  ΔU = √3 · ρ · L · I · cos φ / S<span class="note">ρ = 0,0
    Ajouté pour coller au référentiel en vigueur depuis septembre 2025, qui
    renforce explicitement les technologies communicantes et la transition
    énergétique. */
-{id:"m25",num:"25",bloc:"Transition énergétique",titre:"Produire, stocker, recharger, communiquer",duree:"32 min",
+{id:"m25",num:"25",bloc:"Transition énergétique",an:2,titre:"Produire, stocker, recharger, communiquer",duree:"32 min",
  resume:"Photovoltaïque, autoconsommation, stockage, bornes de recharge et réseaux de communication : les sujets que le métier attend aujourd'hui.",
  steps:[
  {k:"l",t:"La chaîne photovoltaïque",h:`
@@ -3935,6 +4341,123 @@ Object.assign(ANIM,{
  }}
 });
 
+/* ---- Figures du BTS ATI ---- */
+Object.assign(ANIM,{
+"levier-meca":{t:"L'équilibre d'un levier",ratio:2.1,main:true,
+ note:"Déplace la charge : le moment de chaque côté est le produit force × distance. À l'équilibre, les deux sont égaux.",
+ regl:[{id:"m1",lib:"Masse à gauche",min:5,max:120,pas:5,val:40,u:"kg"},
+       {id:"d1",lib:"Distance à gauche",min:20,max:100,pas:5,val:60,u:"cm"},
+       {id:"m2",lib:"Masse à droite",min:5,max:120,pas:5,val:60,u:"kg"}],
+ glisse(p,x,y,w,h){const cx=w*0.5,ech=w*0.0035;
+   const d=Math.max(20,Math.min(100,Math.round(Math.abs(x-cx)/(ech*w*0.01)/5)*5));
+   if(x<cx)p.d1=d;return true;},
+ dessin(c,w,h,t,p){
+  const F1=p.m1*9.81,F2=p.m2*9.81;
+  const d2=F1*p.d1/F2;
+  const cx=w*0.5,cy=h*0.52,L=w*0.40,ech=L/110;
+  const desiq=Math.max(-1,Math.min(1,(F1*p.d1-F2*d2)/(F1*p.d1+1)));
+  const ang=0;
+  c.save();c.translate(cx,cy);c.rotate(ang);
+  c.strokeStyle=CI();c.lineWidth=6;c.lineCap="round";
+  c.beginPath();c.moveTo(-L,0);c.lineTo(L,0);c.stroke();
+  const barre=(dcm,F,col,cote)=>{
+   const x=cote*dcm*ech;
+   c.strokeStyle=col;c.lineWidth=2.4;
+   c.beginPath();c.moveTo(x,0);c.lineTo(x,-Math.min(h*0.30,20+F*0.05));c.stroke();
+   const s=Math.min(34,12+F*0.03);
+   c.fillStyle=col;c.globalAlpha=.20;
+   c.beginPath();c.rect(x-s/2,-Math.min(h*0.30,20+F*0.05)-s,s,s);c.fill();c.globalAlpha=1;
+   c.strokeStyle=col;c.beginPath();c.rect(x-s/2,-Math.min(h*0.30,20+F*0.05)-s,s,s);c.stroke();
+   mono(c,F(0)===undefined?"":"",0,0,1,col);
+   return [x,-Math.min(h*0.30,20+F*0.05)-s];};
+  const g=barre(p.d1,F1,C1(),-1), d=barre(d2,F2,C3(),1);
+  c.restore();
+  /* le pivot */
+  c.fillStyle=CM();c.beginPath();
+  c.moveTo(cx-14,cy+26);c.lineTo(cx+14,cy+26);c.lineTo(cx,cy+2);c.closePath();c.fill();
+  mono(c,F(F1,0)+" N",cx+g[0],cy+g[1]-12,11,C1(),"center");
+  mono(c,F(F2,0)+" N",cx+d[0],cy+d[1]-12,11,C3(),"center");
+  mono(c,p.d1+" cm",cx-p.d1*ech/2,cy+22,10.5,C1(),"center");
+  mono(c,F(d2,0)+" cm",cx+d2*ech/2,cy+22,10.5,C3(),"center");
+  /* les moments */
+  const bx=w*0.06,by=h*0.10;
+  txt(c,"Moment à gauche",bx,by,10.5,CM());
+  mono(c,F(F1*p.d1/100,1)+" N·m",bx,by+16,14,C1());
+  txt(c,"Moment à droite",w*0.72,by,10.5,CM());
+  mono(c,F(F2*d2/100,1)+" N·m",w*0.72,by+16,14,C3());
+  pastilleTexte(c,"équilibre : F₁·d₁ = F₂·d₂",cx,h*0.94,C2());
+ }},
+
+"traction":{t:"Une barre sous traction",ratio:2.2,
+ note:"Augmente la charge : la contrainte monte. Au-delà de la limite élastique, la pièce ne revient plus — au-delà de la rupture, elle casse.",
+ regl:[{id:"f",lib:"Effort",min:0,max:120,pas:2,val:30,u:"kN"},
+       {id:"s",lib:"Section",min:20,max:600,pas:10,val:200,u:"mm²"},
+       {id:"re",lib:"Limite élastique",choix:["S235 · 235 MPa","S355 · 355 MPa","42CrMo4 · 750 MPa"],val:0}],
+ dessin(c,w,h,t,p){
+  const Re=[235,355,750][p.re], F=p.f*1000, sig=F/p.s;
+  const taux=sig/Re;
+  const y=h*0.40,x0=w*0.12,L0=w*0.52;
+  const all=Math.min(0.14,taux*0.10);
+  const L=L0*(1+all);
+  const ep=Math.max(6,Math.min(40,p.s*0.06))*(1-all*0.9);
+  const col=taux<0.6?C2():taux<1?C1():C3();
+  c.fillStyle=CB();c.beginPath();c.rect(x0-16,y-30,16,60);c.fill();
+  c.fillStyle=col;c.globalAlpha=.22;c.beginPath();c.rect(x0,y-ep/2,L,ep);c.fill();c.globalAlpha=1;
+  c.strokeStyle=col;c.lineWidth=2.2;c.beginPath();c.rect(x0,y-ep/2,L,ep);c.stroke();
+  fleche(c,x0+L,y,x0+L+Math.min(90,20+p.f*0.6),y,col,3);
+  mono(c,p.f+" kN",x0+L+Math.min(90,20+p.f*0.6)+8,y,12,col);
+  if(taux>=1){for(let k=0;k<7;k++){c.strokeStyle=C3();c.lineWidth=2;
+    c.beginPath();c.moveTo(x0+L*0.55,y-ep/2+k*ep/6);
+    c.lineTo(x0+L*0.55+(k%2?7:-7),y-ep/2+(k+1)*ep/6);c.stroke();}}
+  /* la jauge de contrainte */
+  const gx=w*0.10,gy=h*0.80,gw=w*0.80;
+  c.fillStyle=CB();c.beginPath();c.roundRect(gx,gy,gw,12,6);c.fill();
+  c.fillStyle=col;c.beginPath();c.roundRect(gx,gy,gw*Math.min(1,taux),12,6);c.fill();
+  c.strokeStyle=C3();c.lineWidth=2;c.setLineDash([3,3]);
+  c.beginPath();c.moveTo(gx+gw,gy-6);c.lineTo(gx+gw,gy+18);c.stroke();c.setLineDash([]);
+  txt(c,"limite élastique "+Re+" MPa",gx+gw,gy+30,10.5,C3(),"right");
+  const l=[["Contrainte",F(sig,1)+" MPa",col],["Taux d'utilisation",F(taux*100,0)+" %",col],
+    ["Coefficient obtenu",taux>0?F(1/taux,2):"∞",taux<0.5?C2():taux<1?C1():C3()]];
+  l.forEach((x,i)=>{txt(c,x[0],w*0.10+i*w*0.28,h*0.08,10.5,CM());
+    mono(c,x[1],w*0.10+i*w*0.28,h*0.08+17,14,x[2]);});
+  if(taux>=1)pastilleTexte(c,"au-delà de la limite : la pièce ne revient plus",w*0.5,h*0.62,C3());
+ }},
+
+"engrenages":{t:"Réduire la vitesse, multiplier le couple",ratio:2.1,
+ note:"Ce que le réducteur enlève à la vitesse, il le rend au couple — aux pertes près. La puissance, elle, ne monte jamais.",
+ regl:[{id:"z1",lib:"Dents du pignon",min:10,max:40,pas:1,val:16,u:""},
+       {id:"z2",lib:"Dents de la roue",min:20,max:160,pas:2,val:64,u:""},
+       {id:"n",lib:"Vitesse d'entrée",min:300,max:3000,pas:50,val:1450,u:"tr/min"},
+       {id:"c",lib:"Couple d'entrée",min:1,max:60,pas:1,val:10,u:"N·m"}],
+ dessin(c,w,h,t,p){
+  const i=p.z2/p.z1, n2=p.n/i, eta=0.96, C2v=p.c*i*eta;
+  const r1=Math.min(h*0.22,w*0.10), r2=r1*i>h*0.40?h*0.40:r1*i;
+  const cx1=w*0.24,cy=h*0.50,cx2=cx1+r1+r2;
+  const a1=t*p.n/300, a2=-a1*p.z1/p.z2;
+  const roue=(x,z,r,a,col)=>{
+    c.strokeStyle=col;c.lineWidth=2.2;
+    c.beginPath();c.arc(x,cy,r,0,TAU);c.stroke();
+    c.beginPath();c.arc(x,cy,r*0.18,0,TAU);c.stroke();
+    const n=Math.min(z,44);
+    for(let k=0;k<n;k++){const b=a+k*TAU/n;
+      c.beginPath();c.moveTo(x+Math.cos(b)*r,cy+Math.sin(b)*r);
+      c.lineTo(x+Math.cos(b)*r*1.13,cy+Math.sin(b)*r*1.13);c.stroke();}
+    c.strokeStyle=col;c.lineWidth=3;
+    c.beginPath();c.moveTo(x,cy);c.lineTo(x+Math.cos(a)*r*0.8,cy+Math.sin(a)*r*0.8);c.stroke();};
+  roue(cx1,p.z1,r1,a1,C1());roue(cx2,p.z2,r2,a2,C2());
+  mono(c,p.z1+" dents",cx1,cy+r1+24,11,C1(),"center");
+  mono(c,p.z2+" dents",cx2,cy+r2+24,11,C2(),"center");
+  const bx=w*0.62;
+  [["Rapport de réduction",F(i,2),CI()],
+   ["Vitesse de sortie",F(n2,0)+" tr/min",C2()],
+   ["Couple de sortie",F(C2v,1)+" N·m",C2()],
+   ["Puissance entrée",F(p.c*2*Math.PI*p.n/60,0)+" W",CM()],
+   ["Puissance sortie",F(C2v*2*Math.PI*n2/60,0)+" W",CM()]].forEach((l,k)=>{
+   txt(c,l[0],bx,h*0.14+k*(h*0.17),10.5,CM());
+   mono(c,l[1],bx,h*0.14+k*(h*0.17)+15,13,l[2]);});
+ }}
+});
+
 /* ---- Figures du bloc « transition énergétique » ---- */
 Object.assign(ANIM,{
 "pv-chaine":{t:"La chaîne photovoltaïque, du panneau au réseau",ratio:2.05,
@@ -4047,7 +4570,8 @@ Object.assign(ANIM,{
    forme composée comprise. 12 sur 20 pour valider et ouvrir le palier
    suivant. On peut passer outre, mais on le fait en connaissance de cause.
    ========================================================================= */
-(function(){
+function preparerExamens(MODULES){
+  if(MODULES.some(m=>m.examen))return MODULES;
   const blocs=[];
   MODULES.forEach((m,i)=>{
     let b=blocs.find(x=>x.nom===m.bloc);
@@ -4061,14 +4585,16 @@ Object.assign(ANIM,{
   blocs.slice().reverse().forEach((b,r)=>{
     const n=blocs.length-r;
     const gen=[...b.gen].filter(g=>GEN[g]);
+    const anBloc=MODULES.filter(m=>m.bloc===b.nom&&!m.examen).map(m=>m.an||0)[0]||0;
     MODULES.splice(b.fin+1,0,{
-      id:"ex"+n,num:"E"+n,bloc:b.nom,examen:true,
+      id:"ex"+n,num:"E"+n,bloc:b.nom,examen:true,an:anBloc,
       titre:"Examen — "+b.nom,duree:"20 min",
       resume:"L'épreuve qui valide le palier « "+b.nom+" ». Toutes les notions du bloc, sous leur forme composée quand elle existe. 12 sur 20 pour ouvrir la suite.",
       steps:[{k:"c",t:"Examen de palier",gen:gen,n:Math.min(12,Math.max(10,gen.length)),seuil:12}]
     });
   });
-})();
+  return MODULES;
+}
 
 /* Un palier reste fermé tant que l'examen précédent n'est pas franchi. */
 function examenAvant(i){
@@ -4857,14 +5383,141 @@ function boucle(ts){
 requestAnimationFrame(boucle);
 
 /* =========================================================================
+   LA PLATEFORME : COMPTE, CATALOGUE DE BTS, SYNCHRONISATION
+   Le parcours d'électrotechnique n'est plus seul : c'est une entrée d'un
+   catalogue. Un compte permet de retrouver sa progression sur n'importe
+   quel appareil ; sans réseau, tout continue de fonctionner en local.
+   ========================================================================= */
+const SB={
+  url:"https://tqtdjmybbrfsfqwqbdoc.supabase.co",
+  cle:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxdGRqbXliYnJmc2Zxd3FiZG9jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg4NjMzMjksImV4cCI6MjEwNDQzOTMyOX0.08wXysOVFHF4aZOp_enetyUskn44_KYZkWpl6kKkf_g",
+  ok:null, session:null, user:null
+};
+const CLE_SESSION="mon-bts-session";
+async function sbFetch(chemin,opt={}){
+  const h=Object.assign({"apikey":SB.cle,"Content-Type":"application/json"},opt.headers||{});
+  if(SB.session&&SB.session.access_token&&!opt.anon)h["Authorization"]="Bearer "+SB.session.access_token;
+  const c=new AbortController();const t=setTimeout(()=>c.abort(),9000);
+  try{
+    const r=await fetch(SB.url+chemin,{method:opt.method||"GET",headers:h,
+      body:opt.body!==undefined?JSON.stringify(opt.body):undefined,signal:c.signal});
+    clearTimeout(t);
+    const txt=await r.text();
+    let d=null;try{d=txt?JSON.parse(txt):null;}catch(e){d=txt;}
+    return {ok:r.ok,status:r.status,d:d};
+  }catch(e){clearTimeout(t);SB.ok=false;return {ok:false,status:0,d:{message:"réseau indisponible"}};}
+}
+function messageAuth(d){
+  const m=(d&&(d.msg||d.message||d.error_description||d.error))||"";
+  if(/Invalid login/i.test(m))return "Adresse ou mot de passe incorrect.";
+  if(/already registered|already exists/i.test(m))return "Cette adresse a déjà un compte. Connecte-toi.";
+  if(/Password should be/i.test(m))return "Le mot de passe doit faire au moins 8 caractères.";
+  if(/Unable to validate email|invalid format/i.test(m))return "Cette adresse ne ressemble pas à une adresse valide.";
+  if(/réseau/i.test(m))return "Pas de connexion au serveur. Tu peux continuer hors ligne : ta progression restera sur cet appareil.";
+  return m||"Quelque chose n'a pas fonctionné.";
+}
+function poserSession(s){
+  SB.session=s;SB.user=s?s.user:null;
+  try{s?localStorage.setItem(CLE_SESSION,JSON.stringify(s)):localStorage.removeItem(CLE_SESSION);}catch(e){}
+}
+async function reprendreSession(){
+  let s=null;try{s=JSON.parse(localStorage.getItem(CLE_SESSION)||"null");}catch(e){}
+  if(!s||!s.refresh_token)return false;
+  const r=await sbFetch("/auth/v1/token?grant_type=refresh_token",{method:"POST",anon:true,body:{refresh_token:s.refresh_token}});
+  if(r.ok&&r.d&&r.d.access_token){SB.ok=true;poserSession(r.d);return true;}
+  if(r.status===0)return false;            /* hors ligne : on garde la session locale */
+  poserSession(null);return false;
+}
+async function inscrire(mail,mdp){
+  const r=await sbFetch("/auth/v1/signup",{method:"POST",anon:true,body:{email:mail,password:mdp}});
+  if(r.ok&&r.d&&r.d.access_token){SB.ok=true;poserSession(r.d);return {ok:true};}
+  if(r.ok&&r.d&&r.d.user&&!r.d.access_token)return {ok:false,msg:"Compte créé. Connecte-toi maintenant."};
+  return {ok:false,msg:messageAuth(r.d)};
+}
+async function connecter(mail,mdp){
+  const r=await sbFetch("/auth/v1/token?grant_type=password",{method:"POST",anon:true,body:{email:mail,password:mdp}});
+  if(r.ok&&r.d&&r.d.access_token){SB.ok=true;poserSession(r.d);return {ok:true};}
+  return {ok:false,msg:messageAuth(r.d)};
+}
+async function deconnecter(){
+  if(SB.session)await sbFetch("/auth/v1/logout",{method:"POST"});
+  poserSession(null);
+}
+
+/* --- le catalogue --- */
+const CATALOGUE=[
+ {id:"electrotechnique",nom:"Électrotechnique",court:"BTS Électrotechnique",
+  sous:"Production, distribution et utilisation de l'énergie électrique",
+  mots:"electrotechnique elec energie moteur reseau tableau habilitation grafcet automatisme",
+  etat:"complet",modules:()=>MODULES_ELEC},
+ {id:"ati",nom:"Assistance technique d'ingénieur",court:"BTS ATI",
+  sous:"Mécanique, énergétique, automatique et mesures industrielles",
+  mots:"ati assistance technique ingenieur mecanique rdm statique thermique automatique metrologie",
+  etat:"nouveau",modules:()=>MODULES_ATI}
+];
+let MODULES=[];
+let BTS=null;
+
+/* --- le temps passé, compté honnêtement : seulement quand la page est active --- */
+const TEMPS={debut:Date.now(),actif:true};
+setInterval(()=>{
+  if(document.hidden||!TEMPS.actif)return;
+  if(!etat.minutes)etat.minutes=0;
+  etat.minutes+=1/6;                       /* appelé toutes les 10 s */
+  if(Math.floor(etat.minutes)%5===0)sauver();
+},10000);
+document.addEventListener("visibilitychange",()=>{TEMPS.actif=!document.hidden;});
+
+/* --- le pronostic : une ESTIMATION, dite comme telle --- */
+function pronostic(){
+  const n=Object.keys(etat.faits||{}).length;
+  const couverture=TOTAL?n/TOTAL:0;
+  const notes=Object.values(etat.notes||{}).map(x=>x.note);
+  const moy=notes.length?notes.reduce((a,b)=>a+b,0)/notes.length:0;
+  const heures=(etat.minutes||0)/60;
+  const cibleH=90;                          /* ordre de grandeur d'une révision sérieuse */
+  const hn=Math.min(1,heures/cibleH);
+  const nn=notes.length?Math.min(1,moy/20):0;
+  const brut=0.45*couverture+0.40*nn+0.15*hn;
+  const p=Math.round(Math.max(0,Math.min(100,brut*100)));
+  let mot,conseil;
+  if(!notes.length)  {mot="pas encore mesurable";conseil="Passe un premier contrôle : sans note, il n'y a rien à estimer.";}
+  else if(p>=75)     {mot="solide";conseil="Tiens le rythme. Ce qui te reste à gagner est surtout de la couverture : avance dans les modules.";}
+  else if(p>=50)     {mot="en bonne voie";conseil="Le socle est là. Reprends les notions du carnet marquées « ce qui résiste », c'est le meilleur rendement.";}
+  else if(p>=25)     {mot="fragile";conseil="Vise la régularité avant la quantité : trente minutes par jour valent mieux que cinq heures d'un coup.";}
+  else               {mot="tout début";conseil="Rien d'inquiétant : c'est simplement le début. Chaque module validé fait monter ce chiffre.";}
+  return {p:p,mot:mot,conseil:conseil,couverture:couverture,moyenne:moy,heures:heures,
+    detail:[["Couverture du parcours",Math.round(couverture*100)+" %",0.45],
+            ["Moyenne aux contrôles",notes.length?nb(moy,1)+" / 20":"—",0.40],
+            ["Temps de travail",nb(heures,1)+" h sur "+cibleH+" h",0.15]]};
+}
+
+/* =========================================================================
    7. ÉTAT, PROGRESSION ET NOTES
    ========================================================================= */
-const CLE="fil-conducteur-v2";
-const TOTAL=MODULES.reduce((s,m)=>s+m.steps.length,0);
-let etat={pos:{m:0,p:0},faits:{},notes:{},essais:{},vue:"module",rail:null,erreurs:{},acquis:{},forcer:{}};
-let base=null,tSauve=null;
+const CLE_BASE="fil-conducteur-v2";
+let CLE=CLE_BASE, TOTAL=0;
+let etat={pos:{m:0,p:0},faits:{},notes:{},essais:{},vue:"module",rail:null,erreurs:{},acquis:{},forcer:{},minutes:0,annee:0};
+let base=null,tSauve=null,tDist=null;
+const etatNeuf=()=>({pos:{m:0,p:0},faits:{},notes:{},essais:{},vue:"module",annee:0,
+  rail:etat?etat.rail:null,erreurs:{},acquis:{},forcer:{},minutes:0,vuGuide:etat?etat.vuGuide:0});
+
+/* Chaque BTS a sa propre progression, sa propre clé, son propre total. */
+function choisirBTS(id,silencieux){
+  const c=CATALOGUE.find(x=>x.id===id)||CATALOGUE[0];
+  BTS=c;
+  MODULES=preparerExamens(c.modules());
+  TOTAL=MODULES.reduce((a,m)=>a+m.steps.length,0);
+  CLE=c.id==="electrotechnique"?CLE_BASE:CLE_BASE+":"+c.id;
+  etat=etatNeuf();
+  localCharger();
+  try{localStorage.setItem(CLE_BASE+"-bts",c.id);}catch(e){}
+  const ss=$("#sous-titre");if(ss)ss.textContent=c.court+" · pas à pas";
+  if(!silencieux)voir(etat.pos.m||0,etat.pos.p||0,true);
+  chargerDistant();
+}
 function localCharger(){try{const b=localStorage.getItem(CLE);if(b)Object.assign(etat,JSON.parse(b));}catch(e){}
-  etat.erreurs=etat.erreurs||{};etat.acquis=etat.acquis||{};etat.forcer=etat.forcer||{};}
+  etat.erreurs=etat.erreurs||{};etat.acquis=etat.acquis||{};etat.forcer=etat.forcer||{};etat.minutes=etat.minutes||0;}
 /* Le carnet des erreurs : on retient QUELLE notion résiste, pas seulement
    la note du module. C'est ce registre qui alimente la révision ciblée. */
 function noter(id,ok){
@@ -4876,19 +5529,44 @@ function faiblesses(n){
       return {id:id,t:t,f:e.f,taux:t?e.f/t:0,titre:GEN[id].t};})
     .filter(x=>x.f>=2&&x.taux>=0.34)
     .sort((a,b)=>b.f*b.taux-a.f*a.taux).slice(0,n||5);}
+
 function sauver(){
   try{localStorage.setItem(CLE,JSON.stringify(etat));}catch(e){}
-  if(!base)return;clearTimeout(tSauve);
-  tSauve=setTimeout(()=>{base.doc("progres/parcours").set({...etat,maj:new Date().toISOString()}).catch(()=>{});},700);
+  if(base){clearTimeout(tSauve);
+    tSauve=setTimeout(()=>{base.doc("progres/"+(BTS?BTS.id:"parcours")).set({...etat,maj:new Date().toISOString()}).catch(()=>{});},700);}
+  if(SB.session&&BTS){clearTimeout(tDist);
+    tDist=setTimeout(()=>{
+      sbFetch("/rest/v1/progression",{method:"POST",
+        headers:{"Prefer":"resolution=merge-duplicates"},
+        body:{user_id:SB.user&&SB.user.id,bts:BTS.id,donnees:etat,
+              minutes:Math.round(etat.minutes||0),maj:new Date().toISOString()}});
+    },1500);}
+}
+/* On ne remplace la progression locale que si la distante est PLUS avancée :
+   revenir sur un appareil en retard ne doit jamais effacer du travail. */
+async function chargerDistant(){
+  if(!SB.session||!BTS)return;
+  const r=await sbFetch("/rest/v1/progression?select=donnees,minutes&bts=eq."+BTS.id);
+  if(!r.ok||!Array.isArray(r.d)||!r.d.length)return;
+  const d=r.d[0].donnees||{};
+  const ici=Object.keys(etat.faits||{}).length, la=Object.keys(d.faits||{}).length;
+  if(la>=ici){
+    etat.faits=d.faits||{};etat.notes=d.notes||{};etat.essais=d.essais||{};
+    etat.erreurs=d.erreurs||{};etat.acquis=d.acquis||{};etat.forcer=d.forcer||{};
+    etat.minutes=Math.max(etat.minutes||0,d.minutes||r.d[0].minutes||0);
+    etat.pos=d.pos||etat.pos;etat.vuGuide=d.vuGuide||etat.vuGuide;
+    try{localStorage.setItem(CLE,JSON.stringify(etat));}catch(e){}
+    if(etat.vue==="module")voir(etat.pos.m,etat.pos.p,true);else majRail(),majGlobal();
+  }
 }
 async function brancherBase(){
-  try{
-    const d=await window.claude?.use?.("db");if(!d)return;base=d;
-    const s=await d.doc("progres/parcours").get();
+  try{const d=await window.claude?.use?.("db");if(!d)return;base=d;
+    const s=await d.doc("progres/"+(BTS?BTS.id:"parcours")).get();
     if(s.exists){const v=s.data();
       if(Object.keys(v.faits||{}).length>=Object.keys(etat.faits).length){
-        etat.faits=v.faits||{};etat.notes=v.notes||{};etat.essais=v.essais||{};etat.pos=v.pos||etat.pos;etat.vuGuide=v.vuGuide||etat.vuGuide;
-        if(etat.vue!=="guide")voir(etat.pos.m,etat.pos.p,true);}}
+        etat.faits=v.faits||{};etat.notes=v.notes||{};etat.essais=v.essais||{};
+        etat.pos=v.pos||etat.pos;etat.vuGuide=v.vuGuide||etat.vuGuide;
+        if(etat.vue==="module")voir(etat.pos.m,etat.pos.p,true);}}
   }catch(e){}
 }
 const clef=(m,p)=>MODULES[m].id+"#"+p;
@@ -4900,11 +5578,12 @@ function moyenne(){const v=Object.values(etat.notes).map(x=>x.note);
   return v.length?v.reduce((a,b)=>a+b,0)/v.length:null;}
 
 function majGlobal(){
-  const n=Object.keys(etat.faits).length,pct=Math.round(n/TOTAL*100);
+  const n=Object.keys(etat.faits||{}).length,pct=TOTAL?Math.round(n/TOTAL*100):0;
   $("#fil-global").style.width=pct+"%";
   $("#pastille-avance").innerHTML="Parcours <b>"+pct+" %</b>";
   const mo=moyenne();
   $("#pastille-note").innerHTML="Moyenne <b>"+(mo===null?"—":nb(mo,1)+" / 20")+"</b>";
+  const hh=$("#pastille-heures");if(hh)hh.innerHTML="Travail <b>"+nb((etat.minutes||0)/60,1)+" h</b>";
   $("#rail-pct").textContent=pct+" %";
 }
 function anneau(pct){
@@ -4914,8 +5593,17 @@ function anneau(pct){
 }
 function majRail(){
   const ul=$("#liste");ul.innerHTML="";
+  if(MODULES.some(m=>m.an)){
+    const li=document.createElement("li");li.className="rail-annee";
+    li.innerHTML='<div class="segm">'+[[1,"1ʳᵉ année"],[2,"2ᵉ année"],[0,"Tout"]].map(a=>
+      '<button type="button" data-a="'+a[0]+'" aria-pressed="'+((etat.annee||0)===a[0])+'">'+a[1]+"</button>").join("")+"</div>";
+    li.querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{
+      etat.annee=+b.dataset.a;sauver();majRail();majGlobal();}));
+    ul.appendChild(li);
+  }
   let bloc=null;
   MODULES.forEach((m,i)=>{
+    if(!visible(m))return;
     if(m.bloc!==bloc){bloc=m.bloc;
       const li=document.createElement("li");li.innerHTML='<div class="groupe">'+bloc+"</div>";ul.appendChild(li);}
     const f=faitsDuModule(i),tot=m.steps.length,pct=Math.round(f/tot*100),nt=noteDe(i);
@@ -6372,6 +7060,155 @@ function reculer(){
   if(p>0)voir(m,p-1);else if(m>0)voir(m-1,MODULES[m-1].steps.length-1);
 }
 
+/* =========================================================================
+   L'ACCUEIL ET LA CONNEXION
+   ========================================================================= */
+function cadreVue(){
+  etat.vue=arguments[0];redessins=[];anims=[];
+  document.querySelector(".page").dataset.rail="off";
+  const sc=$("#scene");sc.innerHTML="";return sc;
+}
+function connexion(mode){
+  const sc=cadreVue("connexion");
+  mode=mode||"entrer";
+  const w=document.createElement("section");w.className="verre feuille monte portail";
+  w.innerHTML='<div class="portail-marque"><span class="sceau"><svg viewBox="0 0 24 24"><path d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg></span>'+
+    "<h1>Mon BTS</h1><p>Révise ton BTS pas à pas — leçons courtes, câblage, simulation, exercices corrigés.</p></div>"+
+    '<div class="segm portail-onglets"><button type="button" data-m="entrer" aria-pressed="'+(mode==="entrer")+'">Se connecter</button>'+
+    '<button type="button" data-m="creer" aria-pressed="'+(mode==="creer")+'">Créer un compte</button></div>'+
+    '<div class="portail-champs">'+
+    '<label><span class="lg">Adresse électronique<b>&nbsp;</b></span><input type="email" id="ch-mail" autocomplete="email" placeholder="toi@exemple.fr"></label>'+
+    '<label><span class="lg">Mot de passe<b>'+(mode==="creer"?"8 caractères minimum":"&nbsp;")+'</b></span><input type="password" id="ch-mdp" autocomplete="'+(mode==="creer"?"new-password":"current-password")+'" placeholder="••••••••"></label>'+
+    "</div>"+
+    '<div class="outils portail-actions"></div><div class="cab-msg" id="portail-msg"></div>'+
+    '<p class="portail-note">Un compte sert à retrouver ta progression sur un autre appareil. Tu peux aussi commencer tout de suite : tout fonctionne sans compte, la progression reste alors sur cet appareil.</p>';
+  sc.appendChild(w);
+  w.querySelectorAll(".portail-onglets button").forEach(b=>b.addEventListener("click",()=>connexion(b.dataset.m)));
+  const act=w.querySelector(".portail-actions"),msg=w.querySelector("#portail-msg");
+  const bp=document.createElement("button");bp.className="btn btn-principal";
+  bp.textContent=mode==="creer"?"Créer mon compte":"Se connecter";
+  const envoyer=async()=>{
+    const mail=w.querySelector("#ch-mail").value.trim(),mdp=w.querySelector("#ch-mdp").value;
+    if(!mail||!mdp){msg.dataset.e="ko";msg.innerHTML="<b>Il manque quelque chose.</b> Renseigne l'adresse et le mot de passe.";return;}
+    bp.disabled=true;bp.textContent="Un instant…";
+    const r=mode==="creer"?await inscrire(mail,mdp):await connecter(mail,mdp);
+    bp.disabled=false;bp.textContent=mode==="creer"?"Créer mon compte":"Se connecter";
+    if(r.ok){majCompte();accueil();}
+    else{msg.dataset.e="ko";msg.innerHTML="<b>"+(mode==="creer"?"Inscription impossible.":"Connexion impossible.")+"</b> "+r.msg;}
+  };
+  bp.addEventListener("click",envoyer);
+  w.querySelectorAll("input").forEach(i=>i.addEventListener("keydown",e=>{if(e.key==="Enter")envoyer();}));
+  const bl=document.createElement("button");bl.className="btn btn-secondaire";
+  bl.textContent="Continuer sans compte";
+  bl.addEventListener("click",()=>{accueil();});
+  act.appendChild(bp);act.appendChild(bl);
+  majRail();majGlobal();window.scrollTo({top:0});
+  setTimeout(()=>w.querySelector("#ch-mail").focus(),60);
+}
+
+function accueil(){
+  const sc=cadreVue("accueil");
+  const w=document.createElement("section");w.className="verre feuille monte portail";
+  w.innerHTML='<div class="portail-marque"><span class="sceau"><svg viewBox="0 0 24 24"><path d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg></span>'+
+    "<h1>Mon BTS</h1><p>Cherche ton BTS et commence.</p></div>"+
+    '<div class="recherche"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>'+
+    '<input type="search" id="ch-bts" placeholder="Cherche un BTS — électrotechnique, ATI…" autocomplete="off"></div>'+
+    '<div class="cartes" id="cartes"></div>'+
+    '<p class="portail-note" id="note-cat"></p>';
+  sc.appendChild(w);
+  const dessine=()=>{
+    const q=(w.querySelector("#ch-bts").value||"").toLowerCase()
+      .normalize("NFD").replace(/[̀-ͯ]/g,"");
+    /* On classe : un mot entier qui correspond passe devant un simple
+       fragment. Sans cela « ati » remontait « automatisme ». */
+    const plat=t=>t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+    const score=c=>{
+      if(!q)return 1;
+      const nom=plat(c.nom+" "+c.court), tout=plat(c.nom+" "+c.court+" "+c.sous+" "+c.mots);
+      const mots=tout.split(/[^a-z0-9]+/);
+      if(mots.indexOf(q)>=0)return 3;
+      if(nom.indexOf(q)>=0)return 2;
+      if(mots.some(m=>m.startsWith(q)))return 2;
+      return tout.indexOf(q)>=0?1:0;};
+    const liste=CATALOGUE.map(c=>[c,score(c)]).filter(x=>x[1]>0)
+      .sort((a,b)=>b[1]-a[1]).map(x=>x[0]);
+    const g=w.querySelector("#cartes");g.innerHTML="";
+    liste.forEach(c=>{
+      const n=c.modules().length;
+      let av=0;try{const b=JSON.parse(localStorage.getItem(c.id==="electrotechnique"?CLE_BASE:CLE_BASE+":"+c.id)||"{}");
+        av=Object.keys(b.faits||{}).length;}catch(e){}
+      const b=document.createElement("button");b.className="carte";b.type="button";
+      b.innerHTML='<span class="carte-tag" data-e="'+c.etat+'">'+(c.etat==="nouveau"?"Nouveau":"Complet")+"</span>"+
+        "<b>"+c.nom+"</b><span class='carte-court'>"+c.court+"</span>"+
+        "<span class='carte-sous'>"+c.sous+"</span>"+
+        '<span class="carte-pied">'+n+" modules"+(av?" · "+av+" pas déjà validés":"")+"</span>";
+      b.addEventListener("click",()=>{choisirBTS(c.id,true);
+        if(etat.annee===undefined||etat.annee===null||!Object.keys(etat.faits).length)choixAnnee();
+        else{document.querySelector(".page").dataset.rail=innerWidth>1040?"on":"off";
+          if(etat.vuGuide)voir(etat.pos.m||0,etat.pos.p||0);else guide();}});
+      g.appendChild(b);});
+    if(!liste.length)g.innerHTML='<p class="simu-vide">Aucun BTS ne correspond. Pour l\'instant le catalogue en compte '+CATALOGUE.length+".</p>";
+    w.querySelector("#note-cat").textContent=
+      "Le catalogue s'agrandira : chaque BTS ajouté reprend le même principe — leçons courtes, figures manipulables, exercices tirés au sort et examens de palier.";
+  };
+  w.querySelector("#ch-bts").addEventListener("input",dessine);
+  dessine();
+  majRail();majGlobal();window.scrollTo({top:0});
+  setTimeout(()=>w.querySelector("#ch-bts").focus(),60);
+}
+
+function choixAnnee(apres){
+  const sc=cadreVue("annee");
+  const w=document.createElement("section");w.className="verre feuille monte portail";
+  const n1=MODULES.filter(m=>m.an===1&&!m.examen).length, n2=MODULES.filter(m=>m.an===2&&!m.examen).length;
+  w.innerHTML='<div class="portail-marque"><h1>Tu es en quelle année ?</h1>'+
+    "<p>Le programme de première et de deuxième année n'est pas le même. En le sachant, l'application te met en avant ce qui te concerne — sans jamais te fermer le reste.</p></div>"+
+    '<div class="cartes">'+
+    '<button type="button" class="carte" data-a="1"><span class="carte-tag" data-e="complet">'+n1+' modules</span><b>Première année</b>'+
+      "<span class='carte-sous'>Les bases : mathématiques, socle, mesures et sécurité.</span></button>"+
+    '<button type="button" class="carte" data-a="2"><span class="carte-tag" data-e="complet">'+n2+' modules</span><b>Deuxième année</b>'+
+      "<span class='carte-sous'>Machines, conversion, installation, automatismes et projet.</span></button>"+
+    '<button type="button" class="carte" data-a="0"><span class="carte-tag" data-e="nouveau">tout</span><b>Montre-moi tout</b>'+
+      "<span class='carte-sous'>Le parcours entier, dans l'ordre. À choisir en révision ou en reprise d'études.</span></button>"+
+    "</div>"+
+    '<p class="portail-note">Ce choix se change à tout moment depuis le volet du parcours, à gauche.</p>';
+  sc.appendChild(w);
+  w.querySelectorAll(".carte").forEach(b=>b.addEventListener("click",()=>{
+    etat.annee=+b.dataset.a;sauver();
+    document.querySelector(".page").dataset.rail=innerWidth>1040?"on":"off";
+    const i=MODULES.findIndex(m=>visible(m)&&faitsDuModule(MODULES.indexOf(m))<m.steps.length);
+    const j=i<0?0:i;
+    if(apres==="guide"||!etat.vuGuide)guide();else voir(j,0);}));
+  majRail();majGlobal();window.scrollTo({top:0});
+}
+const visible=m=>!etat.annee||!m.an||m.an===etat.annee;
+function majCompte(){
+  const b=$("#compte");if(!b)return;
+  const m=SB.user&&SB.user.email;
+  b.title=m?"Compte : "+m:"Se connecter";
+  b.dataset.e=m?"on":"off";
+}
+function menuCompte(){
+  if(!SB.user){connexion();return;}
+  const sc=cadreVue("compte");
+  const w=document.createElement("section");w.className="verre feuille monte";
+  const pr=pronostic();
+  w.innerHTML="<h2>Ton compte</h2><p class='sourdine'>"+SB.user.email+"</p>"+
+    '<div class="bulletin"><div><span class="k">Temps de travail</span><span class="v" data-ton="ac">'+
+    nb(pr.heures,1)+'<u> h</u></span></div>'+
+    '<div><span class="k">Synchronisation</span><span class="v" data-ton="ok" style="font-size:17px">active</span></div></div>'+
+    "<p>Ta progression est enregistrée sur le serveur : tu peux reprendre sur un autre appareil avec la même adresse.</p>";
+  const o=document.createElement("div");o.className="outils";
+  const b1=document.createElement("button");b1.className="btn btn-principal";b1.textContent="Retour au parcours";
+  b1.addEventListener("click",()=>{document.querySelector(".page").dataset.rail=innerWidth>1040?"on":"off";voir(etat.pos.m,etat.pos.p);});
+  const b2=document.createElement("button");b2.className="btn btn-secondaire";b2.textContent="Changer de BTS";
+  b2.addEventListener("click",accueil);
+  const b3=document.createElement("button");b3.className="btn btn-destructif btn-fin";b3.textContent="Se déconnecter";
+  b3.addEventListener("click",async()=>{await deconnecter();majCompte();connexion();});
+  o.appendChild(b1);o.appendChild(b2);o.appendChild(b3);w.appendChild(o);
+  sc.appendChild(w);majRail();majGlobal();window.scrollTo({top:0});
+}
+
 /* ---- Comment ça marche : la page qu'on voit en arrivant ---- */
 const BLOCS_BTS=[
  ["1 — Étude préliminaire","Interpréter un besoin, modéliser, dimensionner, proposer une architecture","01 à 14, 21"],
@@ -6476,6 +7313,16 @@ function carnet(){
   html+="</table></div>";
   t.innerHTML=html;sc.appendChild(t);
 
+  const pr=pronostic();
+  const pv=document.createElement("section");pv.className="verre feuille monte";
+  pv.innerHTML="<h2>Où tu en seras à l'examen</h2>"+
+   '<div class="pronostic"><div class="pr-jauge"><svg viewBox="0 0 120 120"><circle class="fond" cx="60" cy="60" r="52"/>'+
+   '<circle class="arc" cx="60" cy="60" r="52" stroke-dasharray="'+(2*Math.PI*52*pr.p/100)+' '+(2*Math.PI*52)+'" transform="rotate(-90 60 60)"/></svg>'+
+   '<span class="pr-val">'+pr.p+'<u>%</u></span></div>'+
+   '<div class="pr-txt"><b>'+pr.mot+"</b><p>"+pr.conseil+"</p>"+
+   '<div class="pr-detail">'+pr.detail.map(d=>"<span><em>"+d[0]+"</em>"+d[1]+"</span>").join("")+"</div></div></div>"+
+   "<p class='sourdine' style='margin-top:14px;font-size:13.5px'>Ce chiffre est une <strong>estimation indicative</strong> calculée sur ce que l'application peut voir : ta couverture du parcours, tes notes et ton temps de travail. Ce n'est pas une prédiction de résultat à l'examen — personne ne peut la faire. Il sert à une seule chose : montrer que l'effort se voit.</p>";
+  sc.appendChild(pv);
   const fb=faiblesses(6);
   if(fb.length){
     const w=document.createElement("section");w.className="verre feuille monte";
@@ -6571,7 +7418,8 @@ $("#ouvrir-rail").addEventListener("click",()=>{
   etat.rail=v?"on":"off";sauver();poserRail(v);});
 $("#voir-carnet").addEventListener("click",carnet);
 $("#voir-guide").addEventListener("click",guide);
-$("#accueil").addEventListener("click",guide);
+$("#accueil").addEventListener("click",accueil);
+$("#compte").addEventListener("click",menuCompte);
 matchMedia("(prefers-color-scheme:dark)").addEventListener("change",()=>redessins.forEach(f=>f()));
 addEventListener("scroll",()=>{$("#barre").dataset.defile=scrollY>10?"oui":"non";},{passive:true});
 addEventListener("keydown",e=>{
@@ -6585,10 +7433,22 @@ addEventListener("keydown",e=>{
 let tr=null;
 addEventListener("resize",()=>{clearTimeout(tr);tr=setTimeout(()=>redessins.forEach(f=>f()),140);});
 
-localCharger();
-poserRail(etat.rail?etat.rail==="on":innerWidth>1040);
-if(etat.vuGuide)voir(etat.pos.m||0,etat.pos.p||0,true);else guide();
-brancherBase();
+/* Démarrage : on tente la session, puis on choisit l'écran d'entrée.
+   Si le serveur ne répond pas, rien ne bloque : on travaille en local. */
+(async function demarrer(){
+  poserRail(false);
+  let dernier=null;try{dernier=localStorage.getItem(CLE_BASE+"-bts");}catch(e){}
+  const connecte=await reprendreSession();
+  majCompte();
+  if(connecte||SB.ok===false||dernier){
+    if(dernier){choisirBTS(dernier,true);
+      if(SB.ok!==false&&!connecte&&SB.session===null&&!localStorage.getItem(CLE_SESSION)&&!dernier)connexion();
+      else{poserRail(etat.rail?etat.rail==="on":innerWidth>1040);
+        if(etat.vuGuide)voir(etat.pos.m||0,etat.pos.p||0,true);else guide();}}
+    else accueil();
+  }else connexion();
+  brancherBase();
+})();
 </script>
 
 <style>
@@ -6616,6 +7476,60 @@ canvas.manip{cursor:grab;touch-action:none}
 canvas.manip:active{cursor:grabbing}
 
 /* ---- La correction pas à pas : flèches et code couleur ---- */
+/* ---- Portail : connexion et catalogue ---- */
+.portail{max-width:760px;margin:0 auto;padding:34px 34px 30px}
+.portail-marque{text-align:center;margin-bottom:26px}
+.portail-marque .sceau{width:46px;height:46px;border-radius:14px;display:inline-grid;place-items:center;
+  background:linear-gradient(160deg,var(--primary),var(--primary-hover));
+  box-shadow:0 8px 20px -8px rgba(7,94,109,.6);margin-bottom:12px}
+.portail-marque .sceau svg{width:24px;height:24px;fill:var(--on-primary)}
+.portail-marque h1{font-size:clamp(28px,4vw,38px);letter-spacing:-.03em;font-weight:600}
+.portail-marque p{margin:8px auto 0;color:var(--muted);max-width:46ch;font-size:15px}
+.portail-onglets{max-width:340px;margin:0 auto 22px}
+.portail-champs{display:grid;gap:14px;max-width:400px;margin:0 auto 18px}
+.portail-champs input{width:100%;padding:12px 14px;border-radius:11px;border:1.5px solid var(--border);
+  background:var(--surface);font-family:Rubik,sans-serif;font-size:15px}
+.portail-champs input:focus{border-color:var(--primary);outline:none}
+.portail-actions{justify-content:center;max-width:400px;margin:0 auto}
+.portail-note{margin:20px auto 0;max-width:52ch;text-align:center;font-size:13px;color:var(--muted);line-height:1.6}
+.recherche{display:flex;align-items:center;gap:12px;max-width:560px;margin:0 auto 26px;
+  background:var(--surface);border-radius:16px;padding:4px 6px 4px 18px;
+  box-shadow:inset 0 0 0 1.5px var(--border),var(--ombre-carte)}
+.recherche:focus-within{box-shadow:inset 0 0 0 2px var(--primary),var(--ombre-carte)}
+.recherche svg{width:20px;height:20px;stroke:var(--muted);fill:none;stroke-width:2;stroke-linecap:round;flex:none}
+.recherche input{flex:1;border:0;background:none;outline:none;padding:15px 8px;font-size:17px;
+  font-family:Rubik,sans-serif;color:var(--text);min-width:0}
+.cartes{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+.carte{position:relative;text-align:left;padding:20px;border-radius:var(--r);border:1px solid var(--border);
+  background:var(--surface);cursor:pointer;display:flex;flex-direction:column;gap:5px;transition:.16s}
+.carte:hover{border-color:var(--primary);transform:translateY(-2px);box-shadow:var(--ombre-carte)}
+.carte b{font-size:17px;font-weight:600;padding-right:70px}
+.carte-court{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--primary)}
+.carte-sous{font-size:13.5px;color:var(--muted);line-height:1.45;margin-top:3px}
+.carte-pied{margin-top:9px;padding-top:9px;border-top:1px solid var(--border);font-size:12px;color:var(--muted)}
+.carte-tag{position:absolute;top:16px;right:16px;font-size:10px;font-weight:600;letter-spacing:.08em;
+  text-transform:uppercase;padding:3px 9px;border-radius:999px}
+.carte-tag[data-e="nouveau"]{background:color-mix(in srgb,var(--success) 15%,var(--surface));color:var(--success)}
+.carte-tag[data-e="complet"]{background:var(--surface-2);color:var(--muted)}
+.ic[data-e="on"] svg{stroke:var(--primary)}
+/* ---- Le pronostic ---- */
+.pronostic{display:flex;gap:24px;align-items:center;flex-wrap:wrap}
+.pr-jauge{position:relative;width:118px;height:118px;flex:none}
+.pr-jauge svg{width:118px;height:118px}
+.pr-jauge circle{fill:none;stroke-width:9}
+.pr-jauge .fond{stroke:var(--border)}
+.pr-jauge .arc{stroke:var(--primary);stroke-linecap:round;transition:stroke-dasharray .6s cubic-bezier(.4,0,.2,1)}
+.pr-val{position:absolute;inset:0;display:grid;place-items:center;font-family:"IBM Plex Mono",monospace;
+  font-size:30px;font-weight:600;color:var(--primary)}
+.pr-val u{text-decoration:none;font-size:14px;color:var(--muted)}
+.pr-txt{flex:1;min-width:220px}
+.pr-txt b{font-size:17px;font-weight:600;text-transform:capitalize}
+.pr-txt p{margin:6px 0 0;color:var(--muted);font-size:14.5px;max-width:56ch}
+.pr-detail{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.pr-detail span{background:var(--surface-2);border-radius:9px;padding:8px 12px;font-family:"IBM Plex Mono",monospace;
+  font-size:13px;font-weight:600;color:var(--text)}
+.pr-detail em{display:block;font-style:normal;font-family:Rubik,sans-serif;font-size:10.5px;font-weight:500;
+  letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
 /* ---- Page de prise en main ---- */
 .prise{list-style:none;counter-reset:pr;margin:0;padding:0;max-width:none;display:grid;gap:14px}
 .prise li{counter-increment:pr;position:relative;padding:14px 18px 14px 56px;border-radius:12px;

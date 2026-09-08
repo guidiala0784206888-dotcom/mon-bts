@@ -1,7 +1,13 @@
 # Mon BTS
 
-Révision d'un BTS, pas à pas. Première spécialité couverte : **l'électrotechnique**,
-du calcul de base jusqu'à la transition énergétique.
+Révision d'un BTS, pas à pas. Deux spécialités couvertes :
+**l'électrotechnique** (25 modules) et **l'assistance technique d'ingénieur**
+(10 modules) — du calcul de base jusqu'au dossier technique.
+
+Un **compte** permet de retrouver sa progression sur n'importe quel appareil ;
+sans réseau ni compte, tout continue de fonctionner en local. À l'entrée, on
+cherche son BTS puis on indique son **année d'étude** : le parcours se règle
+dessus, sans jamais fermer le reste.
 
 - **25 modules** — on commence par les mathématiques (unités, transposition,
   trigonométrie, vecteurs, exponentielle), puis toute l'électrotechnique.
