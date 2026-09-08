@@ -3554,6 +3554,21 @@ triphasé :  ΔU = √3 · ρ · L · I · cos φ / S<span class="note">ρ = 0,0
   <p>C'est LE circuit à savoir dessiner de mémoire. Tu vas le poser fil par fil, puis le mettre sous tension.</p>`},
  {k:"g",t:"Faire tourner un cycle",auto:"percage",quiz:true,h:`
   <p>Un GRAFCET n'est pas un dessin, c'est un programme. Celui-ci pilote une vraie machine, et les capteurs de fin de course lui répondent. À toi de compléter les réceptivités : tant qu'une seule est fausse, le cycle ne part pas.</p>`},
+ {k:"l",t:"Traduire un GRAFCET en ladder",h:`
+  <p>Un automate ne comprend pas les carrés du GRAFCET. Il faut lui donner des équations — et il n'y en a qu'une, répétée une fois par étape.</p>
+  <div class="formule">X<sub>i</sub> = ( X<sub>i−1</sub> · réceptivité<sub>i−1</sub>  +  X<sub>i</sub> ) · X̄<sub>i+1</sub><span class="note">activation par l'amont · maintien par soi-même · désactivation par l'aval</span></div>
+  <p>Tu as déjà écrit exactement ça : c'est <strong>l'auto-maintien</strong> du circuit de commande, avec un bit mémoire à la place de la bobine du contacteur.</p>
+  <div class="tabl"><table>
+   <tr><th>Dans le GRAFCET</th><th>Dans le ladder</th></tr>
+   <tr><td>Étape active</td><td>bit mémoire <span class="mono">X<sub>i</sub></span> à 1</td></tr>
+   <tr><td>Réceptivité</td><td>contacts en série sur le barreau</td></tr>
+   <tr><td>Franchissement</td><td>X<sub>i</sub> monte, X<sub>i−1</sub> retombe</td></tr>
+   <tr><td>Action associée</td><td>barreau de sortie piloté par X<sub>i</sub></td></tr>
+  </table></div>
+  <p>Les <strong>sorties</strong> se traitent après, séparément : une sortie active à plusieurs étapes s'écrit avec un OU — <span class="mono">broche = X2 + X3</span>.</p>
+  <div class="encart e-piege"><span class="chapo">Pourquoi séparer étapes et sorties</span><p>Si tu pilotes le contacteur directement depuis la réceptivité, tu perds la mémoire du cycle : au moindre défaut, la machine ne sait plus où elle en était. Les bits d'étape SONT la mémoire. Les sorties n'en sont que le reflet.</p></div>`},
+ {k:"h",t:"Écrire le ladder du cycle",auto:"percage",quiz:true,h:`
+  <p>Le même poste de perçage, cette fois en langage à contacts. Choisis la condition d'activation de chaque étape, puis lance le cycle : les barreaux passants s'allument en vert, en direct.</p>`},
  {k:"a",t:"Atelier — automatismes",gen:["grafcet","securite","transpose"],but:4,h:`<p>Les règles du GRAFCET sont normatives : elles ne se devinent pas, elles se connaissent.</p>`},
  {k:"c",t:"Contrôle",gen:["grafcet","securite","transpose","equation1"],n:8}
 ]},
@@ -5731,6 +5746,158 @@ function rendreAutomate(hote,mi,pi,pas){
 }
 
 /* =========================================================================
+   GRAFCET → LADDER
+   Traduire un GRAFCET en langage à contacts n'est pas une recette à
+   apprendre : c'est l'auto-maintien du module 23, appliqué une fois par
+   étape. Activation par l'amont, maintien par soi-même, désactivation par
+   l'aval. Ici les deux langages tournent EN MÊME TEMPS sur la même machine.
+   ========================================================================= */
+function barreaux(a){
+  const n=a.etapes.length,r=[];
+  for(let i=0;i<n;i++){
+    const av=(i+n-1)%n, ap=(i+1)%n;
+    r.push({bobine:"X"+i,
+      act:[["X"+av,0]].concat(a.trans[av].rec.split("·").map(s=>[s.trim(),0])),
+      maintien:"X"+i, stop:"X"+ap, init:i===0});
+  }
+  const sorties={};
+  a.etapes.forEach((e,i)=>e.act.forEach(s=>{(sorties[s]=sorties[s]||[]).push("X"+i);}));
+  const so=Object.keys(sorties).map(s=>({bobine:s,ou:sorties[s]}));
+  return {etapes:r,sorties:so};
+}
+
+function rendreLadder(hote,mi,pi,pas){
+  const a=AUTOMATES[pas.auto];if(!a)return;
+  const B=barreaux(a),quiz=!!pas.quiz;
+  let etape=0,A=0,Bp=0,dcy=false,marche=true,choix=B.etapes.map(()=>quiz?-1:0),valide=!quiz;
+  const box=document.createElement("div");box.className="verre automate";hote.appendChild(box);
+  box.innerHTML='<div class="cab-tete"><span class="t">Le même cycle, en langage à contacts</span>'+
+    '<span class="cab-compte" id="ld-etat">étape 0</span></div>'+
+    '<p class="cab-consigne">'+(quiz
+      ?"Pour chaque étape, choisis la condition qui l'ACTIVE. La règle est toujours la même : l'étape amont ET la réceptivité qui la suit."
+      :"À gauche les étapes, à droite les sorties. Un barreau vert est passant. Appuie sur Départ cycle et regarde les bits d'étape se transmettre le relais.")+"</p>";
+  const zone=document.createElement("div");zone.className="cab-zone";box.appendChild(zone);
+  const qz=document.createElement("div");qz.className="au-quiz";box.appendChild(qz);
+  const outils=document.createElement("div");outils.className="outils cab-outils";box.appendChild(outils);
+  const msg=document.createElement("div");msg.className="cab-msg";box.appendChild(msg);
+
+  const cap=()=>({dcy:dcy,a0:A<=0.02,a1:A>=0.98,b0:Bp<=0.02,b1:Bp>=0.98});
+  const bitX=i=>i===etape;
+  const etatContact=(nom)=>{
+    if(nom.charAt(0)==="X")return bitX(+nom.slice(1));
+    const c=cap();return !!c[nom];
+  };
+
+  const rendu=toile(zone,1.42,(c,w,h)=>{
+    const col=[w*0.03,w*0.53],larg=w*0.44;
+    const dessineBarreau=(x,y,ha,r,i,type)=>{
+      const xa=x+8,xb=x+larg-8;
+      c.strokeStyle=CB();c.lineWidth=2;
+      c.beginPath();c.moveTo(xa,y-ha/2);c.lineTo(xa,y+ha/2);c.moveTo(xb,y-ha/2);c.lineTo(xb,y+ha/2);c.stroke();
+      const contacts=type==="e"?r.act:r.ou.map(o=>[o,0]);
+      const nStop=type==="e"?1:0;
+      const zoneC=(xb-xa)*0.60, x0=xa+14;
+      const pas1=zoneC/Math.max(contacts.length,1);
+      /* la ligne principale */
+      let passant=true;
+      c.lineWidth=2.4;
+      contacts.forEach((ct,k)=>{
+        const cx=x0+k*pas1+pas1/2, on=etatContact(ct[0]);
+        if(type==="e")passant=passant&&on;
+        c.strokeStyle=(type==="e"?(passant?C2():CM()):(on?C2():CM()));
+        c.beginPath();c.moveTo(cx-pas1/2+2,y);c.lineTo(cx-7,y);c.moveTo(cx+7,y);c.lineTo(cx+pas1/2-2,y);c.stroke();
+        c.strokeStyle=on?C2():CI();
+        c.beginPath();c.moveTo(cx-7,y-7);c.lineTo(cx-7,y+7);c.moveTo(cx+7,y-7);c.lineTo(cx+7,y+7);c.stroke();
+        txt(c,ct[0],cx,y-15,10,on?C2():CM(),"center",on);
+      });
+      c.strokeStyle=CM();c.lineWidth=2.4;
+      c.beginPath();c.moveTo(xa,y);c.lineTo(x0,y);c.stroke();
+      let sortieOn;
+      if(type==="e"){
+        /* branche d'auto-maintien */
+        const yb=y+ha*0.32, actif=bitX(i);
+        c.strokeStyle=actif?C2():CM();
+        c.beginPath();c.moveTo(x0,y);c.lineTo(x0,yb);c.lineTo(x0+zoneC*0.35-7,yb);
+        c.moveTo(x0+zoneC*0.35+7,yb);c.lineTo(x0+zoneC,yb);c.lineTo(x0+zoneC,y);c.stroke();
+        c.strokeStyle=actif?C2():CI();
+        c.beginPath();c.moveTo(x0+zoneC*0.35-7,yb-7);c.lineTo(x0+zoneC*0.35-7,yb+7);
+        c.moveTo(x0+zoneC*0.35+7,yb-7);c.lineTo(x0+zoneC*0.35+7,yb+7);c.stroke();
+        txt(c,r.maintien,x0+zoneC*0.35,yb+16,9.5,actif?C2():CM(),"center");
+        /* contact d'arrêt, à ouverture */
+        const sx=x0+zoneC+30, stopOn=etatContact(r.stop);
+        const amont=passant||actif;
+        c.strokeStyle=amont&&!stopOn?C2():CM();c.lineWidth=2.4;
+        c.beginPath();c.moveTo(x0+zoneC,y);c.lineTo(sx-7,y);c.stroke();
+        c.strokeStyle=stopOn?C3():CI();
+        c.beginPath();c.moveTo(sx-7,y-7);c.lineTo(sx-7,y+7);c.moveTo(sx+7,y-7);c.lineTo(sx+7,y+7);
+        c.moveTo(sx-9,y+8);c.lineTo(sx+9,y-8);c.stroke();
+        txt(c,r.stop,sx,y-15,10,stopOn?C3():CM(),"center");
+        sortieOn=amont&&!stopOn;
+        c.strokeStyle=sortieOn?C2():CM();c.lineWidth=2.4;
+        c.beginPath();c.moveTo(sx+7,y);c.lineTo(xb-24,y);c.stroke();
+      }else{
+        sortieOn=contacts.some(ct=>etatContact(ct[0]));
+        c.strokeStyle=sortieOn?C2():CM();c.lineWidth=2.4;
+        c.beginPath();c.moveTo(x0+contacts.length*pas1,y);c.lineTo(xb-24,y);c.stroke();
+      }
+      /* la bobine */
+      c.strokeStyle=sortieOn?C2():CI();c.lineWidth=2.4;
+      c.beginPath();c.arc(xb-16,y,9,Math.PI*0.55,Math.PI*1.45);c.stroke();
+      c.beginPath();c.arc(xb-16,y,9,Math.PI*1.55,Math.PI*0.45);c.stroke();
+      txt(c,r.bobine,xb-16,y-19,10.5,sortieOn?C2():CM(),"center",sortieOn);
+    };
+    txt(c,"Les étapes",col[0]+8,h*0.045,12,C1(),"left",true);
+    txt(c,"Les sorties",col[1]+8,h*0.045,12,C1(),"left",true);
+    const y0=h*0.13,dy=(h*0.84)/Math.max(B.etapes.length,B.sorties.length);
+    B.etapes.forEach((r,i)=>dessineBarreau(col[0],y0+i*dy+dy*0.35,dy*0.62,r,i,"e"));
+    B.sorties.forEach((r,i)=>dessineBarreau(col[1],y0+i*dy+dy*0.35,dy*0.62,r,i,"s"));
+  });
+
+  const majQuiz=()=>{
+    if(!quiz){qz.innerHTML="";return;}
+    qz.innerHTML=B.etapes.map((r,i)=>{
+      const n=B.etapes.length,av=(i+n-1)%n;
+      const bon="X"+av+" · "+a.trans[av].rec;
+      const opts=[bon,"X"+i+" · "+a.trans[i].rec,"X"+((i+1)%n)+" · "+a.trans[av].rec];
+      return '<div class="au-tr"><span class="au-num">X'+i+" =</span>"+
+        '<div class="au-opts" data-i="'+i+'">'+opts.map((o,k)=>
+          '<button type="button" data-k="'+k+'" class="'+(choix[i]===k?(k===0?"bon":"faux"):"")+'">'+o+"</button>").join("")+
+        "</div></div>";}).join("")+
+      '<p class="au-aide">Chaque étape s\'active par l\'étape AMONT et la réceptivité qui les sépare, se maintient par elle-même, et se coupe par l\'étape AVAL.</p>';
+    qz.querySelectorAll(".au-opts").forEach(d=>d.addEventListener("click",e=>{
+      const b=e.target.closest("button");if(!b)return;
+      const i=+d.dataset.i;choix[i]=+b.dataset.k;valide=choix.every(x=>x===0);
+      if(valide){msg.dataset.e="ok";
+        msg.innerHTML="<b>Les cinq équations sont justes.</b> Tu viens d'écrire un programme d'automate : cinq auto-maintiens qui se passent le relais. C'est exactement le circuit de commande du module 23, mais en mémoire au lieu d'être en fil.";
+        if(mi>=0)marquer(mi,pi);}
+      else if(b.dataset.k!=="0"){msg.dataset.e="ko";
+        msg.innerHTML=b.dataset.k==="1"
+          ?"<b>Non.</b> Ce serait l'étape ELLE-MÊME et sa propre réceptivité : elle se réactiverait en boucle sans jamais avancer."
+          :"<b>Non.</b> Ce serait l'étape AVAL : on ne s'active pas depuis celle qui vient après, on s'en fait désactiver.";}
+      majQuiz();rendu();}));
+  };
+
+  const pas2=()=>{
+    if(!marche)return;const v=0.012;
+    const act=a.etapes[etape].act;
+    if(act.indexOf("A+")>=0)A=Math.min(1,A+v);
+    if(act.indexOf("A−")>=0)A=Math.max(0,A-v);
+    if(act.indexOf("B+")>=0)Bp=Math.min(1,Bp+v*0.8);
+    if(act.indexOf("B−")>=0)Bp=Math.max(0,Bp-v*1.4);
+    if(valide){const t=a.trans[etape];
+      if(t&&t.f(cap())){etape=(etape+1)%a.etapes.length;dcy=false;
+        const e=$("#ld-etat");if(e)e.textContent="étape "+etape+" · "+a.etapes[etape].lib;}}
+  };
+  anims.push({t:0,jouer:true,rendu:()=>{pas2();rendu();}});
+  const bt=(cl,l,f)=>{const b=document.createElement("button");b.className="btn "+cl;b.textContent=l;
+    b.addEventListener("click",f);outils.appendChild(b);return b;};
+  bt("btn-principal","Départ cycle",()=>{dcy=true;setTimeout(()=>{dcy=false;},900);});
+  const bm=bt("btn-secondaire btn-fin","Pause",()=>{marche=!marche;bm.textContent=marche?"Pause":"Reprendre";});
+  bt("btn-secondaire btn-fin","Remettre au repos",()=>{etape=0;A=0;Bp=0;dcy=false;});
+  majQuiz();
+}
+
+/* =========================================================================
    9. CONTRÔLE NOTÉ — et la boucle de remédiation
    ========================================================================= */
 function rendreControle(hote,mi,pi,pas){
@@ -5868,7 +6035,7 @@ function voir(m,p,silencieux){
     o.appendChild(ba);o.appendChild(bf);v.appendChild(o);
     sc.appendChild(v);majRail();majGlobal();window.scrollTo({top:0});return;
   }
-  const et=pas.k==="c"?(mod.examen?"Examen de palier":"Contrôle noté"):pas.k==="a"?"Atelier d'exercices":pas.k==="s"?"Banc d'essai":pas.k==="w"?"Câblage à faire":pas.k==="z"?"Simulateur":pas.k==="f"?"Chaîne fonctionnelle":pas.k==="g"?"Automate":"Leçon";
+  const et=pas.k==="c"?(mod.examen?"Examen de palier":"Contrôle noté"):pas.k==="a"?"Atelier d'exercices":pas.k==="s"?"Banc d'essai":pas.k==="w"?"Câblage à faire":pas.k==="z"?"Simulateur":pas.k==="f"?"Chaîne fonctionnelle":pas.k==="g"?"Automate":pas.k==="h"?"Ladder":"Leçon";
   const feuille=document.createElement("section");feuille.className="verre feuille monte";
   feuille.innerHTML='<span class="etiquette">'+et+"</span>"+
     (pas.t?"<h2>"+pas.t+"</h2>":"<h2>Contrôle du module</h2>")+(pas.h||"");
@@ -5880,9 +6047,10 @@ function voir(m,p,silencieux){
   if(pas.k==="z")rendreSimu(sc,m,p,pas);
   if(pas.k==="f")rendreChaine(sc,m,p,pas);
   if(pas.k==="g")rendreAutomate(sc,m,p,pas);
+  if(pas.k==="h")rendreLadder(sc,m,p,pas);
   if(pas.k==="c")rendreControle(sc,m,p,pas);
 
-  if(pas.k==="l"||pas.k==="s"||pas.k==="w"||pas.k==="z"||pas.k==="f"||pas.k==="g"){
+  if(pas.k==="l"||pas.k==="s"||pas.k==="w"||pas.k==="z"||pas.k==="f"||pas.k==="g"||pas.k==="h"){
     const pied=document.createElement("nav");pied.className="verre pied";
     const prec=document.createElement("button");prec.className="btn btn-secondaire";prec.textContent="← Précédent";
     prec.disabled=(m===0&&p===0);prec.addEventListener("click",reculer);

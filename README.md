@@ -19,6 +19,8 @@ du calcul de base jusqu'à la transition énergétique.
   énergie) sur deux machines réelles, et un **GRAFCET qui pilote vraiment** un
   poste de perçage : les capteurs de fin de course répondent à la machine, la
   boucle est fermée. Les réceptivités sont à compléter avant que le cycle parte.
+  Puis **traduction en langage à contacts** : les cinq équations d'étape à
+  écrire, et le ladder qui s'exécute barreau par barreau à côté du GRAFCET.
 - **Câblage à faire soi-même** — quatre bancs : circuit de commande à
   auto-maintien, circuit de puissance, inversion de sens, tableau divisionnaire.
   On relie les bornes, l'app vérifie, puis on met sous tension.
