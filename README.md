@@ -28,6 +28,9 @@ du calcul de base jusqu'à la transition énergétique.
   exercices composés qui enchaînent deux ou trois notions comme en examen.
 - **Contrôle noté sur 20** par module, et un **examen de palier** en fin de bloc :
   12 sur 20 pour ouvrir le bloc suivant.
+- **Calculatrice intégrée**, et surtout : chaque correction montre la **suite de
+  touches** à enfoncer, avec le piège de frappe propre au calcul — parenthèse
+  oubliée, touche EXP, seconde fonction, mode degrés.
 - **Démarrage en douceur** — la première rencontre d'une notion se fait avec des
   nombres ronds ; les valeurs de terrain viennent ensuite.
 - **Mémoire des erreurs** — l'app retient les notions qui résistent, les repropose

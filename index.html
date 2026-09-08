@@ -496,10 +496,21 @@ const GEN={
 
 /* ---------------- Bloc mathématiques ---------------- */
 "prefixe":{t:"Préfixes et conversions",u:"",tol:1e-9,rappel:"k = 10³ · m = 10⁻³ · µ = 10⁻⁶ · n = 10⁻⁹ · M = 10⁶",
- tirer(){const c=P([{de:"kΩ",vers:"Ω",f:1e3},{de:"mA",vers:"A",f:1e-3},{de:"µF",vers:"F",f:1e-6},
-   {de:"MW",vers:"W",f:1e6},{de:"mH",vers:"H",f:1e-3},{de:"nF",vers:"F",f:1e-9},{de:"kV",vers:"V",f:1e3}]);
+ tirer(){const c=P([
+   {de:"kΩ",vers:"Ω",f:1e3,u:"l'ohm (Ω)",g:"la résistance"},
+   {de:"mA",vers:"A",f:1e-3,u:"l'ampère (A)",g:"le courant"},
+   {de:"µF",vers:"F",f:1e-6,u:"le farad (F)",g:"la capacité d'un condensateur"},
+   {de:"MW",vers:"W",f:1e6,u:"le watt (W)",g:"la puissance"},
+   {de:"mH",vers:"H",f:1e-3,u:"le henry (H)",g:"l'inductance d'une bobine"},
+   {de:"nF",vers:"F",f:1e-9,u:"le farad (F)",g:"la capacité d'un condensateur"},
+   {de:"kV",vers:"V",f:1e3,u:"le volt (V)",g:"la tension"}]);
   return {c:c,v:R(1,99,0.5)};},
- enonce(p){return "Convertis <span class='val'>"+F(p.v)+" "+p.c.de+"</span> en "+p.c.vers+". Réponds en notation décimale ou scientifique (exemple : <span class='mono'>4.7e-6</span>).";},
+ enonce(p){const pre=p.c.de.charAt(0);
+  const nom={k:"kilo, mille fois plus",m:"milli, mille fois moins","µ":"micro, un million de fois moins",
+    n:"nano, un milliard de fois moins",M:"méga, un million de fois plus"}[pre]||"";
+  return "Convertis <span class='val'>"+F(p.v)+" "+p.c.de+"</span> en <span class='val'>"+p.c.vers+"</span>."+
+   "<span class='rappel-u'>"+p.c.u+" mesure "+p.c.g+" · <b>"+pre+"</b> = "+nom+"</span>"+
+   "<span class='rappel-u'>Réponds en écriture décimale ou scientifique — par exemple <span class='mono'>4,7e-6</span>.</span>";},
  rep(p){return p.v*p.c.f;},
  pas(p){return [{t:"Le préfixe dit par combien multiplier l'unité de base.",op:"1 "+p.c.de+" = "+p.c.f.toExponential()+" "+p.c.vers},
   {t:"On multiplie donc la valeur par ce facteur.",op:F(p.v)+" × "+p.c.f.toExponential()+" = "+(p.v*p.c.f).toExponential(4)},
@@ -1431,7 +1442,10 @@ const DUR={"courant-moteur":"x-moteur-cable","puis-tri":"x-moteur-cable",
  "neutre":"x-neutre-verdict","tri-uv":"x-neutre-verdict",
  "resistivite":"x-section-mini","ddr":"x-transfo-icc"};
 const FACILE={
- "prefixe":()=>({c:P([{de:"kΩ",vers:"Ω",f:1e3},{de:"kV",vers:"V",f:1e3},{de:"MW",vers:"W",f:1e6}]),v:P([2,3,4,5,10])}),
+ "prefixe":()=>({c:P([
+   {de:"kΩ",vers:"Ω",f:1e3,u:"l'ohm (Ω)",g:"la résistance"},
+   {de:"kV",vers:"V",f:1e3,u:"le volt (V)",g:"la tension"},
+   {de:"MW",vers:"W",f:1e6,u:"le watt (W)",g:"la puissance"}]),v:P([2,3,4,5,10])}),
  "scientifique":()=>({a:P([2,3,5]),n:P([1,2,3]),m:P([2,3]),k:P([1,2])}),
  "pourcent":()=>{const U=P([200,400]),pc=P([2,5,10]);return {U:U,d:U*pc/100};},
  "proportion":()=>({l:100,s:P([2,5,10]),l2:P([200,300,500])}),
@@ -2521,9 +2535,21 @@ Object.assign(ANIM,{
 const MODULES=[
 
 /* ═══════════════ BLOC 1 — LES MATHS DONT TU AS BESOIN ═══════════════ */
-{id:"m01",num:"01",bloc:"Les maths d'abord",titre:"Lire un nombre et son unité",duree:"12 min",
+{id:"m01",num:"01",bloc:"Les maths d'abord",titre:"Lire un nombre et son unité",duree:"16 min",
  resume:"Une seule idée : un préfixe déplace la virgule. C'est le point de départ de tout le reste.",
  steps:[
+ {k:"l",t:"De quoi on parle",h:`
+  <p>Avant de manipuler des nombres, il faut savoir ce qu'ils mesurent. En électricité, quatre grandeurs reviennent en permanence — et chacune a son unité et son symbole.</p>
+  <div class="tabl"><table>
+   <tr><th>On mesure</th><th>Unité</th><th>Symbole</th><th>Une image</th></tr>
+   <tr><td><b>la tension</b></td><td>le volt</td><td class="mono">V</td><td>la pression qui pousse</td></tr>
+   <tr><td><b>le courant</b></td><td>l'ampère</td><td class="mono">A</td><td>le débit qui passe</td></tr>
+   <tr><td><b>la résistance</b></td><td>l'ohm</td><td class="mono">Ω</td><td>l'étranglement qui freine</td></tr>
+   <tr><td><b>la puissance</b></td><td>le watt</td><td class="mono">W</td><td>le travail fourni chaque seconde</td></tr>
+  </table></div>
+  <figure data-anim="ohm-flux"></figure>
+  <p>Trois autres unités reviendront plus loin, autant les croiser une fois : le <b>farad</b> (<span class="mono">F</span>) pour un condensateur, le <b>henry</b> (<span class="mono">H</span>) pour une bobine, le <b>hertz</b> (<span class="mono">Hz</span>) pour une fréquence.</p>
+  <div class="encart e-cle"><span class="chapo">Ce module ne calcule rien d'électrique</span><p>On n'y apprend pas à trouver un courant : on y apprend à <strong>lire un nombre et son unité</strong>. Le calcul viendra au module 07, une fois l'outil en main.</p></div>`},
  {k:"l",t:"Une valeur, plusieurs écritures",h:`
   <p>Un condensateur peut porter écrit <span class="mono">4700 µF</span> ou <span class="mono">0,0047 F</span>. C'est le <strong>même composant</strong>. Seule l'écriture change.</p>
   <figure data-anim="echelle-prefixes"></figure>
@@ -4911,6 +4937,166 @@ function majRail(){
 }
 
 /* =========================================================================
+   LA CALCULATRICE, ET LA SÉQUENCE DE TOUCHES
+   Se tromper de résultat n'est pas toujours se tromper de méthode : très
+   souvent, c'est la calculatrice qui a été mal tapée. La correction montre
+   donc AUSSI la suite de touches à enfoncer, et signale les pièges de
+   frappe — parenthèses, racine, seconde fonction, mode degrés.
+   ========================================================================= */
+function sequenceTouches(op){
+  if(!op)return null;
+  let ligne=String(op).split("\n")[0];
+  const parts=ligne.split("=");
+  if(parts.length<2)return null;
+  let expr=parts[0].trim();
+  /* on recolle les espaces qui séparent les milliers : « 52 900 » → « 52900 » */
+  expr=expr.replace(/(\d)[   ](\d)/g,"$1$2").replace(/(\d)[   ](\d)/g,"$1$2");
+  if(!/\d/.test(expr))return null;
+  const avert=[];
+  if(/√/.test(expr))avert.push("La racine s'applique à TOUT ce qui suit : ferme la parenthèse avant d'appuyer sur √, ou calcule la parenthèse d'abord.");
+  if(/arctan|arccos|arcsin/.test(expr))avert.push("Fonction inverse : touche tan⁻¹, cos⁻¹ ou sin⁻¹, souvent en seconde fonction. Et vérifie que la calculatrice est en mode DEG.");
+  if(/(cos|sin|tan)\s*\(/.test(expr)&&!/arc/.test(expr))avert.push("Mode DEG obligatoire : cos 60 doit donner exactement 0,5.");
+  if(/10[⁻\^]|e[-+]?\d/.test(expr))avert.push("Puissance de dix : touche EXP ou ×10ˣ, jamais « × 10 ^ ».");
+  if(/\/\s*\(/.test(expr)||/\(\s*[^()]*[+−-][^()]*\)/.test(expr))
+    avert.push("Il y a une parenthèse : tape-la vraiment. Sans elle, la calculatrice divise seulement par le premier terme.");
+  /* ⚠️ ON NE DEVINE PAS. Une séquence de touches fausse enseigne un geste
+     faux : mieux vaut n'en afficher aucune. On n'accepte donc que les
+     expressions dont chaque caractère est reconnu — ni exposant, ni
+     notation scientifique, ni symbole exotique. Les cas plus riches sont
+     écrits à la main dans le générateur, via `tch`. */
+  const propre=expr.replace(/\b(cos|sin|tan|arccos|arcsin|arctan)\b/g,"F");
+  if(!/^[0-9F,.\s+\-−×·÷\/()√π]+$/.test(propre))return null;
+  const ouv=(expr.match(/\(/g)||[]).length, fer=(expr.match(/\)/g)||[]).length;
+  if(ouv!==fer)return null;
+  const touches=[];
+  const jeton=/(\d+(?:[.,]\d+)?)|(√)|(×|·)|(÷|\/)|(\+)|(−|-)|(\()|(\))|(π)|(arccos|arcsin|arctan|cos|sin|tan)/g;
+  let m,garde=0;
+  while((m=jeton.exec(expr))&&garde++<40){
+    const t=m[0];
+    if(m[3])touches.push("×");
+    else if(m[4])touches.push("÷");
+    else if(m[6])touches.push("−");
+    else if(m[10])touches.push(/^arc/.test(t)?t.replace("arc","")+"⁻¹":t);
+    else touches.push(t.replace(".",","));
+  }
+  if(touches.length<3)return null;
+  touches.push("=");
+  return {touches:touches,avert:avert,resultat:parts[parts.length-1].trim()};
+}
+
+/* --- la calculatrice, pour de vrai --- */
+function calculatrice(){
+  const d=document.createElement("div");d.className="calcul";
+  const T=[["7","8","9","(",")"],["4","5","6","÷","√"],["1","2","3","×","x²"],
+           ["0",",","−","+","EXP"],["C","←","π","","="]];
+  d.innerHTML='<div class="calc-ecran"><span class="calc-expr" id="calc-expr">&nbsp;</span>'+
+    '<span class="calc-res" id="calc-res">0</span></div><div class="calc-touches">'+
+    T.map(l=>l.map(k=>k?'<button type="button" class="calc-t'+
+      (k==="="?" eg":k==="C"||k==="←"?" fn":"")+'" data-k="'+k+'">'+k+"</button>":'<span></span>').join("")).join("")+"</div>";
+  let expr="";
+  const ecran=()=>{
+    d.querySelector("#calc-expr").textContent=expr||" ";
+    let v="";
+    try{v=evaluer(expr);}catch(e){v="";}
+    d.querySelector("#calc-res").textContent=v===""||!isFinite(v)?"—":nb(v,6);
+  };
+  const evaluer=e=>{
+    if(!e)return "";
+    let s=e.replace(/,/g,".").replace(/×/g,"*").replace(/÷/g,"/").replace(/−/g,"-")
+      .replace(/π/g,"Math.PI").replace(/√/g,"Math.sqrt").replace(/²/g,"**2")
+      .replace(/EXP/g,"e");
+    if(!/^[0-9+\-*/().e\s]|Math\.(PI|sqrt)/.test(s))return "";
+    if(/[^0-9+\-*/().e\s MathPIsqrt*]/.test(s.replace(/Math\.(PI|sqrt)/g,"")))return "";
+    return Function('"use strict";return ('+s+")")();
+  };
+  d.querySelectorAll(".calc-t").forEach(b=>b.addEventListener("click",()=>{
+    const k=b.dataset.k;
+    if(k==="C")expr="";
+    else if(k==="←")expr=expr.slice(0,-1);
+    else if(k==="=" ){try{const v=evaluer(expr);if(isFinite(v))expr=String(v).replace(".",",");}catch(e){}}
+    else if(k==="x²")expr+="²";
+    else if(k==="√")expr+="√(";
+    else if(k==="EXP")expr+="EXP";
+    else expr+=k;
+    ecran();}));
+  ecran();
+  return d;
+}
+function poserCalculatrice(outils,hote){
+  let ouverte=false,el=null;
+  const b=document.createElement("button");b.className="btn btn-secondaire btn-fin";
+  b.textContent="Calculatrice";
+  b.addEventListener("click",()=>{
+    ouverte=!ouverte;
+    if(ouverte){el=calculatrice();hote.appendChild(el);b.textContent="Fermer la calculatrice";}
+    else{if(el)el.remove();b.textContent="Calculatrice";}});
+  outils.appendChild(b);
+}
+
+/* ---- Séquences de touches écrites à la main, là où l'automatique renonce ----
+   Elles disent exactement ce qu'il faut enfoncer, dans l'ordre, avec le
+   piège de frappe propre à chaque calcul. */
+const AV_EXP="Puissance de dix : touche EXP (ou ×10ˣ). Ne tape jamais « × 1 0 ^ », tu obtiendrais un facteur dix de trop.";
+const AV_PAR="La parenthèse n'est pas décorative : sans elle la calculatrice ne divise que par le premier terme.";
+const AV_RAC="Calcule d'abord tout l'intérieur, PUIS la racine. Sur beaucoup de modèles, √ se tape avant la parenthèse ouvrante.";
+const AV_DEG="Vérifie le mode DEG : cos 60 doit donner exactement 0,5.";
+const AV_INV="Fonction inverse : touche tan⁻¹ ou cos⁻¹, souvent en seconde fonction (SHIFT ou 2nd).";
+const TCH={
+ "prefixe":p=>{const f=p.c.f,v=F(p.v).replace(".",",");
+   if(f>=1000)return {touches:[v,"×",String(f),"="],
+     avert:["Multiplier par "+String(f)+" : tape les zéros à la main, c'est plus sûr que la touche EXP quand on débute."]};
+   const e=Math.round(Math.log10(f));
+   return {touches:[v,"EXP","−"+Math.abs(e),"="],
+     avert:["La touche EXP veut dire « ×10 puissance ». Tape "+v+" EXP −"+Math.abs(e)+", et surtout PAS « × 1 0 ^ » : tu obtiendrais un zéro de trop."]};},
+ "scientifique":p=>({touches:[F(p.a),"EXP",String(p.n),"×",F(p.m),"EXP",String(p.k),"="],avert:[AV_EXP]}),
+ "pythagore":p=>({touches:["√","(",String(p.a),"x²","+",String(p.b),"x²",")","="],avert:[AV_RAC]}),
+ "vecteur-somme":p=>({touches:["√","(",String(p.a),"x²","+",String(p.b),"x²",")","="],avert:[AV_RAC]}),
+ "complexe-module":p=>(p.q==="mod"
+   ?{touches:["√","(",String(p.r),"x²","+",String(p.x),"x²",")","="],avert:[AV_RAC]}
+   :{touches:["tan⁻¹","(",String(p.x),"÷",String(p.r),")","="],avert:[AV_INV,AV_DEG]}),
+ "trigo-angle":p=>({touches:["tan⁻¹","(",String(p.y),"÷",String(p.x),")","="],avert:[AV_INV,AV_DEG]}),
+ "rc-tau":p=>({touches:[String(p.r),"×",String(p.c),"÷","1000","="],
+   avert:["Astuce qui évite les puissances de dix : des kΩ × des nF donnent des microsecondes ; ici on divise par 1000 pour obtenir des millisecondes."]}),
+ "periode":p=>(p.q==="T"?{touches:["1000","÷",String(p.f),"="],avert:[]}
+   :{touches:["2","×","π","×",String(p.f),"="],avert:[]}),
+ "energie-condo":p=>({touches:["0,5","×",String(p.c),"EXP","−6","×",String(p.u),"x²","="],avert:[AV_EXP]}),
+ "reactance":p=>(p.t==="L"
+   ?{touches:["2","×","π","×",String(p.f),"×",F(p.l/1000,4),"="],avert:["Convertis d'abord les mH en H, sinon le résultat est mille fois trop grand."]}
+   :{touches:["1","÷","(","2","×","π","×",String(p.f),"×",String(p.c),"EXP","−6",")","="],avert:[AV_PAR,AV_EXP]}),
+ "puis-mono":p=>({touches:["230","×",F(p.i),"×",F(p.k,2),"="],avert:[]}),
+ "puis-tri":p=>({touches:["√","3","×","400","×",String(p.i),"×",F(p.k,2),"="],
+   avert:["Le √3 se tape en premier : √ puis 3. L'oublier fait perdre 42 % du résultat."]}),
+ "triangle-pqs":p=>(p.q==="S"?{touches:[String(p.p),"÷",F(p.k,2),"="],avert:[]}
+   :p.q==="Q"?{touches:["√","(","(",String(p.p),"÷",F(p.k,2),")","x²","−",String(p.p),"x²",")","="],avert:[AV_RAC,AV_PAR]}
+   :{touches:[String(p.p),"÷",F(p.p/p.k,1),"="],avert:[]}),
+ "neutre":p=>({touches:["√","(","(",String(p.a),"−",F(p.b/2,1),"−",F(p.c/2,1),")","x²","+","(","0,866","×","(",String(p.c),"−",String(p.b),")",")","x²",")","="],
+   avert:[AV_RAC,"Beaucoup de parenthèses : fais le calcul en deux temps, note x puis y, et n'enchaîne qu'ensuite."]}),
+ "transfo-rapport":p=>(p.q==="u2"
+   ?{touches:[String(p.n2),"÷",String(p.n1),"×",String(p.u1),"="],avert:[]}
+   :{touches:[String(p.n2),"÷",String(p.n1),"×",String(p.i2),"="],avert:[]}),
+ "synchronisme":p=>({touches:["60","×",String(p.f),"÷",String(p.p),"="],
+   avert:["Le diviseur est le nombre de PAIRES de pôles, pas le nombre de pôles."]}),
+ "couple":p=>({touches:[String(p.p*1000),"÷","(","2","×","π","×",String(p.n),"÷","60",")","="],avert:[AV_PAR]}),
+ "hacheur":p=>(p.q==="u"?{touches:[F(p.a,2),"×",String(p.ue),"="],avert:[]}
+   :{touches:[F(p.ue*p.a,0),"÷",String(p.ue),"="],avert:[]}),
+ "chute-tension":p=>({touches:[p.t===3?"√":"2",p.t===3?"3":"×",p.t===3?"×":F3(p.m.r),p.t===3?F3(p.m.r):"×",
+   "×",String(p.l),"×",String(p.i),"×",F(p.k,2),"÷",String(p.s),"="],
+   avert:["Coefficient 2 en monophasé, √3 en triphasé : c'est la première chose à identifier."]}),
+ "ddr":p=>({touches:[String(p.ul),"÷",String(p.r),"="],
+   avert:["Le résultat est en ampères : convertis-le en milliampères pour choisir le calibre."]}),
+ "irve-courant":p=>(p.t===1
+   ?{touches:[F(p.p*1000,0),"÷","230","="],avert:[]}
+   :{touches:[F(p.p*1000,0),"÷","(","√","3","×","400",")","="],avert:[AV_PAR]}),
+ "autoconso":p=>({touches:[String(p.auto),"÷",String(p.prod),"×","100","="],
+   avert:["Le dénominateur est ce qui est PRODUIT, pas ce qui est consommé."]}),
+ "equation1":p=>({touches:["(",String(p.c),"−",String(p.b),")","÷",String(p.a),"="],avert:[AV_PAR]}),
+ "pourcent":p=>({touches:[F(p.d),"÷",String(p.U),"×","100","="],avert:[]}),
+ "transfo-rendement":p=>({touches:["—"],avert:["Fais-le en trois temps notés séparément : la puissance utile, les pertes fer, les pertes cuivre. Enchaîner tout d'un coup sur la calculatrice est le meilleur moyen de se perdre."]}),
+ "x-plaque-complete":p=>({touches:[String(p.pu*1000),"÷","(","2","×","π","×",String(p.n),"÷","60",")","="],avert:[AV_PAR]}),
+ "x-impedance-puissance":p=>({touches:["—"],avert:["Trois temps, trois résultats notés : X_L, puis Z, puis I, puis P. Chaque étape se vérifie, un calcul d'un seul jet ne se vérifie pas."]})
+};
+
+/* =========================================================================
    8. ATELIER — on recommence jusqu'à ce que ce soit acquis
    ========================================================================= */
 function lireNombre(s){
@@ -5000,6 +5186,13 @@ function blocCorrection(g,p){
     if(i<liste.length-1)h+='<li class="fl" aria-hidden="true"><span class="tige"></span><span class="tete"></span></li>';
   });
   h+="</ol>";
+  /* comment cela se tape réellement sur une calculatrice */
+  let sq=null;
+  for(const k in GEN)if(GEN[k]===g&&TCH[k]){try{sq=TCH[k](p);}catch(e){sq=null;}break;}
+  for(let i=liste.length-1;i>=0&&!sq;i--)if(liste[i].op)sq=sequenceTouches(liste[i].op);
+  if(sq)h+='<div class="touches"><span class="k">Sur ta calculatrice, tu tapes</span>'+
+    '<div class="tt">'+sq.touches.map(t=>"<kbd>"+t+"</kbd>").join("")+"</div>"+
+    (sq.avert.length?'<p class="av">'+sq.avert.join(" ")+"</p>":"")+"</div>";
   h+='<div class="corr-final"><span class="k">Réponse</span><b>'+colorise(rep)+"</b></div>";
   if(vues.size>=3){
     h+='<div class="corr-legende"><span>Code couleur :</span>'+
@@ -5011,12 +5204,16 @@ const blocPas=liste=>'<ol class="pas-calc">'+liste.map(e=>"<li>"+e.t+
 function rendreAtelier(hote,mi,pi,pas){
   const but=pas.but||3;
   const box=document.createElement("div");box.className="verre atelier";hote.appendChild(box);
-  let serie=0,total=0,justes=0,g=null,p=null,aide=false,idx=0,id=null,palier=1;
+  let serie=0,total=0,justes=0,g=null,p=null,aide=false,idx=0,id=null,palier=1,rejouer=false;
   /* Les notions arrivent DANS L'ORDRE, pas en vrac : on en découvre une,
      puis la suivante. Et la première rencontre se fait avec des nombres
      ronds — le tirage de terrain vient après. */
   const dessine=()=>{
-    id=pas.gen[idx%pas.gen.length];idx++;
+    /* Après une erreur on ne change PAS de notion : on la refait, avec de
+       nouveaux nombres. Changer de sujet juste après un échec, c'est laisser
+       le point faible derrière soi. */
+    if(rejouer)rejouer=false;
+    else{id=pas.gen[idx%pas.gen.length];idx++;}
     const niv=etat.acquis[id]||0;
     /* 0 → nombres ronds · 1 → valeurs de terrain · 2 et plus → exercice composé */
     const compose=niv>=2&&DUR[id]&&GEN[DUR[id]];
@@ -5060,7 +5257,7 @@ function rendreAtelier(hote,mi,pi,pas){
       corps.insertBefore(a,corps.querySelector(".saisie,.choix"));});
     const bn=document.createElement("button");bn.className="btn btn-secondaire btn-fin";bn.textContent="Je ne sais pas";
     bn.addEventListener("click",()=>repondre(false,null,null,null,true));
-    out.appendChild(bi);out.appendChild(bn);corps.appendChild(out);
+    out.appendChild(bi);out.appendChild(bn);poserCalculatrice(out,corps);corps.appendChild(out);
   };
   const repondre=(ok,cont,cible,ordre,abandon)=>{
     total++;if(ok)justes++;
@@ -5070,7 +5267,7 @@ function rendreAtelier(hote,mi,pi,pas){
     if(ordre&&cont){[...cont.children].forEach((b,k)=>{
       if(ordre[k][1]===0)b.dataset.r="bon";else if(b===cible&&!ok)b.dataset.r="mauvais";});}
     if(cible&&cible.tagName==="INPUT")cible.dataset.e=ok?"ok":"ko";
-    serie=ok?serie+1:0;
+    serie=ok?serie+1:0;rejouer=!ok;
     box.querySelectorAll(".perles i").forEach((e,i)=>{e.dataset.e=i<serie?"ok":(!ok&&i===0?"ko":"");});
     const r=document.createElement("div");r.className="retour";r.dataset.e=ok?"ok":"ko";
     const att=g.qcm?g.opts(p)[0]:nb(g.rep(p),g.rep(p)<1?4:2)+(g.u?" "+g.u:"");
@@ -5089,10 +5286,10 @@ function rendreAtelier(hote,mi,pi,pas){
       pied.appendChild(s);
     }else{
       const b=document.createElement("button");b.className="btn btn-principal";
-      b.textContent=ok?"Exercice suivant":"On recommence";
+      b.textContent=ok?"Exercice suivant":"Refaire ce type d'exercice";
       b.addEventListener("click",dessine);pied.appendChild(b);
       const s=document.createElement("span");s.style.color="var(--muted)";s.style.fontSize="13px";
-      s.textContent=ok?"encore "+(but-serie)+" pour valider":"la série repart à zéro — c'est fait exprès";
+      s.textContent=ok?"encore "+(but-serie)+" pour valider":"même notion, nouveaux nombres — on ne passe pas à côté";
       pied.appendChild(s);
       if(mi>=0&&estFait(mi,pi)){const p2=document.createElement("button");p2.className="btn btn-secondaire btn-fin";
         p2.textContent="Passer";p2.addEventListener("click",avancer);pied.appendChild(p2);}
@@ -5948,7 +6145,7 @@ function rendreControle(hote,mi,pi,pas){
     const b=document.createElement("button");b.className="btn btn-principal";
     b.textContent=i<n-1?"Question suivante":"Voir la note";
     b.addEventListener("click",()=>{if(i<n-1){i++;question();}else bilan();});
-    pied.appendChild(b);box.appendChild(pied);b.focus();
+    pied.appendChild(b);poserCalculatrice(pied,box);box.appendChild(pied);b.focus();
   };
   const bilan=()=>{
     const note=justes/n*20, mod=MODULES[mi];
@@ -6338,6 +6535,8 @@ canvas.manip:active{cursor:grabbing}
 .corr-cherche{background:color-mix(in srgb,var(--primary) 9%,var(--surface));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--primary) 26%,transparent)}
 .corr-cherche .k{color:var(--primary)}
 .corr-case .v{font-size:14.5px;font-weight:500;display:block}
+.rappel-u{display:block;font-size:13px;color:var(--muted);margin-top:7px;line-height:1.5}
+.rappel-u b{color:var(--primary);font-family:"IBM Plex Mono",monospace}
 .corr-case .sous{display:block;font-size:12px;color:var(--muted);margin-top:3px}
 .corr-case .v .u{font-style:normal;color:var(--muted);font-weight:400}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
@@ -6456,6 +6655,27 @@ canvas.manip:active{cursor:grabbing}
 .palier[data-e="normal"]{background:var(--surface-2);color:var(--muted)}
 .palier[data-e="dur"]{background:color-mix(in srgb,var(--danger) 13%,var(--surface));color:var(--danger)}
 .autrement{margin-top:14px}
+.touches{border-radius:11px;padding:12px 15px;background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--border)}
+.touches .k{display:block;font-size:10.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:8px}
+.touches .tt{display:flex;flex-wrap:wrap;gap:5px}
+.touches kbd{font-family:"IBM Plex Mono",monospace;font-size:13px;padding:5px 9px;border-radius:7px;
+  background:var(--surface);border:1px solid var(--border);border-bottom-width:2.5px;color:var(--text);min-width:26px;text-align:center}
+.touches .av{margin:9px 0 0;font-size:13px;color:var(--danger);line-height:1.5;max-width:66ch}
+.calcul{margin-top:14px;border-radius:12px;background:var(--surface);box-shadow:inset 0 0 0 1px var(--border);
+  padding:12px;max-width:340px}
+.calc-ecran{background:var(--surface-2);border-radius:9px;padding:10px 12px;margin-bottom:10px;
+  box-shadow:inset 0 0 0 1px var(--border);min-height:56px;display:flex;flex-direction:column;justify-content:center}
+.calc-expr{font-family:"IBM Plex Mono",monospace;font-size:13px;color:var(--muted);
+  word-break:break-all;line-height:1.3}
+.calc-res{font-family:"IBM Plex Mono",monospace;font-size:22px;font-weight:600;color:var(--primary);text-align:right}
+.calc-touches{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.calc-t{padding:11px 0;border-radius:9px;border:1px solid var(--border);background:var(--surface);
+  cursor:pointer;font-family:"IBM Plex Mono",monospace;font-size:14.5px;transition:.12s}
+.calc-t:hover{border-color:var(--primary);background:var(--surface-2)}
+.calc-t.fn{color:var(--danger)}
+.calc-t.eg{background:var(--primary);border-color:var(--primary);color:var(--on-primary);font-weight:600}
+
 .autre-corps{border-radius:10px;padding:13px 16px;
   background:color-mix(in srgb,var(--primary) 8%,var(--surface));
   box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--primary) 24%,transparent)}
