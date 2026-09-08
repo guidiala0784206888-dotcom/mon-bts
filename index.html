@@ -191,11 +191,15 @@ button,input,select{font:inherit;color:inherit}
   background:var(--surface);cursor:pointer;transition:.16s;flex:none}
 .ic:hover{border-color:var(--primary);background:var(--surface-2)}
 .ic svg{width:17px;height:17px;stroke:var(--muted);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-#ouvrir-rail{display:none}
+#ouvrir-rail .barres{transition:transform .2s}
+.ic[aria-pressed="false"] svg{stroke:var(--primary)}
 
 /* ---- Grille ---- */
 .page{max-width:1400px;margin:0 auto;padding:26px 24px 96px;display:grid;
-  grid-template-columns:296px minmax(0,1fr);gap:30px;align-items:start}
+  grid-template-columns:296px minmax(0,1fr);gap:30px;align-items:start;
+  transition:grid-template-columns .28s cubic-bezier(.4,0,.2,1)}
+.page[data-rail="off"]{grid-template-columns:minmax(0,1fr);max-width:1060px}
+.page[data-rail="off"]>.rail{display:none}
 
 /* ---- Rail ---- */
 .rail{position:sticky;top:88px;padding:16px 12px 12px}
@@ -419,11 +423,10 @@ kbd{border:1px solid var(--border);border-bottom-width:2px;border-radius:5px;pad
 .vide p{color:var(--muted);max-width:46ch;margin:0 auto 20px}
 
 @media(max-width:1040px){
-  .page{grid-template-columns:1fr;gap:16px;padding:18px 16px 90px}
-  .rail{position:static;display:none}
-  .rail.ouvert{display:block}
+  .page,.page[data-rail="off"]{grid-template-columns:1fr;gap:16px;padding:18px 16px 90px;max-width:none}
+  .rail{position:static}
+  .page[data-rail="off"]>.rail{display:none}
   .liste{max-height:56vh}
-  #ouvrir-rail{display:grid}
   .barre-in{padding:12px 16px}
   .pastille{display:none}
 }
@@ -446,8 +449,8 @@ kbd{border:1px solid var(--border);border-bottom-width:2px;border-radius:5px;pad
       <button class="ic" id="voir-carnet" title="Carnet de notes" aria-label="Carnet de notes">
         <svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h12v18H6a2 2 0 0 1-2-2z"/><path d="M8 7h8M8 11h8M8 15h5"/></svg>
       </button>
-      <button class="ic" id="ouvrir-rail" title="Parcours" aria-label="Parcours">
-        <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      <button class="ic" id="ouvrir-rail" title="Afficher ou masquer le parcours" aria-label="Afficher ou masquer le parcours" aria-pressed="true">
+        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg>
       </button>
       <button class="ic" id="bascule-theme" title="Clair / sombre" aria-label="Changer de thème">
         <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
@@ -1006,6 +1009,107 @@ Object.assign(GEN,{
  pas(p){return [{t:"Réponse.",op:p.c.b},
   {t:"Sur la sécurité, il n'y a pas de raccourci acceptable : la procédure est écrite parce que chaque étape manquante a déjà coûté un accident."}];}}
 });
+
+/* =========================================================================
+   PREMIER CONTACT AVEC UNE NOTION : DES NOMBRES RONDS
+   La première fois qu'un atelier propose une notion, il la tire ici : des
+   valeurs choisies pour que le calcul tombe juste et que l'attention aille
+   à la MÉTHODE, pas à la calculatrice. Dès que la notion est réussie une
+   fois, on repasse au tirage normal, avec des valeurs de terrain.
+   ========================================================================= */
+const CU={n:"cuivre",r:0.023};
+const FACILE={
+ "prefixe":()=>({c:P([{de:"kΩ",vers:"Ω",f:1e3},{de:"kV",vers:"V",f:1e3},{de:"MW",vers:"W",f:1e6}]),v:P([2,3,4,5,10])}),
+ "scientifique":()=>({a:P([2,3,5]),n:P([1,2,3]),m:P([2,3]),k:P([1,2])}),
+ "pourcent":()=>{const U=P([200,400]),pc=P([2,5,10]);return {U:U,d:U*pc/100};},
+ "proportion":()=>({l:100,s:P([2,5,10]),l2:P([200,300,500])}),
+ "equation1":()=>{const a=P([2,3,5]),x=P([2,4,6,10]),b=P([10,20,-10]);return {a:a,b:b,c:a*x+b};},
+ "systeme2":()=>{const i1=P([15,20,25]),i2=P([5,10]);return {i1:i1,i2:i2,s:i1+i2,d:i1-i2};},
+ "pythagore":()=>{const t=P([[3,4],[6,8],[30,40],[60,80],[5,12]]);return {a:t[0],b:t[1]};},
+ "trigo-cote":()=>P([{h:P([100,200]),a:60,q:"adj"},{h:P([100,200]),a:30,q:"opp"}]),
+ "trigo-angle":()=>{const v=P([10,20,50]);return {x:v,y:v};},
+ "radian":()=>({s:"dr",d:P([90,180,360]),r:3.14}),
+ "carre":()=>({k:P([2,3])}),
+ "vecteur-somme":()=>{const t=P([[30,40],[60,80],[90,120]]);return {a:t[0],b:t[1]};},
+ "complexe-module":()=>{const t=P([[30,40],[60,80]]);return {r:t[0],x:t[1],q:P(["mod","arg"])};},
+ "expo-tau":()=>({n:P([1,3,5])}),
+ "rc-tau":()=>P([{r:10,c:1000},{r:100,c:100}]),
+ "eff-max":()=>({s:P(["em","me"]),u:P([230,400])}),
+ "periode":()=>({f:50,q:P(["T","w"])}),
+ "ohm":()=>{const r=P([10,20,50,100]),i=P([1,2,5]);return {q:P(["U","I","R"]),r:r,i:i,u:+(r*i).toFixed(2)};},
+ "puissance-dc":()=>({c:P(["ui","ri","ur"]),u:P([100,200]),i:P([2,5,10]),r:P([10,20,50])}),
+ "joule":()=>({p:P([1000,2000]),h:P([1,2,5]),j:P([10,100])}),
+ "serie-par":()=>{const t=P([[100,100],[60,30],[20,80]]);return {a:t[0],b:t[1],m:P(["s","p"])};},
+ "diviseur":()=>({u:P([12,24]),a:1000,b:P([1000,3000])}),
+ "resistivite":()=>({m:CU,l:P([100,200]),s:P([10,20])}),
+ "energie-condo":()=>({c:P([100,1000]),u:P([100,200])}),
+ "reactance":()=>({t:P(["L","C"]),f:50,l:100,c:100}),
+ "impedance-rl":()=>({r:30,l:127,f:50}),
+ "puis-mono":()=>({u:230,i:10,k:0.8}),
+ "triangle-pqs":()=>({q:P(["S","Q","k"]),p:P([80,100]),k:0.8}),
+ "compensation":()=>({p:100,a:0.8,b:0.95}),
+ "capacite-comp":()=>({q:50,u:400,c:P(["etoile","triangle"])}),
+ "tri-uv":()=>({s:P(["uv","vu"]),v:230,u:400}),
+ "puis-tri":()=>({u:400,i:P([10,20]),k:0.8}),
+ "courant-moteur":()=>({p:10,k:0.8,e:0.9}),
+ "neutre":()=>({a:20,b:10,c:10}),
+ "transfo-rapport":()=>({q:P(["u2","i1"]),n1:1000,n2:100,u1:400,i2:10}),
+ "transfo-rendement":()=>({s:100,k:1,c:1}),
+ "synchronisme":()=>({f:50,p:P([1,2])}),
+ "glissement":()=>({p:2,ns:1500,n:1440}),
+ "couple":()=>({p:P([3,10]),n:1000}),
+ "hacheur":()=>({q:"u",ue:P([100,400]),a:P([0.25,0.5]),us:100}),
+ "pd3":()=>({u:400}),
+ "chute-tension":()=>({m:CU,l:100,i:10,s:10,k:1,t:1}),
+ "icc":()=>({s:400,u:4}),
+ "ddr":()=>({r:100,ul:50}),
+ "cube":()=>({p:10,n:50}),
+ "pv-tension":()=>({n:10,uoc:40,b:-0.28,th:-5}),
+ "pv-prod":()=>({p:3,h:1000,r:0.8}),
+ "irve-courant":()=>({t:1,p:2.3}),
+ "irve-duree":()=>({b:50,d:20,f:80,p:10,r:0.9}),
+ "autoconso":()=>({prod:4000,cons:6000,auto:2000})
+};
+
+/* =========================================================================
+   EXPLIQUER AUTREMENT
+   Une même notion ne rentre pas par le même chemin chez tout le monde. À
+   chaque notion, un SECOND angle : une image, un ordre de grandeur, un
+   raccourci mental. Il s'ouvre à la demande, et tout seul dès qu'on s'est
+   déjà trompé sur cette notion.
+   ========================================================================= */
+const AUTREMENT={
+ "prefixe":["L'image du zoom","Un préfixe, c'est un objectif d'appareil photo : la scène ne change pas, seul le cadrage change. 4700 µF et 0,0047 F, c'est le même condensateur vu de plus près ou de plus loin. Compte les crans : de µ à l'unité il y a 6 zéros, de m à l'unité il y en a 3."],
+ "scientifique":["Le compteur de zéros","10⁶ veut juste dire « six zéros après le 1 ». Quand tu multiplies, tu empiles les zéros : trois zéros plus deux zéros font cinq zéros. C'est pour ça que les exposants s'additionnent — tu ne fais que compter."],
+ "pourcent":["Le repère du dixième","10 % d'un nombre, c'est ce nombre avec la virgule décalée d'un cran : 10 % de 400 V = 40 V. À partir de là, 5 % c'est la moitié (20 V), 1 % c'est le dixième (4 V). Tu peux estimer n'importe quel pourcentage sans calculatrice, et vérifier ton résultat."],
+ "transpose":["La balance","Une égalité est une balance à deux plateaux. Tout ce que tu fais d'un côté, tu le fais de l'autre, sinon elle penche. Pour retirer un facteur qui MULTIPLIE, tu divises des deux côtés. Il n'y a jamais d'autre geste que celui-là."],
+ "ohm":["Le tuyau d'eau","La tension est la pression, le courant est le débit, la résistance est l'étranglement du tuyau. Plus tu serres le tuyau, moins il coule à pression égale. Si ton résultat dit l'inverse, tu as inversé la division."],
+ "puissance-dc":["Pourquoi trois formules","Il n'y en a qu'une : P = U·I. Les deux autres sortent en remplaçant U par R·I, ou I par U/R. Tu ne mémorises donc qu'une ligne, et tu fabriques les autres au moment où tu en as besoin."],
+ "carre":["L'image du carrelage","Un carré de 2 m de côté fait 4 m², un carré de 3 m en fait 9. Quand une grandeur est au carré, doubler l'entrée quadruple la sortie. C'est pour ça que 6 A dans un câble ne chauffe pas trois fois plus que 2 A, mais neuf fois plus."],
+ "serie-par":["Le péage d'autoroute","En série, les voitures passent par tous les péages l'un après l'autre : les attentes s'ajoutent. En parallèle, on ouvre plusieurs guichets : ça passe mieux qu'avec le meilleur guichet seul. D'où la règle — l'équivalent parallèle est plus petit que la plus petite."],
+ "diviseur":["Le partage au prorata","Le même courant traverse les deux résistances. Celle qui est deux fois plus grande prend donc deux fois plus de tension. Si les deux sont égales, chacune prend la moitié : ce cas te sert de contrôle."],
+ "pythagore":["Le raccourci en diagonale","Marcher 3 rues à l'est puis 4 au nord fait 7 rues. À vol d'oiseau, seulement 5. La diagonale est toujours PLUS COURTE que la somme, et plus longue que chaque côté : ton résultat doit tomber entre les deux."],
+ "vecteur-somme":["Deux personnes qui poussent","Deux forces dans le même sens s'ajoutent. À angle droit, elles ne s'ajoutent plus : la résultante est la diagonale. 60 et 80 ne font pas 140 mais 100 — c'est exactement Pythagore, et c'est ce qui se passe entre R et X."],
+ "eff-max":["Ce que ressent le radiateur","La valeur efficace, ce n'est pas une moyenne : c'est « la tension continue qui chaufferait pareil ». La crête, elle, est ce que doit tenir l'isolant. Deux nombres, deux usages : 230 V pour le calcul, 325 V pour l'isolation."],
+ "reactance":["Le portier qui trie","La bobine laisse passer le lent et bloque le rapide. Le condensateur fait l'inverse. Retiens juste que X_L monte avec la fréquence et X_C descend : le reste du calcul en découle."],
+ "impedance-rl":["L'angle droit obligatoire","R et X ne se cumulent pas parce qu'ils n'agissent pas au même instant : la résistance travaille quand le courant est maximal, la réactance quand il change le plus vite. D'où l'angle droit, d'où Pythagore. Z est toujours entre le plus grand des deux et leur somme."],
+ "triangle-pqs":["Le demi de bière","S est le verre entier, P est la bière, Q est la mousse. Tu paies le verre (le câble, le transfo) mais tu ne bois que la bière. Le cos φ dit quelle proportion du verre est buvable."],
+ "compensation":["Rapprocher la source","Le réactif fait l'aller-retour entre le réseau et le moteur. La batterie de condensateurs le fabrique SUR PLACE : le moteur en reçoit autant, mais le câble ne le transporte plus. C'est pour ça que P ne bouge pas et que le courant baisse."],
+ "tri-uv":["Pourquoi pas le double","Les deux phases ne montent pas en même temps : quand l'une est au maximum, l'autre est déjà redescendue. Leur écart n'atteint donc jamais le double, mais 1,73 fois. Le √3 n'est pas une convention, c'est le décalage de 120° mesuré."],
+ "puis-tri":["Le test des 2 A par kW","En 400 V, un moteur tire environ 2 A par kilowatt. Un 15 kW ≈ 30 A. Fais toujours ce test de tête AVANT le calcul exact : s'il te sort 16 A pour un 15 kW, tu as oublié le √3."],
+ "courant-moteur":["Le sens du rendement","La plaque donne ce qui SORT sur l'arbre. Le réseau doit fournir plus, jamais moins. Donc on DIVISE par le rendement. Si ton courant baisse quand le rendement baisse, tu as multiplié à l'envers."],
+ "synchronisme":["Compter en tours de champ","À 50 Hz, le champ fait 50 tours par seconde s'il y a une seule paire de pôles, soit 3000 tours par minute. Deux paires de pôles : le champ met deux fois plus de temps à faire un tour complet, donc 1500. Tu peux retrouver la formule sans l'apprendre."],
+ "glissement":["La course poursuite","Le rotor court derrière le champ sans jamais le rattraper. Le glissement mesure son retard, en pourcentage. S'il le rattrapait, il ne verrait plus rien bouger et n'aurait plus de couple : c'est le retard qui produit la force."],
+ "couple":["Force ou endurance","La puissance, c'est le couple multiplié par la vitesse. À puissance égale, un moteur lent a beaucoup de couple, un moteur rapide en a peu — comme un vélo : petit braquet, ça pousse fort mais ça n'avance pas vite."],
+ "chute-tension":["Le tuyau d'arrosage","Plus le tuyau est long et fin, moins il arrive d'eau au bout. Longueur et courant font monter la chute, la section la fait baisser. Doubler la section divise la chute par deux : c'est le seul levier vraiment efficace."],
+ "cube":["Pourquoi c'est si rentable","Le ventilateur doit vaincre l'air, et l'air résiste d'autant plus qu'il va vite. Ralentir de 20 % ne fait pas gagner 20 % mais presque la moitié. Retiens l'ordre de grandeur : 0,8³ ≈ 0,5."],
+ "ddr":["Le seuil de sécurité","Le courant de défaut passe dans la terre et y crée une tension. Cette tension ne doit jamais dépasser 50 V. Une terre mauvaise (grande résistance) oblige donc à un différentiel plus sensible : les deux varient en sens inverse."],
+ "expo-tau":["Le café qui refroidit","Ça va vite au début, puis de plus en plus lentement. Après une constante de temps, les deux tiers du chemin sont faits ; après cinq, c'est terminé pour ce qu'on peut mesurer. Les quatre repères 63 / 86 / 95 / 99 remplacent le calcul."],
+ "rc-tau":["Le raccourci des unités","Des kΩ multipliés par des µF donnent directement des millisecondes. 10 kΩ × 1 µF = 10 ms. Cette astuce évite de manipuler les puissances de dix, qui sont l'endroit exact où l'on se trompe."],
+ "capacite-comp":["Pourquoi trois fois moins","En triangle, chaque condensateur voit la pleine tension composée, en étoile seulement U/√3. Comme le réactif produit varie avec le CARRÉ de la tension, le triangle en fournit trois fois plus à capacité égale. D'où trois fois moins de µF à acheter."],
+ "hacheur":["L'interrupteur qui clignote","Si tu allumes une lampe la moitié du temps, elle éclaire comme si elle recevait la moitié de la tension. Le rapport cyclique est cette fraction de temps. C'est pour ça que la sortie ne peut jamais dépasser l'entrée."],
+ "icc":["Ce que dit la U_cc","Une U_cc de 4 % signifie qu'il suffit de 4 % de la tension pour faire circuler le courant nominal dans un secondaire en court-circuit. Sous 100 % de la tension, il passe donc 25 fois plus. Petite U_cc, gros court-circuit."]
+};
 
 /* =========================================================================
    2. LES FIGURES ANIMÉES
@@ -2005,53 +2109,34 @@ Object.assign(ANIM,{
 const MODULES=[
 
 /* ═══════════════ BLOC 1 — LES MATHS DONT TU AS BESOIN ═══════════════ */
-{id:"m01",num:"01",bloc:"Les maths d'abord",titre:"Nombres, unités et préfixes",duree:"20 min",
- resume:"Avant toute formule : lire un nombre, changer d'unité, ne jamais se tromper d'un facteur mille.",
+{id:"m01",num:"01",bloc:"Les maths d'abord",titre:"Lire un nombre et son unité",duree:"12 min",
+ resume:"Une seule idée : un préfixe déplace la virgule. C'est le point de départ de tout le reste.",
  steps:[
- {k:"l",t:"Pourquoi commencer ici",h:`
-  <p>La quasi-totalité des erreurs de calcul en électrotechnique ne sont pas des erreurs de formule. Ce sont des erreurs d'<strong>unité</strong> : des millihenrys traités comme des henrys, des microfarads oubliés, un kilowatt confondu avec un watt.</p>
-  <p>Ce premier module ne contient aucune électricité. Il contient l'outil que tu vas utiliser dans les vingt-trois suivants.</p>
-  <div class="encart e-cle"><span class="chapo">L'idée en une phrase</span><p>Un préfixe n'est rien d'autre qu'une <strong>multiplication par une puissance de dix</strong> collée devant l'unité. Le remplacer par sa valeur, c'est tout le travail.</p></div>`},
- {k:"l",t:"L'échelle des préfixes",h:`
-  <div class="tabl"><table>
-   <tr><th>Préfixe</th><th>Symbole</th><th>Facteur</th><th>Puissance</th><th>Où tu le rencontres</th></tr>
-   <tr><td>giga</td><td class="mono">G</td><td class="mono">1 000 000 000</td><td class="mono">10⁹</td><td>GWh, production annuelle</td></tr>
-   <tr><td>méga</td><td class="mono">M</td><td class="mono">1 000 000</td><td class="mono">10⁶</td><td>MΩ (isolement), MW</td></tr>
-   <tr><td>kilo</td><td class="mono">k</td><td class="mono">1 000</td><td class="mono">10³</td><td>kW, kΩ, kV, kVA</td></tr>
-   <tr><td>—</td><td class="mono">—</td><td class="mono">1</td><td class="mono">10⁰</td><td>V, A, Ω, W, F, H</td></tr>
-   <tr><td>milli</td><td class="mono">m</td><td class="mono">0,001</td><td class="mono">10⁻³</td><td>mA (différentiel), mH, ms</td></tr>
-   <tr><td>micro</td><td class="mono">µ</td><td class="mono">0,000 001</td><td class="mono">10⁻⁶</td><td>µF (condensateurs), µs</td></tr>
-   <tr><td>nano</td><td class="mono">n</td><td class="mono">0,000 000 001</td><td class="mono">10⁻⁹</td><td>nF (filtres, CEM)</td></tr>
-  </table></div>
-  <p>Deux gestes suffisent, et ils sont symétriques :</p>
-  <div class="formule">vers l'unité de base : on MULTIPLIE par le facteur
-depuis l'unité de base : on DIVISE par le facteur<span class="note">4,7 kΩ = 4,7 × 1000 = 4700 Ω · 0,000 022 F = 0,000 022 / 10⁻⁶ = 22 µF</span></div>
-  <div class="resolu"><span class="chapo">Exemple résolu</span>
-   <p>Convertir <span class="mono">150 mH</span> en henrys, puis <span class="mono">0,000 47 F</span> en microfarads.</p>
+ {k:"l",t:"Une valeur, plusieurs écritures",h:`
+  <p>Un condensateur peut porter écrit <span class="mono">4700 µF</span> ou <span class="mono">0,0047 F</span>. C'est le <strong>même composant</strong>. Seule l'écriture change.</p>
+  <figure data-anim="echelle-prefixes"></figure>
+  <div class="encart e-cle"><span class="chapo">Tout ce module tient en une phrase</span><p>Un préfixe n'est pas une nouvelle unité : c'est une <strong>multiplication par une puissance de dix</strong> collée devant l'unité.</p></div>`},
+ {k:"l",t:"Le geste à faire",h:`
+  <p>Trois préfixes couvrent presque tout ce que tu rencontreras :</p>
+  <div class="formule">k = ×1000        m = ÷1000        µ = ÷1 000 000</div>
+  <div class="resolu"><span class="chapo">Un exemple, en deux temps</span>
+   <p>Convertir <span class="mono">4 kΩ</span> en ohms.</p>
    <ol>
-    <li>Le préfixe milli vaut 10⁻³.<span class="op">150 mH = 150 × 10⁻³ = 0,150 H</span></li>
-    <li>Pour aller vers les microfarads, on divise par 10⁻⁶, c'est-à-dire qu'on multiplie par 10⁶.<span class="op">0,000 47 F = 0,000 47 × 10⁶ = 470 µF</span></li>
+    <li>Le préfixe kilo vaut mille.<span class="op">1 kΩ = 1000 Ω</span></li>
+    <li>On multiplie.<span class="op">4 × 1000 = 4000 Ω</span></li>
    </ol>
-   <div class="final">150 mH = 0,15 H     et     0,000 47 F = 470 µF</div></div>
-  <div class="encart e-piege"><span class="chapo">Le contrôle qui te sauve à chaque fois</span><p>Après une conversion, demande-toi si le nombre a grandi ou rétréci dans le bon sens. Passer de <strong>mH vers H</strong> doit donner un nombre PLUS PETIT. Si ton résultat a grandi, tu as multiplié au lieu de diviser.</p></div>`},
- {k:"l",t:"La notation scientifique",h:`
-  <p>Quand les nombres deviennent très grands ou très petits, on les écrit sous la forme d'une mantisse comprise entre 1 et 10, multipliée par une puissance de dix.</p>
-  <div class="formule">a × 10<sup>n</sup>   avec   1 ≤ a &lt; 10<span class="note">4700 Ω = 4,7 × 10³ Ω · 0,000 022 F = 2,2 × 10⁻⁵ F</span></div>
-  <h3>Les deux seules règles de calcul à connaître</h3>
-  <div class="formule">multiplication : 10<sup>a</sup> × 10<sup>b</sup> = 10<sup>a+b</sup>   (les exposants s'ADDITIONNENT)
-division : 10<sup>a</sup> / 10<sup>b</sup> = 10<sup>a−b</sup>   (les exposants se SOUSTRAIENT)</div>
-  <div class="resolu"><span class="chapo">Exemple résolu — et il est très électrotechnique</span>
-   <p>Calculer la réactance d'un condensateur de 47 µF à 50 Hz : <span class="mono">X = 1 / (2πfC)</span>.</p>
-   <ol>
-    <li>On écrit la capacité en notation scientifique.<span class="op">47 µF = 4,7 × 10⁻⁵ F</span></li>
-    <li>On calcule le dénominateur.<span class="op">2π × 50 × 4,7 × 10⁻⁵ = 314 × 4,7 × 10⁻⁵ = 1476 × 10⁻⁵ = 1,476 × 10⁻²</span></li>
-    <li>On inverse.<span class="op">X = 1 / (1,476 × 10⁻²) = 0,677 × 10² = 67,7</span></li>
-   </ol>
-   <div class="final">X ≈ 67,7 Ω</div></div>
-  <div class="encart e-math"><span class="chapo">Sur ta calculatrice</span><p>La touche à utiliser est <span class="mono">EXP</span> ou <span class="mono">×10ˣ</span>, jamais la multiplication suivie de 10. Taper <span class="mono">4,7 × 10 ^ −5</span> fonctionne aussi, mais taper <span class="mono">4,7 E −5</span> est plus rapide et surtout moins risqué avec les parenthèses.</p></div>`},
- {k:"a",t:"Atelier — conversions",gen:["prefixe","scientifique","pourcent"],but:3,h:`
-  <p>Trois exercices justes d'affilée et la notion est acquise. Une erreur remet le compteur à zéro — c'est fait exprès : ce qui compte n'est pas d'avoir bon une fois, c'est de ne plus se tromper.</p>`},
- {k:"c",t:"Contrôle",gen:["prefixe","scientifique","pourcent","proportion"],n:8}
+   <div class="final">4 kΩ = 4000 Ω</div></div>
+  <div class="encart e-piege"><span class="chapo">Le seul contrôle à faire</span><p>Vers une unité <strong>plus petite</strong>, le nombre <strong>grandit</strong>. Si tu passes de kΩ à Ω et que ton résultat a rétréci, tu as divisé au lieu de multiplier.</p></div>`},
+ {k:"a",t:"Atelier — conversions",gen:["prefixe","pourcent"],but:3,h:`
+  <p>Les premiers exercices arrivent avec des nombres ronds. Ils se corsent une fois la notion passée.</p>`},
+ {k:"l",t:"Écrire les très grands et les très petits",h:`
+  <p>Quand les zéros s'accumulent, on écrit le nombre autrement pour ne pas les compter à la main.</p>
+  <div class="formule">4700 = 4,7 × 10³          0,0047 = 4,7 × 10⁻³<span class="note">On garde un chiffre avant la virgule, la puissance de dix fait le reste.</span></div>
+  <p>Sur ta calculatrice, la touche est <span class="mono">EXP</span> ou <span class="mono">×10ˣ</span> — jamais une multiplication écrite à la main par 10.</p>
+  <div class="encart e-cle"><span class="chapo">La seule règle de calcul</span><p>Quand on multiplie deux puissances de dix, les exposants <strong>s'additionnent</strong> : <span class="mono">10³ × 10⁻⁶ = 10⁻³</span>.</p></div>`},
+ {k:"a",t:"Atelier — puissances de dix",gen:["scientifique","prefixe"],but:3,h:`
+  <p>Même principe : on commence doucement.</p>`},
+ {k:"c",t:"Contrôle",gen:["prefixe","pourcent","scientifique"],n:6}
 ]},
 
 {id:"m02",num:"02",bloc:"Les maths d'abord",titre:"Manipuler une formule",duree:"25 min",
@@ -3331,6 +3416,50 @@ Object.assign(GEN,{
   {t:"Ces points reviennent systématiquement en mise en service et en diagnostic : ils font partie des blocs « réalisation » et « maintenance » du référentiel."}];}}
 });
 
+/* ---- L'échelle des préfixes : une valeur, plusieurs écritures ---- */
+Object.assign(ANIM,{
+"echelle-prefixes":{t:"La même valeur, écrite autrement",ratio:2.15,main:true,
+ note:"Fais glisser le curseur sur l'échelle. La valeur ne change pas : c'est la virgule qui se déplace.",
+ regl:[{id:"v",lib:"Valeur de départ",min:1,max:9.9,pas:0.1,val:4.7,u:""},
+       {id:"u",lib:"Grandeur",choix:["farad (F)","ohm (Ω)","volt (V)","henry (H)"],val:0}],
+ etat:{i:3},
+ ECH:[["G",9,"giga"],["M",6,"méga"],["k",3,"kilo"],["",0,"unité"],["m",-3,"milli"],["µ",-6,"micro"],["n",-9,"nano"]],
+ zoneX(w,i){return w*0.10+ (w*0.80)*(i/6);},
+ clic(p,x,y,w,h,e){return this.glisse(p,x,y,w,h,e);},
+ glisse(p,x,y,w,h,e){
+  let best=0,d=1e9;
+  for(let i=0;i<7;i++){const dd=Math.abs(x-this.zoneX(w,i));if(dd<d){d=dd;best=i;}}
+  if(e.i!==best){e.i=best;return true;}return false;},
+ dessin(c,w,h,t,p,e){
+  const U=["F","Ω","V","H"][p.u], base=p.v*Math.pow(10,-3);   /* on part du milli */
+  const y=h*0.40;
+  c.strokeStyle=CB();c.lineWidth=2;
+  c.beginPath();c.moveTo(w*0.08,y);c.lineTo(w*0.92,y);c.stroke();
+  this.ECH.forEach((s,i)=>{
+   const x=this.zoneX(w,i), on=i===e.i;
+   c.strokeStyle=on?C1():CB();c.lineWidth=on?2.6:1.6;
+   c.beginPath();c.moveTo(x,y-9);c.lineTo(x,y+9);c.stroke();
+   if(on){c.fillStyle=C1();c.beginPath();c.arc(x,y,7,0,TAU);c.fill();}
+   mono(c,s[0]||"—",x,y-24,on?15:13,on?C1():CM(),"center");
+   txt(c,s[2],x,y+24,on?11:10,on?CI():CM(),"center",on);
+   mono(c,"10"+(s[1]>=0?"":"⁻")+String(Math.abs(s[1])).split("").map(d=>"⁰¹²³⁴⁵⁶⁷⁸⁹"[+d]).join(""),x,y+40,9.5,CM(),"center");
+  });
+  /* la valeur, écrite avec le préfixe choisi */
+  const ex=this.ECH[e.i][1], val=base/Math.pow(10,ex);
+  const ecrit=(v)=>{
+   if(v>=1e5||(v<1e-3&&v>0))return v.toExponential(3).replace(".",",");
+   let s=v.toFixed(Math.max(0,Math.min(9,6-Math.floor(Math.log10(Math.max(v,1e-12))))));
+   if(s.indexOf(".")>=0)s=s.replace(/0+$/,"").replace(/\.$/,"");
+   return s.replace(".",",");};
+  const txtVal=ecrit(val)+" "+this.ECH[e.i][0]+U;
+  c.font='600 30px "IBM Plex Mono", monospace';c.textAlign="center";c.textBaseline="middle";
+  c.fillStyle=C1();c.fillText(txtVal,w*0.5,h*0.76);
+  const ref=e.i===4?null:"c'est exactement la même chose que "+ecrit(base*1000)+" m"+U;
+  txt(c,ref||"la valeur de base, sans préfixe",w*0.5,h*0.90,12,CM(),"center");
+  txt(c,"une seule valeur physique, sept façons de l'écrire",w*0.5,h*0.10,12,CM(),"center");
+ }}
+});
+
 /* ---- Figures du bloc « transition énergétique » ---- */
 Object.assign(ANIM,{
 "pv-chaine":{t:"La chaîne photovoltaïque, du panneau au réseau",ratio:2.05,
@@ -4216,9 +4345,21 @@ requestAnimationFrame(boucle);
    ========================================================================= */
 const CLE="fil-conducteur-v2";
 const TOTAL=MODULES.reduce((s,m)=>s+m.steps.length,0);
-let etat={pos:{m:0,p:0},faits:{},notes:{},essais:{},vue:"module"};
+let etat={pos:{m:0,p:0},faits:{},notes:{},essais:{},vue:"module",rail:null,erreurs:{},acquis:{}};
 let base=null,tSauve=null;
-function localCharger(){try{const b=localStorage.getItem(CLE);if(b)Object.assign(etat,JSON.parse(b));}catch(e){}}
+function localCharger(){try{const b=localStorage.getItem(CLE);if(b)Object.assign(etat,JSON.parse(b));}catch(e){}
+  etat.erreurs=etat.erreurs||{};etat.acquis=etat.acquis||{};}
+/* Le carnet des erreurs : on retient QUELLE notion résiste, pas seulement
+   la note du module. C'est ce registre qui alimente la révision ciblée. */
+function noter(id,ok){
+  const e=etat.erreurs[id]||(etat.erreurs[id]={j:0,f:0});
+  if(ok)e.j++;else e.f++;e.vu=Date.now();sauver();}
+function faiblesses(n){
+  return Object.keys(etat.erreurs).filter(id=>GEN[id])
+    .map(id=>{const e=etat.erreurs[id],t=e.j+e.f;
+      return {id:id,t:t,f:e.f,taux:t?e.f/t:0,titre:GEN[id].t};})
+    .filter(x=>x.f>=2&&x.taux>=0.34)
+    .sort((a,b)=>b.f*b.taux-a.f*a.taux).slice(0,n||5);}
 function sauver(){
   try{localStorage.setItem(CLE,JSON.stringify(etat));}catch(e){}
   if(!base)return;clearTimeout(tSauve);
@@ -4270,7 +4411,7 @@ function majRail(){
       (nt?'<span class="note-mini">'+nb(nt.note,0)+"</span>":anneau(pct));
     b.addEventListener("click",()=>{
       let p=m.steps.findIndex((_,k)=>!estFait(i,k));voir(i,p<0?0:p);
-      if(innerWidth<=1040)$("#rail").classList.remove("ouvert");});
+      if(innerWidth<=1040){etat.rail="off";poserRail(false);}});
     li.appendChild(b);ul.appendChild(li);
   });
 }
@@ -4328,6 +4469,21 @@ const CIBLES={"A":"un courant, en ampères (A)","kA":"un courant, en kiloampère
  "J":"une énergie, en joules (J)","kWh":"une énergie, en kilowattheures (kWh)",
  "%":"un pourcentage","°":"un angle, en degrés","ms":"une durée, en millisecondes",
  "h":"une durée, en heures","tr/min":"une vitesse, en tours par minute","N·m":"un couple, en newtons-mètres"};
+/* Le second chemin d'explication. Il s'ouvre tout seul si la notion a déjà
+   résisté auparavant : à la deuxième erreur, redonner le même raisonnement
+   n'a aucune chance de mieux marcher. */
+function poserAutrement(hote,id){
+  const a=AUTREMENT[id];if(!a||!hote)return;
+  const e=etat.erreurs[id];const insiste=e&&e.f>=2;
+  const d=document.createElement("div");d.className="autrement";
+  d.innerHTML='<button type="button" class="btn btn-secondaire btn-fin">Explique-moi autrement</button>';
+  const ouvrir=()=>{
+    d.innerHTML='<div class="autre-corps"><span class="chapo">Une autre façon de le voir · '+a[0]+
+      "</span><p>"+a[1]+"</p></div>";};
+  d.querySelector("button").addEventListener("click",ouvrir);
+  hote.appendChild(d);
+  if(insiste)ouvrir();
+}
 function blocCorrection(g,p){
   const liste=g.pas(p),vues=new Set();
   const donnees=(g.enonce(p).match(/<span class='val'>([\s\S]*?)<\/span>/g)||[])
@@ -4361,10 +4517,17 @@ const blocPas=liste=>'<ol class="pas-calc">'+liste.map(e=>"<li>"+e.t+
 function rendreAtelier(hote,mi,pi,pas){
   const but=pas.but||3;
   const box=document.createElement("div");box.className="verre atelier";hote.appendChild(box);
-  let serie=0,total=0,justes=0,g=null,p=null,aide=false;
+  let serie=0,total=0,justes=0,g=null,p=null,aide=false,idx=0,id=null,palier=1;
+  /* Les notions arrivent DANS L'ORDRE, pas en vrac : on en découvre une,
+     puis la suivante. Et la première rencontre se fait avec des nombres
+     ronds — le tirage de terrain vient après. */
   const dessine=()=>{
-    g=GEN[pas.gen[Math.floor(Math.random()*pas.gen.length)]];p=g.tirer();aide=false;
+    id=pas.gen[idx%pas.gen.length];idx++;g=GEN[id];
+    const neuf=!etat.acquis[id]&&FACILE[id];palier=neuf?1:2;
+    p=neuf?FACILE[id]():g.tirer();aide=false;
     box.innerHTML='<div class="at-tete"><span class="t">'+g.t+'</span>'+
+      '<span class="palier" data-e="'+(palier===1?"doux":"normal")+'">'+
+        (palier===1?"pour commencer":"valeurs de terrain")+'</span>'+
       '<span class="d">objectif : '+but+' bonnes réponses d\'affilée</span>'+
       '<span class="perles">'+Array.from({length:but},(_,i)=>'<i data-e="'+(i<serie?"ok":"")+'"></i>').join("")+"</span></div>"+
       '<div class="at-corps"><p class="enonce">'+g.enonce(p)+"</p></div>";
@@ -4403,6 +4566,7 @@ function rendreAtelier(hote,mi,pi,pas){
   };
   const repondre=(ok,cont,cible,ordre,abandon)=>{
     total++;if(ok)justes++;
+    noter(id,ok);if(ok)etat.acquis[id]=1;
     const corps=box.querySelector(".at-corps");
     corps.querySelectorAll("button,input").forEach(x=>{x.disabled=true;});
     if(ordre&&cont){[...cont.children].forEach((b,k)=>{
@@ -4415,11 +4579,12 @@ function rendreAtelier(hote,mi,pi,pas){
     r.innerHTML='<div class="bandeau">'+(ok?"Juste.":abandon?"On regarde ensemble.":"Non — la réponse était "+att)+"</div>"+
       '<div class="detail">'+blocCorrection(g,p)+"</div>";
     corps.appendChild(r);
+    if(!ok)poserAutrement(r.querySelector(".detail"),id);
     const pied=document.createElement("div");pied.className="outils";pied.style.marginTop="16px";
     if(serie>=but){
       const b=document.createElement("button");b.className="btn btn-positif";
       b.textContent="Notion acquise — continuer";
-      b.addEventListener("click",()=>{marquer(mi,pi);avancer();});
+      b.addEventListener("click",()=>{if(mi>=0){marquer(mi,pi);avancer();}else carnet();});
       pied.appendChild(b);
       const s=document.createElement("span");s.style.color="var(--success)";s.style.fontWeight="500";
       s.textContent=but+" d'affilée. "+justes+" bonnes réponses sur "+total+".";
@@ -4431,7 +4596,7 @@ function rendreAtelier(hote,mi,pi,pas){
       const s=document.createElement("span");s.style.color="var(--muted)";s.style.fontSize="13px";
       s.textContent=ok?"encore "+(but-serie)+" pour valider":"la série repart à zéro — c'est fait exprès";
       pied.appendChild(s);
-      if(estFait(mi,pi)){const p2=document.createElement("button");p2.className="btn btn-secondaire btn-fin";
+      if(mi>=0&&estFait(mi,pi)){const p2=document.createElement("button");p2.className="btn btn-secondaire btn-fin";
         p2.textContent="Passer";p2.addEventListener("click",avancer);pied.appendChild(p2);}
     }
     corps.appendChild(pied);
@@ -4476,6 +4641,7 @@ function rendreControle(hote,mi,pi,pas){
   };
   const valider=(ok,cont,cible,ordre)=>{
     resultats[i]=ok;if(ok)justes++;
+    noter(tirage[i],ok);
     box.querySelectorAll("button,input").forEach(x=>{x.disabled=true;});
     if(ordre&&cont){[...cont.children].forEach((b,k)=>{
       if(ordre[k][1]===0)b.dataset.r="bon";else if(b===cible&&!ok)b.dataset.r="mauvais";});}
@@ -4485,6 +4651,7 @@ function rendreControle(hote,mi,pi,pas){
     r.innerHTML='<div class="bandeau">'+(ok?"Juste.":"Non — la réponse était "+att)+"</div>"+
       '<div class="detail">'+blocCorrection(g,p)+"</div>";
     box.appendChild(r);
+    if(!ok)poserAutrement(r.querySelector(".detail"),tirage[i]);
     const pied=document.createElement("div");pied.className="outils";pied.style.marginTop="16px";
     const b=document.createElement("button");b.className="btn btn-principal";
     b.textContent=i<n-1?"Question suivante":"Voir la note";
@@ -4648,6 +4815,23 @@ function guide(){
   sc.appendChild(pied);
   majRail();majGlobal();window.scrollTo({top:0});
 }
+/* Révision ciblée : on ne repasse pas tout le module, on reprend
+   uniquement les notions qui résistent. */
+function revision(){
+  etat.vue="revision";redessins=[];anims=[];
+  const ids=faiblesses(5).map(x=>x.id);
+  const sc=$("#scene");sc.innerHTML="";
+  const tete=document.createElement("header");tete.className="verre entete monte";
+  tete.innerHTML='<div class="sur"><i></i>Révision ciblée</div><h1>Ce qui résiste</h1>'+
+    "<p>"+(ids.length?"Ces notions t'ont fait trébucher plus d'une fois. On les reprend seules, jusqu'à ce qu'elles passent."
+      :"Rien ne résiste pour l'instant : ce tableau se remplit tout seul au fil de tes erreurs.")+"</p>";
+  sc.appendChild(tete);
+  if(ids.length)rendreAtelier(sc,-1,0,{gen:ids,but:3});
+  const pied=document.createElement("nav");pied.className="verre pied";
+  const b=document.createElement("button");b.className="btn btn-secondaire";b.textContent="Retour au carnet";
+  b.addEventListener("click",carnet);pied.appendChild(b);sc.appendChild(pied);
+  majRail();majGlobal();window.scrollTo({top:0});
+}
 function carnet(){
   etat.vue="carnet";redessins=[];anims=[];
   const sc=$("#scene");sc.innerHTML="";
@@ -4680,6 +4864,23 @@ function carnet(){
   html+="</table></div>";
   t.innerHTML=html;sc.appendChild(t);
 
+  const fb=faiblesses(6);
+  if(fb.length){
+    const w=document.createElement("section");w.className="verre feuille monte";
+    w.innerHTML="<h2>Ce qui résiste</h2>"+
+     "<p>Ces notions reviennent dans tes erreurs. Elles sont reprises en priorité, avec une seconde façon de les expliquer.</p>"+
+     '<div class="tabl"><table class="carnet"><tr><th>Notion</th><th>Erreurs</th><th>Réussite</th><th></th></tr>'+
+     fb.map(x=>{const e=etat.erreurs[x.id],t=e.j+e.f,r=Math.round(e.j/t*100);
+      return "<tr><td class='libre'>"+x.titre+"</td><td class='n' data-ton='ko'>"+e.f+"</td>"+
+       "<td class='n' data-ton='"+(r>=60?"ok":"ko")+"'>"+r+" %</td>"+
+       "<td><span class='barre-note'><i style='width:"+r+"%'></i></span></td></tr>";}).join("")+
+     "</table></div>";
+    const o=document.createElement("div");o.className="outils";o.style.marginTop="16px";
+    const bt=document.createElement("button");bt.className="btn btn-principal";
+    bt.textContent="Reprendre ces "+fb.length+" notions";
+    bt.addEventListener("click",revision);o.appendChild(bt);
+    w.appendChild(o);sc.appendChild(w);
+  }
   const s=document.createElement("section");s.className="verre feuille monte";
   const faibles=MODULES.map((m,i)=>[m,i,etat.notes[m.id]]).filter(x=>x[2]&&x[2].note<12);
   s.innerHTML="<h2>Et ensuite</h2>"+
@@ -4746,7 +4947,16 @@ function theme(){
 }
 try{const t=localStorage.getItem(CLE+"-theme");if(t)document.documentElement.dataset.theme=t;}catch(e){}
 $("#bascule-theme").addEventListener("click",theme);
-$("#ouvrir-rail").addEventListener("click",()=>$("#rail").classList.toggle("ouvert"));
+/* Le volet du parcours : un interrupteur, et son état est retenu. */
+function poserRail(v){
+  document.querySelector(".page").dataset.rail=v?"on":"off";
+  $("#ouvrir-rail").setAttribute("aria-pressed",v?"true":"false");
+  $("#ouvrir-rail").title=v?"Masquer le parcours":"Afficher le parcours";
+  requestAnimationFrame(()=>redessins.forEach(f=>f()));
+}
+$("#ouvrir-rail").addEventListener("click",()=>{
+  const v=document.querySelector(".page").dataset.rail!=="on";
+  etat.rail=v?"on":"off";sauver();poserRail(v);});
 $("#voir-carnet").addEventListener("click",carnet);
 $("#voir-guide").addEventListener("click",guide);
 $("#accueil").addEventListener("click",guide);
@@ -4764,6 +4974,7 @@ let tr=null;
 addEventListener("resize",()=>{clearTimeout(tr);tr=setTimeout(()=>redessins.forEach(f=>f()),140);});
 
 localCharger();
+poserRail(etat.rail?etat.rail==="on":innerWidth>1040);
 if(etat.vuGuide)voir(etat.pos.m||0,etat.pos.p||0,true);else guide();
 brancherBase();
 </script>
@@ -4853,6 +5064,17 @@ canvas.manip:active{cursor:grabbing}
   .corr-etapes>li>.n{width:24px;height:24px;font-size:11px}
   .corr-etapes>li.fl .tige{left:11px}.corr-etapes>li.fl .tete{left:6px}}
 .atelier{overflow:hidden}
+.palier{font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+  padding:3px 10px;border-radius:999px}
+.palier[data-e="doux"]{background:color-mix(in srgb,var(--success) 14%,var(--surface));color:var(--success)}
+.palier[data-e="normal"]{background:var(--surface-2);color:var(--muted)}
+.autrement{margin-top:14px}
+.autre-corps{border-radius:10px;padding:13px 16px;
+  background:color-mix(in srgb,var(--primary) 8%,var(--surface));
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--primary) 24%,transparent)}
+.autre-corps .chapo{display:block;font-size:11px;font-weight:600;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--primary);margin-bottom:6px}
+.autre-corps p{margin:0;font-size:14.6px;line-height:1.6;max-width:66ch}
 </style>
 
 </body>
