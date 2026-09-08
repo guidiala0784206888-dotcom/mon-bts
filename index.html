@@ -1278,6 +1278,138 @@ const CABLAGE={
 };
 
 /* =========================================================================
+   LE SIMULATEUR DE CIRCUIT
+   Ce n'est pas une animation préparée : le circuit que tu poses est
+   réellement RÉSOLU, à chaque modification, par analyse nodale modifiée.
+   Continu et alternatif sont traités de la même façon — en alternatif les
+   impédances sont complexes, c'est la seule différence.
+   ========================================================================= */
+
+/* --- arithmétique complexe, réduite au strict nécessaire --- */
+const K=(a,b)=>({a:a,b:b||0});
+const Kadd=(x,y)=>K(x.a+y.a,x.b+y.b);
+const Ksub=(x,y)=>K(x.a-y.a,x.b-y.b);
+const Kmul=(x,y)=>K(x.a*y.a-x.b*y.b,x.a*y.b+x.b*y.a);
+const Kdiv=(x,y)=>{const d=y.a*y.a+y.b*y.b||1e-300;
+  return K((x.a*y.a+x.b*y.b)/d,(x.b*y.a-x.a*y.b)/d);};
+const Kmod=x=>Math.hypot(x.a,x.b);
+const Karg=x=>Math.atan2(x.b,x.a)*180/Math.PI;
+const Kconj=x=>K(x.a,-x.b);
+
+/* --- résolution d'un système linéaire complexe, pivot partiel --- */
+function resoudre(M,V){
+  const n=V.length;
+  for(let i=0;i<n;i++){
+    let p=i,mx=Kmod(M[i][i]);
+    for(let k=i+1;k<n;k++){const m=Kmod(M[k][i]);if(m>mx){mx=m;p=k;}}
+    if(mx<1e-14)continue;
+    if(p!==i){const t=M[p];M[p]=M[i];M[i]=t;const u=V[p];V[p]=V[i];V[i]=u;}
+    for(let k=i+1;k<n;k++){
+      const f=Kdiv(M[k][i],M[i][i]);
+      if(Kmod(f)<1e-18)continue;
+      for(let j=i;j<n;j++)M[k][j]=Ksub(M[k][j],Kmul(f,M[i][j]));
+      V[k]=Ksub(V[k],Kmul(f,V[i]));
+    }
+  }
+  const x=new Array(n).fill(0).map(()=>K(0,0));
+  for(let i=n-1;i>=0;i--){
+    let s=V[i];
+    for(let j=i+1;j<n;j++)s=Ksub(s,Kmul(M[i][j],x[j]));
+    x[i]=Kmod(M[i][i])<1e-14?K(0,0):Kdiv(s,M[i][i]);
+  }
+  return x;
+}
+
+/* --- le catalogue de pièces --- */
+const PIECES={
+ srcdc:{n:"Source continue",sym:"pile",u:"V",par:[{k:"u",lib:"Tension",min:1.5,max:400,pas:0.5,val:12,u:"V"}],src:true},
+ srcac:{n:"Source alternative",sym:"ac",par:[{k:"u",lib:"Tension efficace",min:6,max:400,pas:1,val:230,u:"V"},
+        {k:"f",lib:"Fréquence",min:0,max:400,pas:5,val:50,u:"Hz"}],src:true,ac:true},
+ r:{n:"Résistance",sym:"r",par:[{k:"r",lib:"Valeur",min:1,max:1000,pas:1,val:100,u:"Ω"}]},
+ lampe:{n:"Lampe",sym:"lampe",par:[{k:"r",lib:"Résistance à chaud",min:20,max:2000,pas:10,val:530,u:"Ω"}]},
+ l:{n:"Bobine",sym:"l",par:[{k:"l",lib:"Inductance",min:1,max:1000,pas:1,val:100,u:"mH"}]},
+ c:{n:"Condensateur",sym:"c",par:[{k:"c",lib:"Capacité",min:1,max:2000,pas:1,val:100,u:"µF"}]},
+ inter:{n:"Interrupteur",sym:"sw",par:[{k:"on",lib:"État",choix:["Ouvert","Fermé"],val:1}]},
+ amp:{n:"Ampèremètre",sym:"amp",par:[],mesure:"I"},
+ volt:{n:"Voltmètre",sym:"volt",par:[],mesure:"U"}
+};
+
+/* --- impédance d'une pièce à la pulsation ω --- */
+function impedance(p,w){
+  const t=p.type,v=p.par;
+  if(t==="r"||t==="lampe")return K(Math.max(v.r,1e-3),0);
+  if(t==="l")return K(1e-6,w*v.l/1000);
+  if(t==="c")return w<1e-9?K(1e11,0):K(1e-6,-1/(w*v.c*1e-6));
+  if(t==="inter")return K(v.on?1e-4:1e11,0);
+  if(t==="volt")return K(1e9,0);
+  return null;                    /* sources et ampèremètre : traités à part */
+}
+
+/* --- construction des nœuds par proximité de bornes --- */
+function bornesDe(p){
+  const d=p.rot%2?[[0,-1],[0,1]]:[[-1,0],[1,0]];
+  return d.map(o=>[p.x+o[0],p.y+o[1]]);
+}
+function nœuds(circuit){
+  const parent={},cle=(x,y)=>x+","+y;
+  const trouve=a=>{while(parent[a]!==a)a=parent[a]=parent[parent[a]];return a;};
+  const unir=(a,b)=>{a=trouve(a);b=trouve(b);if(a!==b)parent[b]=a;};
+  const ajoute=k=>{if(!(k in parent))parent[k]=k;};
+  circuit.comps.forEach(p=>bornesDe(p).forEach(b=>ajoute(cle(b[0],b[1]))));
+  circuit.fils.forEach(f=>{ajoute(cle(f[0][0],f[0][1]));ajoute(cle(f[1][0],f[1][1]));
+    unir(cle(f[0][0],f[0][1]),cle(f[1][0],f[1][1]));});
+  const num={},liste=[];
+  for(const k in parent){const r=trouve(k);
+    if(!(r in num)){num[r]=liste.length;liste.push(r);}}
+  return {num:k=>num[trouve(k)],n:liste.length,cle:cle};
+}
+
+/* --- le solveur : analyse nodale modifiée, en complexe --- */
+function simuler(circuit){
+  const N=nœuds(circuit);
+  if(!N.n)return {ok:false,raison:"circuit vide"};
+  const srcs=circuit.comps.filter(p=>PIECES[p.type].src||p.type==="amp");
+  const w=2*Math.PI*(circuit.comps.reduce((f,p)=>p.type==="srcac"?Math.max(f,p.par.f):f,0));
+  const acPresent=circuit.comps.some(p=>p.type==="srcac");
+  const nn=N.n-1, ns=srcs.length, taille=nn+ns;
+  if(taille<=0)return {ok:false,raison:"aucun nœud"};
+  const M=Array.from({length:taille},()=>Array.from({length:taille},()=>K(0,0)));
+  const V=Array.from({length:taille},()=>K(0,0));
+  const idx=(x,y)=>N.num(N.cle(x,y))-1;      /* le nœud 0 est la masse */
+  const met=(i,j,v)=>{if(i>=0&&j>=0)M[i][j]=Kadd(M[i][j],v);};
+
+  circuit.comps.forEach(p=>{
+    const b=bornesDe(p),i=idx(b[0][0],b[0][1]),j=idx(b[1][0],b[1][1]);
+    const Z=impedance(p,w);
+    if(Z){
+      const Y=Kdiv(K(1,0),Z);
+      met(i,i,Y);met(j,j,Y);met(i,j,K(-Y.a,-Y.b));met(j,i,K(-Y.a,-Y.b));
+    }
+  });
+  srcs.forEach((p,s)=>{
+    const b=bornesDe(p),i=idx(b[0][0],b[0][1]),j=idx(b[1][0],b[1][1]),k=nn+s;
+    if(i>=0){M[i][k]=Kadd(M[i][k],K(1,0));M[k][i]=Kadd(M[k][i],K(1,0));}
+    if(j>=0){M[j][k]=Kadd(M[j][k],K(-1,0));M[k][j]=Kadd(M[k][j],K(-1,0));}
+    V[k]=p.type==="amp"?K(0,0):K(p.par.u||0,0);
+  });
+  const x=resoudre(M,V);
+  const pot=k=>{const i=idx(k[0],k[1]);return i<0?K(0,0):x[i];};
+  const res={};
+  circuit.comps.forEach((p,n)=>{
+    const b=bornesDe(p),U=Ksub(pot(b[0]),pot(b[1]));
+    let I;
+    const s=srcs.indexOf(p);
+    if(s>=0)I=x[nn+s];
+    else{const Z=impedance(p,w);I=Z?Kdiv(U,Z):K(0,0);}
+    const S=Kmul(U,Kconj(I));
+    res[p.id]={U:Kmod(U),I:Kmod(I),P:S.a,Q:S.b,
+      phi:Karg(U)-Karg(I),ac:acPresent,
+      sens:(I.a>=0?1:-1)};
+  });
+  return {ok:true,res:res,ac:acPresent,f:w/(2*Math.PI),nb:N.n};
+}
+
+/* =========================================================================
    PREMIER CONTACT AVEC UNE NOTION : DES NOMBRES RONDS
    La première fois qu'un atelier propose une notion, il la tire ici : des
    valeurs choisies pour que le calcul tombe juste et que l'attention aille
@@ -2594,6 +2726,8 @@ tan φ = opposé / adjacent</div>
    </ol>
    <div class="final">I = 8,7 A et R = 26,4 Ω — vérification : P = U²/R = 52 900 / 26,4 = 2004 W ✓</div></div>
   <div class="encart e-piege"><span class="chapo">L'erreur d'inattention type</span><p>« Une résistance de 100 Ω traversée par 2 A dissipe 200 W » — faux. 100 est une résistance, pas une tension : <span class="mono">P = R·I² = 100 × 4 = 400 W</span>. Avant de multiplier deux nombres, vérifie ce que chacun représente.</p></div>`},
+ {k:"z",t:"Monte ton premier circuit",defi:"ohm",h:`
+  <p>Assez de formules. Pose une source et une résistance, relie-les, et regarde le courant s'installer. Le circuit est vraiment calculé : change une valeur, tout se recalcule.</p>`},
  {k:"a",t:"Atelier — Ohm et puissance",gen:["ohm","puissance-dc","joule"],but:4,h:`
   <p>Quatre bonnes réponses d'affilée. Si tu bloques, l'indice te redonne la formule, et la correction détaille chaque ligne du calcul.</p>`},
  {k:"s",t:"Banc d'essai",sim:"ohm",h:`
@@ -2643,6 +2777,12 @@ tan φ = opposé / adjacent</div>
   <div class="formule">tension : U₁ = U · R₁ / (R₁ + R₂)
 courant : I₁ = I · R₂ / (R₁ + R₂)<span class="note">Pour le courant, c'est la résistance de l'AUTRE branche au numérateur : le courant préfère le chemin facile.</span></div>
   <div class="encart e-terrain"><span class="chapo">Où tu vas le rencontrer</span><p>Tout capteur résistif est un pont diviseur : sonde Pt100, thermistance CTN, potentiomètre de consigne 0-10 V d'un variateur. Tu en câbleras beaucoup plus que tu n'en calculeras — mais savoir le calculer, c'est savoir diagnostiquer quand la mesure dérive.</p></div>`},
+ {k:"z",t:"Monter deux résistances en série",defi:"serie",h:`
+  <p>À toi. Le courant doit tomber à 0,06 A.</p>`},
+ {k:"z",t:"Monter deux résistances en parallèle",defi:"parallele",h:`
+  <p>Même matériel, autre câblage. Cette fois c'est la tension qui est commune.</p>`},
+ {k:"z",t:"Mesurer un pont diviseur",defi:"diviseur",h:`
+  <p>Place un voltmètre et vérifie de tes yeux la formule du pont diviseur.</p>`},
  {k:"a",t:"Atelier — réseaux",gen:["serie-par","diviseur","systeme2","ohm"],but:4,h:`<p>Quatre d'affilée. La difficulté n'est pas dans le calcul mais dans l'ordre : réduire d'abord ce qui est le plus « intérieur ».</p>`},
  {k:"c",t:"Contrôle",gen:["serie-par","diviseur","ohm","puissance-dc","systeme2"],n:8}
 ]},
@@ -2794,6 +2934,8 @@ X<sub>C</sub> = 1 / (C · ω) = 1 / (2 · π · f · C)<span class="note">Toutes
   <figure data-anim="resonance"></figure>
   <p>À la fréquence où les deux réactances sont égales, elles s'annulent : le circuit devient purement résistif, le courant passe par un maximum, et la tension aux bornes de L et de C peut atteindre plusieurs fois la tension d'alimentation. C'est ce qui détruit les batteries de condensateurs mal accordées.</p>
   <div class="encart e-piege"><span class="chapo">L'addition interdite</span><p>Écrire <span class="mono">Z = R + X = 12 + 29,8 = 41,8 Ω</span> donne un courant de 5,5 A au lieu de 7,17 A : 23 % d'erreur, et une protection mal dimensionnée. La racine de la somme des carrés n'est pas une coquetterie de professeur.</p></div>`},
+ {k:"z",t:"Mesurer un circuit R-L",defi:"rl",h:`
+  <p>En alternatif cette fois. Le simulateur affiche aussi le déphasage φ : tu vas le voir apparaître dès que la bobine entre en jeu.</p>`},
  {k:"s",t:"Banc d'essai — Fresnel",sim:"impedance",h:`<p>Le triangle se redessine à chaque mouvement. Fais monter la fréquence : regarde le vecteur X grandir et l'angle φ se rapprocher de 90°.</p>`},
  {k:"a",t:"Atelier — impédances",gen:["reactance","impedance-rl","complexe-module","vecteur-somme"],but:4,h:`<p>Quatre d'affilée. Vérifie systématiquement que Z est plus grand que R et que X, mais plus petit que leur somme.</p>`},
  {k:"c",t:"Contrôle",gen:["reactance","impedance-rl","complexe-module","eff-max","periode"],n:9}
@@ -3478,6 +3620,8 @@ triphasé :  ΔU = √3 · ρ · L · I · cos φ / S<span class="note">ρ = 0,0
    <tr><td>Contacteur qui vibre</td><td>tension de commande faible · bague de déphasage cassée · bobine mauvais calibre</td></tr>
    <tr><td>Entrée analogique qui dérive au démarrage d'un variateur</td><td>blindage non repris à 360° · câble de commande le long du câble moteur</td></tr>
   </table></div>`},
+ {k:"z",t:"Banc libre",h:`
+  <p>Pas de consigne ici : monte ce que tu veux, en continu ou en alternatif, et mesure. C'est l'outil pour vérifier une intuition ou refaire un exercice de cours en vrai.</p>`},
  {k:"a",t:"Atelier — terrain",gen:["cube","chute-tension","courant-moteur","neutre","securite"],but:5,h:`<p>Dernier atelier du parcours. Cinq bonnes réponses d'affilée, tous domaines mélangés.</p>`},
  {k:"c",t:"Contrôle final du parcours",gen:["ohm","puis-tri","courant-moteur","compensation","chute-tension","glissement","icc","cube","transfo-rendement","eff-max","ddr","impedance-rl"],n:12}
 ]},
@@ -5085,6 +5229,247 @@ function rendreCablage(hote,mi,pi,pas){
   maj();
 }
 
+/* ---- Les défis du simulateur : monter un circuit et atteindre une cible ---- */
+const DEFIS={
+ "ohm":{t:"Ton premier circuit",
+  c:"Monte une source continue de 12 V et une résistance de 100 Ω, relie-les, et fais circuler le courant.",
+  ind:["Pose la source, pose la résistance, puis passe en mode Fil et relie les deux bornes du haut, puis celles du bas.",
+       "Un circuit doit être FERMÉ : deux fils, pas un seul."],
+  ok:(r,ci)=>{const R=ci.comps.find(p=>p.type==="r");
+    return R&&r.res[R.id]&&Math.abs(r.res[R.id].I-0.12)<0.01;},
+  reussi:"12 V sur 100 Ω donnent 0,12 A. Change la résistance et regarde le courant suivre — c'est la loi d'Ohm, en direct."},
+ "serie":{t:"Deux résistances en série",
+  c:"Monte deux résistances de 100 Ω en série sous 12 V. Le courant doit tomber à 0,06 A.",
+  ind:["En série, le courant traverse les deux l'une après l'autre : une seule boucle.",
+       "Relie la sortie de la première à l'entrée de la seconde, puis boucle sur la source."],
+  ok:(r,ci)=>{const R=ci.comps.filter(p=>p.type==="r");
+    return R.length>=2&&R.every(p=>r.res[p.id]&&Math.abs(r.res[p.id].I-0.06)<0.008);},
+  reussi:"Le courant est COMMUN aux deux, et la tension s'est partagée : 6 V chacune. C'est la définition du montage série."},
+ "parallele":{t:"Deux résistances en parallèle",
+  c:"Monte deux résistances de 100 Ω en parallèle sous 12 V. Chacune doit voir 12 V, et la source débiter 0,24 A.",
+  ind:["En parallèle, les deux entrées sont reliées ensemble, et les deux sorties aussi.",
+       "La tension est COMMUNE, ce sont les courants qui s'ajoutent."],
+  ok:(r,ci)=>{const R=ci.comps.filter(p=>p.type==="r"),S=ci.comps.find(p=>p.type==="srcdc");
+    return R.length>=2&&S&&Math.abs(r.res[S.id].I-0.24)<0.02&&R.every(p=>Math.abs(r.res[p.id].U-12)<0.5);},
+  reussi:"Deux fois 0,12 A qui s'ajoutent : 0,24 A. Et l'ensemble se comporte comme une seule résistance de 50 Ω — plus petite que chacune."},
+ "rl":{t:"Le déphasage, mesuré",
+  c:"En alternatif 230 V / 50 Hz, monte une résistance de 30 Ω en série avec une bobine de 100 mH. Relève le courant.",
+  ind:["Utilise la source ALTERNATIVE, pas la continue.",
+       "L'impédance n'est pas 30 + 31,4 mais √(30² + 31,4²) ≈ 43,4 Ω."],
+  ok:(r,ci)=>{const R=ci.comps.find(p=>p.type==="r"),L=ci.comps.find(p=>p.type==="l");
+    return R&&L&&r.res[R.id]&&Math.abs(r.res[R.id].I-5.3)<0.4;},
+  reussi:"5,3 A, et non 230/61,4 = 3,7 A. Regarde le déphasage φ affiché : la bobine met le courant en retard."},
+ "diviseur":{t:"Mesurer sans perturber",
+  c:"Monte 1 kΩ et 3 kΩ en série sous 12 V, puis place un voltmètre aux bornes de la 3 kΩ. Il doit lire 9 V.",
+  ind:["Le voltmètre se branche EN PARALLÈLE, aux deux bornes du composant à mesurer.",
+       "9 V, c'est 12 × 3000/(1000+3000) : le pont diviseur du module 08."],
+  ok:(r,ci)=>{const V=ci.comps.find(p=>p.type==="volt");
+    return V&&r.res[V.id]&&Math.abs(r.res[V.id].U-9)<0.4;},
+  reussi:"Le voltmètre a une résistance énorme : il mesure sans se servir. Un ampèremètre, lui, se met EN SÉRIE — le brancher en parallèle serait un court-circuit."}
+};
+
+/* ---- Le banc de simulation ---- */
+function rendreSimu(hote,mi,pi,pas){
+  const defi=pas.defi?DEFIS[pas.defi]:null;
+  const ci={comps:[],fils:[]};
+  const COL=17,LIG=9;
+  let seq=0,mode="curseur",aPoser=null,sel=null,filDe=null,res=null,marche=true,indice=0,gagne=false;
+
+  const box=document.createElement("div");box.className="verre simu";hote.appendChild(box);
+  box.innerHTML='<div class="cab-tete"><span class="t">'+(defi?defi.t:"Banc de simulation")+'</span>'+
+    '<span class="cab-compte" id="simu-etat">circuit vide</span></div>'+
+    '<p class="cab-consigne">'+(defi?defi.c:
+      "Pose des composants, relie-les : le circuit est résolu en direct — tensions, courants, puissances, déphasages.")+"</p>";
+  const pal=document.createElement("div");pal.className="simu-palette";box.appendChild(pal);
+  const zone=document.createElement("div");zone.className="cab-zone";box.appendChild(zone);
+  const reglage=document.createElement("div");reglage.className="simu-reglage";box.appendChild(reglage);
+  const tabl=document.createElement("div");tabl.className="simu-mesures";box.appendChild(tabl);
+  const outils=document.createElement("div");outils.className="outils cab-outils";box.appendChild(outils);
+  const msg=document.createElement("div");msg.className="cab-msg";box.appendChild(msg);
+
+  /* ---------- palette ---------- */
+  const boutons=[];
+  const btnPal=(k,lab)=>{const b=document.createElement("button");b.className="simu-piece";b.dataset.k=k;
+    b.textContent=lab;pal.appendChild(b);boutons.push(b);
+    b.addEventListener("click",()=>{
+      if(k==="fil"){mode=mode==="fil"?"curseur":"fil";aPoser=null;filDe=null;}
+      else if(k==="poubelle"){
+        if(sel){const bs=bornesDe(sel);
+          ci.fils=ci.fils.filter(f=>!f.some(e=>bs.some(b2=>b2[0]===e[0]&&b2[1]===e[1])));
+          ci.comps=ci.comps.filter(p=>p!==sel);sel=null;calcul();}
+        mode="curseur";}
+      else if(k==="rotation"){if(sel){const bs=bornesDe(sel);
+          ci.fils=ci.fils.filter(f=>!f.some(e=>bs.some(b2=>b2[0]===e[0]&&b2[1]===e[1])));
+          sel.rot=(sel.rot+1)%2;calcul();}}
+      else{mode="poser";aPoser=k;filDe=null;}
+      majPal();majReglage();rendu();});};
+  for(const k in PIECES)btnPal(k,PIECES[k].n);
+  btnPal("fil","↔ Fil");btnPal("rotation","⟳ Pivoter");btnPal("poubelle","✕ Supprimer");
+  const majPal=()=>boutons.forEach(b=>b.setAttribute("aria-pressed",
+    ((mode==="poser"&&b.dataset.k===aPoser)||(mode==="fil"&&b.dataset.k==="fil"))?"true":"false"));
+
+  /* ---------- calcul + affichages ---------- */
+  function calcul(){
+    res=ci.comps.length?simuler(ci):null;
+    const e=$("#simu-etat");
+    if(e)e.textContent=!ci.comps.length?"circuit vide"
+      :(res&&res.ok?ci.comps.length+" composants · "+(res.ac?nb(res.f,0)+" Hz":"continu"):"circuit incomplet");
+    majMesures();majReglage();verifDefi();rendu();
+  }
+  function majMesures(){
+    if(!res||!res.ok||!ci.comps.length){tabl.innerHTML="";return;}
+    tabl.innerHTML='<div class="tabl"><table class="carnet"><tr><th>Composant</th><th>U</th><th>I</th><th>P</th>'+
+      (res.ac?"<th>φ</th>":"")+"</tr>"+
+      ci.comps.map(p=>{const r=res.res[p.id];if(!r)return"";
+        return "<tr><td class='libre'>"+PIECES[p.type].n+"</td>"+
+         "<td class='n'>"+nb(r.U,2)+" V</td><td class='n'>"+nb(r.I,3)+" A</td>"+
+         "<td class='n'>"+nb(Math.abs(r.P),2)+" W</td>"+
+         (res.ac?"<td class='n'>"+nb(((r.phi+540)%360)-180,1)+"°</td>":"")+"</tr>";}).join("")+
+      "</table></div>";
+  }
+  function majReglage(){
+    reglage.innerHTML="";
+    if(!sel){reglage.innerHTML='<p class="simu-vide">Clique un composant pour régler sa valeur.</p>';return;}
+    const P=PIECES[sel.type];
+    const t=document.createElement("div");t.className="regl";
+    t.innerHTML='<label><span class="lg">Composant<b>'+P.n+"</b></span></label>"+
+      P.par.map(g=>g.choix
+        ? '<label><span class="lg">'+g.lib+'<b>&nbsp;</b></span><div class="segm" data-k="'+g.k+'">'+
+          g.choix.map((o,i)=>'<button type="button" data-v="'+i+'" aria-pressed="'+(i===sel.par[g.k])+'">'+o+"</button>").join("")+"</div></label>"
+        : curs("sp-"+g.k,g.lib,g.min,g.max,g.pas,sel.par[g.k],g.u||"")).join("");
+    reglage.appendChild(t);
+    t.querySelectorAll("input[type=range]").forEach(i=>i.addEventListener("input",()=>{
+      const k=i.id.slice(3);sel.par[k]=+i.value;
+      const v=$("#v-"+i.id);if(v)v.textContent=String(i.value).replace(".",",");calcul();}));
+    t.querySelectorAll(".segm").forEach(sg=>sg.addEventListener("click",ev=>{
+      const b=ev.target.closest("button");if(!b)return;
+      sg.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b));
+      sel.par[sg.dataset.k]=+b.dataset.v;calcul();}));
+  }
+  function verifDefi(){
+    if(!defi||gagne||!res||!res.ok)return;
+    let bon=false;try{bon=defi.ok(res,ci);}catch(e){}
+    if(bon){gagne=true;msg.dataset.e="ok";
+      msg.innerHTML="<b>C'est ça.</b> "+defi.reussi;
+      if(mi>=0)marquer(mi,pi);}
+  }
+
+  /* ---------- dessin ---------- */
+  const rendu=toile(zone,COL/LIG*0.95,(c,w,h)=>{
+    const px=w/COL,py=h/LIG,X=i=>(i+0.5)*px,Y=j=>(j+0.5)*py;
+    c.fillStyle=CB();
+    for(let i=0;i<COL;i++)for(let j=0;j<LIG;j++){c.beginPath();c.arc(X(i),Y(j),1.1,0,TAU);c.fill();}
+    ci.fils.forEach(f=>{c.strokeStyle=CM();c.lineWidth=2.4;c.lineCap="round";
+      c.beginPath();c.moveTo(X(f[0][0]),Y(f[0][1]));c.lineTo(X(f[1][0]),Y(f[1][1]));c.stroke();});
+    ci.comps.forEach(p=>{
+      const bs=bornesDe(p),x=X(p.x),y=Y(p.y),L=Math.min(px,py)*0.95;
+      const r=res&&res.ok&&res.res[p.id];
+      const actif=marche&&r&&r.I>1e-5;
+      c.save();c.translate(x,y);if(p.rot%2)c.rotate(Math.PI/2);
+      c.strokeStyle=p===sel?C1():actif?C2():CI();c.lineWidth=p===sel?2.8:2;
+      c.beginPath();c.moveTo(-px,0);c.lineTo(-L*0.5,0);c.moveTo(L*0.5,0);c.lineTo(px,0);c.stroke();
+      const S=PIECES[p.type].sym;
+      if(S==="r"||S==="lampe"){
+        if(S==="lampe"&&r){const e=Math.min(1,Math.abs(r.P)/40);
+          c.fillStyle=C2();c.globalAlpha=.10+.65*e;c.beginPath();c.arc(0,0,L*0.45,0,TAU);c.fill();c.globalAlpha=1;}
+        if(S==="lampe"){c.beginPath();c.arc(0,0,L*0.4,0,TAU);c.stroke();
+          c.beginPath();c.moveTo(-L*0.28,-L*0.28);c.lineTo(L*0.28,L*0.28);
+          c.moveTo(L*0.28,-L*0.28);c.lineTo(-L*0.28,L*0.28);c.stroke();}
+        else{c.beginPath();c.rect(-L*0.5,-L*0.26,L,L*0.52);c.stroke();}}
+      else if(S==="pile"){c.beginPath();c.moveTo(-L*0.18,-L*0.42);c.lineTo(-L*0.18,L*0.42);
+        c.moveTo(L*0.06,-L*0.2);c.lineTo(L*0.06,L*0.2);c.stroke();
+        c.lineWidth=3.2;c.beginPath();c.moveTo(-L*0.18,-L*0.42);c.lineTo(-L*0.18,L*0.42);c.stroke();}
+      else if(S==="ac"){c.beginPath();c.arc(0,0,L*0.42,0,TAU);c.stroke();
+        c.beginPath();for(let i=-12;i<=12;i++){const t=i/12,xx=t*L*0.28,yy=-Math.sin(t*Math.PI)*L*0.18;
+          i===-12?c.moveTo(xx,yy):c.lineTo(xx,yy);}c.stroke();}
+      else if(S==="l"){c.beginPath();for(let i=0;i<3;i++)c.arc(-L*0.32+i*L*0.32,0,L*0.16,Math.PI,0);c.stroke();}
+      else if(S==="c"){c.beginPath();c.moveTo(-L*0.1,-L*0.38);c.lineTo(-L*0.1,L*0.38);
+        c.moveTo(L*0.1,-L*0.38);c.lineTo(L*0.1,L*0.38);c.stroke();}
+      else if(S==="sw"){c.fillStyle=c.strokeStyle;
+        c.beginPath();c.arc(-L*0.4,0,2.8,0,TAU);c.fill();c.beginPath();c.arc(L*0.4,0,2.8,0,TAU);c.fill();
+        c.beginPath();c.moveTo(-L*0.4,0);c.lineTo(L*0.4,p.par.on?0:-L*0.4);c.stroke();}
+      else if(S==="amp"||S==="volt"){c.beginPath();c.arc(0,0,L*0.42,0,TAU);c.stroke();
+        c.save();if(p.rot%2)c.rotate(-Math.PI/2);
+        c.font='700 14px Rubik, sans-serif';c.textAlign="center";c.textBaseline="middle";
+        c.fillStyle=p===sel?C1():CI();c.fillText(S==="amp"?"A":"V",0,0);c.restore();}
+      c.restore();
+      /* les étiquettes se placent sur le côté quand la pièce est verticale,
+         sinon elles chevauchent les fils qui montent et descendent */
+      const vert=p.rot%2===1;
+      if(r){const t=p.type==="volt"?nb(r.U,1)+" V":p.type==="amp"?nb(r.I,2)+" A"
+          :nb(r.U,1)+" V · "+nb(r.I,2)+" A";
+        if(vert)txt(c,t,x+px*0.62,y+py*0.16,10,actif?C2():CM(),"left",true);
+        else txt(c,t,x,y+py*0.68,10,actif?C2():CM(),"center",true);}
+      const g=PIECES[p.type].par[0];
+      if(g&&!g.choix){const v=nb(p.par[g.k],g.pas<1?1:0)+" "+(g.u||"");
+        if(vert)txt(c,v,x+px*0.62,y-py*0.16,10,CM(),"left");
+        else txt(c,v,x,y-py*0.66,10,CM(),"center");}
+      bs.forEach(bb=>{const pris=filDe&&filDe[0]===bb[0]&&filDe[1]===bb[1];
+        c.fillStyle=pris?C1():CB();c.beginPath();c.arc(X(bb[0]),Y(bb[1]),pris?5.5:4,0,TAU);c.fill();});
+    });
+    if(marche&&res&&res.ok){
+      const ph=performance.now()/900;
+      ci.fils.forEach(f=>{
+        const p1=ci.comps.find(p=>bornesDe(p).some(b=>b[0]===f[0][0]&&b[1]===f[0][1]));
+        const r=p1&&res.res[p1.id];if(!r||r.I<1e-4)return;
+        const t=(ph*Math.min(3,0.35+r.I*1.6))%1;
+        c.fillStyle=C2();c.beginPath();
+        c.arc(X(f[0][0])+(X(f[1][0])-X(f[0][0]))*t,Y(f[0][1])+(Y(f[1][1])-Y(f[0][1]))*t,3.4,0,TAU);c.fill();});
+    }
+    const aide=mode==="poser"?"clique une case pour poser « "+PIECES[aPoser].n+" »"
+      :mode==="fil"?(filDe?"clique la seconde borne":"clique une borne pour tirer un fil"):"";
+    if(aide)txt(c,aide,w/2,h-9,11,C1(),"center",true);
+  });
+
+  /* ---------- gestes ---------- */
+  const cv=zone.querySelector("canvas");cv.classList.add("manip");
+  cv.addEventListener("pointerdown",e=>{
+    const r=cv.getBoundingClientRect(),px=r.width/COL,py=r.height/LIG;
+    const gx=Math.floor((e.clientX-r.left)/px),gy=Math.floor((e.clientY-r.top)/py);
+    if(gx<0||gy<0||gx>=COL||gy>=LIG)return;
+    if(mode==="poser"){
+      if(gx<1||gx>COL-2){msg.dataset.e="aide";msg.innerHTML="<b>Trop près du bord.</b> Un composant occupe trois cases : pose-le plus au centre.";return;}
+      const P=PIECES[aPoser],par={};P.par.forEach(g=>par[g.k]=g.val);
+      const p={id:"p"+(++seq),type:aPoser,x:gx,y:gy,rot:0,par:par};
+      ci.comps.push(p);sel=p;mode="curseur";aPoser=null;majPal();calcul();return;}
+    if(mode==="fil"){
+      let best=null,d=1e9;
+      ci.comps.forEach(p=>bornesDe(p).forEach(b=>{
+        const dd=Math.hypot((b[0]+0.5)*px-(e.clientX-r.left),(b[1]+0.5)*py-(e.clientY-r.top));
+        if(dd<d){d=dd;best=b;}}));
+      if(d>Math.min(px,py)*0.7){filDe=null;rendu();return;}
+      if(!filDe){filDe=best;}
+      else if(filDe[0]===best[0]&&filDe[1]===best[1]){filDe=null;}
+      else{const k=[filDe,best];
+        if(!ci.fils.some(f=>(f[0][0]===k[0][0]&&f[0][1]===k[0][1]&&f[1][0]===k[1][0]&&f[1][1]===k[1][1])||
+                            (f[0][0]===k[1][0]&&f[0][1]===k[1][1]&&f[1][0]===k[0][0]&&f[1][1]===k[0][1])))
+          ci.fils.push(k);
+        filDe=null;calcul();return;}
+      rendu();return;}
+    /* mode curseur : sélectionner, ou retirer un fil */
+    for(let i=0;i<ci.fils.length;i++){const f=ci.fils[i];
+      const mx=(f[0][0]+f[1][0])/2+0.5,my=(f[0][1]+f[1][1])/2+0.5;
+      if(Math.hypot(mx*px-(e.clientX-r.left),my*py-(e.clientY-r.top))<Math.min(px,py)*0.35){
+        ci.fils.splice(i,1);calcul();return;}}
+    const p=ci.comps.find(p=>p.x===gx&&p.y===gy);
+    sel=p||null;majReglage();rendu();
+  });
+
+  /* ---------- boutons ---------- */
+  const bt=(cl,lab,fn)=>{const b=document.createElement("button");b.className="btn "+cl;
+    b.textContent=lab;b.addEventListener("click",fn);outils.appendChild(b);return b;};
+  const bm=bt("btn-positif","Couper le courant",()=>{marche=!marche;
+    bm.textContent=marche?"Couper le courant":"Remettre en marche";rendu();});
+  if(defi)bt("btn-secondaire btn-fin","Indice",()=>{msg.dataset.e="aide";
+    msg.innerHTML="<b>Piste "+(indice+1)+" sur "+defi.ind.length+"</b> "+defi.ind[indice];
+    indice=Math.min(defi.ind.length-1,indice+1);});
+  bt("btn-secondaire btn-fin","Tout effacer",()=>{ci.comps.length=0;ci.fils.length=0;
+    sel=null;filDe=null;gagne=false;msg.dataset.e="";msg.innerHTML="";calcul();});
+  if(mi>=0&&defi)bt("btn-secondaire btn-fin","Passer",()=>{marquer(mi,pi);avancer();});
+  anims.push({t:0,jouer:true,rendu:()=>{if(marche&&res&&res.ok)rendu();}});
+  majPal();calcul();
+}
+
 /* =========================================================================
    9. CONTRÔLE NOTÉ — et la boucle de remédiation
    ========================================================================= */
@@ -5223,7 +5608,7 @@ function voir(m,p,silencieux){
     o.appendChild(ba);o.appendChild(bf);v.appendChild(o);
     sc.appendChild(v);majRail();majGlobal();window.scrollTo({top:0});return;
   }
-  const et=pas.k==="c"?(mod.examen?"Examen de palier":"Contrôle noté"):pas.k==="a"?"Atelier d'exercices":pas.k==="s"?"Banc d'essai":pas.k==="w"?"Câblage à faire":"Leçon";
+  const et=pas.k==="c"?(mod.examen?"Examen de palier":"Contrôle noté"):pas.k==="a"?"Atelier d'exercices":pas.k==="s"?"Banc d'essai":pas.k==="w"?"Câblage à faire":pas.k==="z"?"Simulateur":"Leçon";
   const feuille=document.createElement("section");feuille.className="verre feuille monte";
   feuille.innerHTML='<span class="etiquette">'+et+"</span>"+
     (pas.t?"<h2>"+pas.t+"</h2>":"<h2>Contrôle du module</h2>")+(pas.h||"");
@@ -5232,9 +5617,10 @@ function voir(m,p,silencieux){
   if(pas.k==="s"&&SIMS[pas.sim])SIMS[pas.sim](feuille);
   if(pas.k==="a")rendreAtelier(sc,m,p,pas);
   if(pas.k==="w")rendreCablage(sc,m,p,pas);
+  if(pas.k==="z")rendreSimu(sc,m,p,pas);
   if(pas.k==="c")rendreControle(sc,m,p,pas);
 
-  if(pas.k==="l"||pas.k==="s"||pas.k==="w"){
+  if(pas.k==="l"||pas.k==="s"||pas.k==="w"||pas.k==="z"){
     const pied=document.createElement("nav");pied.className="verre pied";
     const prec=document.createElement("button");prec.className="btn btn-secondaire";prec.textContent="← Précédent";
     prec.disabled=(m===0&&p===0);prec.addEventListener("click",reculer);
@@ -5565,6 +5951,20 @@ canvas.manip:active{cursor:grabbing}
   .corr-etapes>li.fl .tige{left:11px}.corr-etapes>li.fl .tete{left:6px}}
 .atelier{overflow:hidden}
 .cablage{overflow:hidden}
+.simu{overflow:hidden}
+.simu-palette{display:flex;flex-wrap:wrap;gap:7px;padding:15px 22px 0}
+.simu-piece{padding:7px 12px;border-radius:9px;border:1px solid var(--border);background:var(--surface);
+  cursor:pointer;font-size:12.8px;font-weight:500;transition:.15s;white-space:nowrap}
+.simu-piece:hover{border-color:var(--primary);background:var(--surface-2)}
+.simu-piece[aria-pressed="true"]{background:var(--primary);border-color:var(--primary);color:var(--on-primary)}
+.simu-reglage{padding:14px 22px 0}
+.simu-reglage .regl{margin-bottom:0}
+.simu-vide{margin:0;font-size:13.5px;color:var(--muted)}
+.simu-mesures{padding:14px 22px 0}
+.simu-mesures .tabl{margin:0}
+.simu-mesures td.n{font-family:"IBM Plex Mono",monospace;font-weight:500;text-align:right}
+.simu canvas{background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--border)}
+
 .cab-tete{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:16px 22px;border-bottom:1px solid var(--border)}
 .cab-tete .t{font-weight:600;font-size:15px;flex:1;min-width:0}
 .cab-compte{font-family:"IBM Plex Mono",monospace;font-size:12.5px;font-weight:600;color:var(--primary);

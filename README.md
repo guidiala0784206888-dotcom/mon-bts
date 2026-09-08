@@ -11,6 +11,10 @@ du calcul de base jusqu'à la transition énergétique.
 - **Exercices tirés au sort** — les valeurs changent à chaque tour. Une erreur
   déclenche une correction fléchée, étape par étape, avec une couleur par
   grandeur.
+- **Simulateur de circuit** — on pose les composants, on tire les fils, et le
+  circuit est réellement résolu (analyse nodale modifiée, complexe) : continu et
+  alternatif, tensions, courants, puissances, déphasages, en direct. Cinq défis
+  guidés se valident tout seuls.
 - **Câblage à faire soi-même** — quatre bancs : circuit de commande à
   auto-maintien, circuit de puissance, inversion de sens, tableau divisionnaire.
   On relie les bornes, l'app vérifie, puis on met sous tension.
