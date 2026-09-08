@@ -1607,6 +1607,193 @@ function simuler(circuit){
 }
 
 /* =========================================================================
+   LES FICHES
+   Une par module. Cinq cases, toujours les mêmes : l'idée en une phrase,
+   l'image qui la fait comprendre, la formule, le piège, le repère à retenir.
+   Écrites pour être comprises par quelqu'un qui découvre — sans rien
+   sacrifier de ce qu'un examinateur attend.
+   ========================================================================= */
+const FICHES={
+m01:{p:"Un préfixe ne change pas la valeur, il déplace la virgule.",
+ i:"C'est un objectif d'appareil photo : la scène est la même, seul le cadrage change. 4700 µF et 0,0047 F sont le même condensateur.",
+ f:["k = ×1000","m = ÷1000","µ = ÷1 000 000"],
+ g:"Vers une unité plus PETITE, le nombre GRANDIT. Si tu passes de kΩ à Ω et que ton résultat rétrécit, tu as divisé au lieu de multiplier.",
+ r:"volt (V) tension · ampère (A) courant · ohm (Ω) résistance · watt (W) puissance"},
+m02:{p:"Une égalité est une balance : ce qu'on fait d'un côté, on le fait de l'autre.",
+ i:"Ce qui multiplie à gauche divise à droite. Il n'y a pas d'autre geste à connaître.",
+ f:["P = U · I  ⟹  I = P / U","P = R · I²  ⟹  I = √(P / R)"],
+ g:"La racine s'applique à TOUT le rapport : √(P/R), jamais √P / R. Calcule la parenthèse d'abord.",
+ r:"Contrôle par les unités : des watts divisés par des volts donnent des ampères. Sinon, la formule est retournée à l'envers."},
+m03:{p:"Quand une grandeur est au carré, doubler l'entrée quadruple la sortie.",
+ i:"Un carré de 2 m de côté fait 4 m² ; de 3 m, il en fait 9. Six ampères dans un câble ne chauffent pas trois fois plus que deux, mais neuf fois plus.",
+ f:["P = R · I²","W = ½ · C · U²","couple ∝ U²"],
+ g:"Une baisse de 10 % suivie d'une hausse de 10 % ne revient pas au départ : 100 → 90 → 99.",
+ r:"√2 ≈ 1,414 (crête et efficace) · √3 ≈ 1,732 (simple et composée)"},
+m04:{p:"Le cosinus est la projection horizontale, le sinus la projection verticale.",
+ i:"Un vecteur incliné a une ombre au sol (le cosinus) et une ombre sur le mur (le sinus). Rien de plus.",
+ f:["cos φ = adjacent / hypoténuse","tan φ = opposé / adjacent","P = S · cos φ"],
+ g:"Calculatrice en mode DEG. En radians, cos 25 donne 0,991 au lieu de 0,906 — plausible, donc invisible.",
+ r:"cos 0° = 1 · cos 45° = 0,707 · cos 60° = 0,5"},
+m05:{p:"Deux grandeurs déphasées ne s'additionnent pas comme des nombres.",
+ i:"Marcher 3 rues à l'est puis 4 au nord fait 7 rues, mais 5 à vol d'oiseau. Le raccourci, c'est la résultante.",
+ f:["résultante = √(a² + b²)","Z = R + j·X","|Z| = √(R² + X²)"],
+ g:"60 V et 80 V à 90° donnent 100 V, pas 140. L'addition directe se trompe de 40 %.",
+ r:"Partie réelle = ce qui consomme. Partie imaginaire = ce qui échange sans consommer."},
+m06:{p:"Rien ne s'installe instantanément : tout suit une exponentielle.",
+ i:"Un café qui refroidit : vite au début, de plus en plus lentement. Après cinq constantes de temps, c'est fini.",
+ f:["T = 1 / f","ω = 2 · π · f","τ = R · C"],
+ g:"« d/dt » se lit « à quelle vitesse ça change ». Couper le courant d'une bobine rend cette vitesse énorme — d'où la surtension.",
+ r:"50 Hz → 20 ms → 314 rad/s · 63 % à 1τ, 95 % à 3τ, 99 % à 5τ"},
+m07:{p:"La tension pousse, le courant passe, la résistance freine.",
+ i:"Un circuit d'eau : la pression, le débit, l'étranglement du tuyau. Serrer le tuyau réduit le débit à pression égale.",
+ f:["U = R · I","P = U · I = R · I² = U² / R"],
+ g:"« 100 Ω traversés par 2 A dissipent 200 W » est faux : 100 est une résistance, pas une tension. P = R·I² = 400 W.",
+ r:"Un oiseau sur une ligne ne prend rien : ses deux pattes sont au même potentiel."},
+m08:{p:"En série le courant est commun, en parallèle c'est la tension.",
+ i:"Des péages l'un après l'autre : les attentes s'ajoutent. Plusieurs guichets ouverts : ça passe mieux qu'avec le meilleur seul.",
+ f:["série : R₁ + R₂","parallèle : R₁·R₂ / (R₁+R₂)","U₁ = U · R₁ / (R₁+R₂)"],
+ g:"L'équivalent parallèle est TOUJOURS plus petit que la plus petite. Si ton résultat est plus grand, tu as oublié d'inverser.",
+ r:"Trois appareils de 2500, 2200 et 300 W sur 230 V font 21,8 A : un 16 A ne tient pas."},
+m09:{p:"Un câble chauffe au carré du courant, et sa résistance dépend de sa section.",
+ i:"Un tuyau long et fin laisse passer moins d'eau. Doubler la section divise la résistance par deux.",
+ f:["R = ρ · L / S","P = R · I²"],
+ g:"Une borne desserrée ajoute une résistance parasite : 0,05 Ω sous 32 A font 51 W sur un centimètre carré. C'est un début d'incendie.",
+ r:"ρ à chaud : cuivre 0,023 · aluminium 0,037 Ω·mm²/m"},
+m10:{p:"Le condensateur retient la tension, la bobine retient le courant.",
+ i:"Le condensateur est un réservoir qui se remplit ; la bobine est un volant d'inertie qu'on ne peut pas arrêter net.",
+ f:["i = C · du/dt","u = L · di/dt","W = ½ C U²","τ = R·C"],
+ g:"Un bus continu de variateur reste mortel après coupure. On respecte le temps affiché ET on fait une VAT.",
+ r:"Diode de roue libre en continu, circuit RC ou varistance en alternatif."},
+m11:{p:"La sinusoïde est l'ombre d'un vecteur qui tourne.",
+ i:"Une roue qui tourne, éclairée de côté : son ombre monte et descend. C'est exactement la tension du réseau.",
+ f:["u(t) = U max · sin(ωt + φ)","U eff = U max / √2"],
+ g:"La valeur efficace n'est pas une moyenne : c'est « la tension continue qui chaufferait pareil ».",
+ r:"230 V efficaces = 325 V de crête. C'est 325 que l'isolant doit tenir."},
+m12:{p:"En alternatif, la résistance ne suffit plus : il faut l'impédance.",
+ i:"La bobine est un portier qui laisse passer le lent et bloque le rapide ; le condensateur fait l'inverse.",
+ f:["X_L = 2πfL","X_C = 1/(2πfC)","Z = √(R² + X²)"],
+ g:"R et X ne s'additionnent pas : ils agissent à des instants différents, d'où l'angle droit et Pythagore.",
+ r:"L comme lag : dans une bobine, le courant traîne derrière la tension."},
+m13:{p:"P travaille, Q fait l'aller-retour, S est ce qu'il faut dimensionner.",
+ i:"Un demi de bière : S est le verre entier, P la bière, Q la mousse. Tu paies le verre, tu bois la bière.",
+ f:["S² = P² + Q²","cos φ = P / S","Qc = P (tan φ₁ − tan φ₂)"],
+ g:"Jamais de compensation en aval d'un variateur : les condensateurs voient le découpage et se détruisent.",
+ r:"En triangle il faut trois fois moins de capacité qu'en étoile, car Q varie avec U²."},
+m14:{p:"Trois tensions décalées d'un tiers de tour créent un champ qui tourne tout seul.",
+ i:"Trois personnes qui poussent un manège chacune à son tour : le manège tourne sans que personne ne se déplace.",
+ f:["U = √3 · V","P = √3 · U · I · cos φ","I = P / (√3 U cos φ η)"],
+ g:"Coupler en triangle sur 400 V quand la plaque dit 230/400, c'est appliquer √3 fois trop : le moteur brûle en secondes.",
+ r:"En 400 V, un moteur tire environ 2 A par kW. Un 15 kW ≈ 30 A."}
+};
+Object.assign(FICHES,{
+m15:{p:"Un flux commun, deux enroulements, aucune liaison électrique.",
+ i:"Deux roues dentées reliées par une courroie invisible : ce qu'on gagne en vitesse, on le perd en force.",
+ f:["m = N₂/N₁ = U₂/U₁ ≈ I₁/I₂","η = P₂ / (P₂ + P fer + P cuivre)","Icc ≈ In × 100 / Ucc(%)"],
+ g:"Alimenté en continu, il n'y a plus de variation de flux : le primaire ne présente que sa résistance, et il fume.",
+ r:"Essai à vide → pertes fer, constantes. Essai en court-circuit → pertes cuivre, variables."},
+m16:{p:"Le rotor court derrière le champ sans jamais le rattraper.",
+ i:"Une course-poursuite : s'il rattrapait, il ne verrait plus rien bouger et n'aurait plus de force. C'est le retard qui produit le couple.",
+ f:["n_s = 60 f / p","g = (n_s − n) / n_s","T = P / Ω"],
+ g:"Le couple varie avec le CARRÉ de la tension : −10 % de tension, c'est −19 % de couple.",
+ r:"3000 · 1500 · 1000 · 750 tr/min pour 2, 4, 6, 8 pôles. Glissement nominal 2 à 8 %."},
+m17:{p:"Dans une machine à courant continu, le courant fait le couple et la tension fait la vitesse.",
+ i:"Deux boutons indépendants : l'un dose la force, l'autre la vitesse. C'est ce qui la rendait si facile à piloter avant l'électronique.",
+ f:["E = k·Φ·Ω","T = k·Φ·I","U = E + R·I"],
+ g:"Un moteur série à vide s'emballe jusqu'à se détruire. Couper l'excitation d'une machine en marche fait la même chose.",
+ r:"Un moteur à aimants entraîné produit de la tension à ses bornes, variateur éteint. Blocage mécanique obligatoire."},
+m18:{p:"Redresser, hacher, onduler : quatre conversions, quelques interrupteurs.",
+ i:"Un robinet qu'on ouvre et ferme très vite : en moyenne, il coule ce qu'on veut.",
+ f:["⟨Us⟩ = α · Ue","PD3 : U moy ≈ 1,35 · U","ΔI = α(1−α)·Ue/(L·f)"],
+ g:"Un hacheur série est toujours abaisseur : α est entre 0 et 1. Une valeur au-dessus signale une erreur de sens.",
+ r:"Un PD3 sur 400 V donne 540 V continus — le bus de tous les variateurs."},
+m19:{p:"Le variateur maintient U/f constant pour garder le couple.",
+ i:"Une sonorisation dont on baisse le volume et les graves ensemble, pour garder le même équilibre.",
+ f:["U / f = constante","P ∝ N³ sur une machine centrifuge"],
+ g:"Câble moteur blindé, blindage repris à 360°, longueur limitée : au-delà, les réflexions d'onde percent l'isolant.",
+ r:"Ralentir un ventilateur de 20 % économise près de la moitié de l'énergie : 0,8³ ≈ 0,5."},
+m20:{p:"Le régime de neutre ne change pas le danger, il change le chemin du courant.",
+ i:"Une fuite d'eau : selon la plomberie, elle repart doucement au puits (TT), ou d'un coup dans le tuyau principal (TN), ou nulle part (IT).",
+ f:["TT : Uc = R_A · IΔn ≤ U_L","TN : court-circuit franc","IT : alarme, pas de coupure"],
+ g:"Deux différentiels 30 mA en cascade ne sont pas sélectifs. Il faut un type S temporisé en amont.",
+ r:"U_L = 50 V en milieu sec. Courbes : B 3-5 In · C 5-10 In · D 10-20 In."},
+m21:{p:"Une section se calcule sur trois contraintes, et la plus exigeante gagne.",
+ i:"Un tuyau d'arrosage long et fin : l'eau arrive faible au bout. Doubler la section divise la perte par deux.",
+ f:["mono : ΔU = 2ρLI cos φ / S","tri : ΔU = √3 ρLI cos φ / S"],
+ g:"Le coefficient est 2 en monophasé et √3 en triphasé. C'est la première chose à identifier dans l'énoncé.",
+ r:"Limites usuelles : 3 % éclairage, 5 % autres usages."},
+m22:{p:"Ce n'est pas la tension qui tue, c'est le courant et sa durée.",
+ i:"Une main qui se referme toute seule sur le fil : à partir de 10 mA, on ne lâche plus.",
+ f:["séparer · condamner · identifier · vérifier l'absence de tension"],
+ g:"La VAT se contrôle AVANT et APRÈS la mesure. Sans le second contrôle, un appareil en panne donne une absence de tension parfaitement rassurante et fausse.",
+ r:"0,5 mA perception · 10 mA tétanisation · 30 mA seuil du différentiel"},
+m23:{p:"L'auto-maintien : la sortie se réalimente par son propre contact.",
+ i:"Un bouton poussoir d'ascenseur qui reste allumé quand on relâche : quelque chose s'est souvenu.",
+ f:["KM = (S2 + KM) · S̄1 · F̄","Xi = (Xi−1 · rec + Xi) · X̄i+1"],
+ g:"Un arrêt d'urgence se câble en contact à OUVERTURE, et il ne passe jamais par le seul programme automate.",
+ r:"Le ladder d'un GRAFCET, c'est un auto-maintien par étape. Rien d'autre."},
+m24:{p:"Une onde propre devient sale dès qu'une charge n'est pas linéaire.",
+ i:"Un instrument désaccordé dans un orchestre : le son global se déforme, même si chacun joue fort.",
+ f:["THD = √(Σ In²) / I₁"],
+ g:"Les rangs 3, 9, 15 s'ADDITIONNENT dans le neutre au lieu de s'annuler. Un neutre chaud sans phase chaude, c'est eux.",
+ r:"Une self de ligne de 3 à 4 % divise le THD par deux pour un coût dérisoire."},
+m25:{p:"Produire sur place, stocker, recharger, et faire parler les machines.",
+ i:"Un panneau donne plus de tension quand il fait froid, comme une pile qui se raidit au gel.",
+ f:["U_oc(θ) = U_oc(25) × [1 + β(θ−25)]","I = P / (√3 · U)"],
+ g:"Un champ photovoltaïque éclairé est toujours sous tension : on ne le consigne pas, on le sectionne. Et l'arc continu ne s'éteint pas seul.",
+ r:"Borne de recharge : différentiel type B, ou type A avec détection de 6 mA continu."},
+a01:{p:"La masse est en kilogrammes, le poids est une force en newtons.",
+ i:"Sur la Lune, ta masse ne change pas mais ton poids est six fois plus faible.",
+ f:["P = m · g  avec g = 9,81"],
+ g:"Une force en N divisée par une section en mm² donne des MPa. Passer par les m² introduit un facteur un million.",
+ r:"1 kg ≈ 10 N · 1 N/mm² = 1 MPa · 1 bar = 0,1 MPa"},
+a02:{p:"Une force loin de l'axe fait plus tourner qu'une force près de l'axe.",
+ i:"Une clé longue desserre un écrou qu'une clé courte ne bouge pas, avec la même main.",
+ f:["M = F · d","à l'équilibre : F₁d₁ = F₂d₂","M = F · d · sin α"],
+ g:"Un solide en équilibre demande DEUX conditions : somme des forces nulle ET somme des moments nulle. Oublier la seconde est l'erreur classique.",
+ r:"Tirer à 30° du bras ne donne que la moitié du moment."},
+a03:{p:"Ce qui casse une pièce n'est pas la force, c'est la force par millimètre carré.",
+ i:"Marcher sur la neige : avec des chaussures on s'enfonce, avec des raquettes non. Même poids, autre surface.",
+ f:["σ = F / S","R_pe = R_e / s","ΔL = F·L / (E·S)"],
+ g:"Tenir en contrainte ne suffit pas : une pièce longue et comprimée flambe, une pièce sollicitée des millions de fois casse en fatigue.",
+ r:"E acier = 210 000 MPa · aluminium 70 000 · coefficient de sécurité 2 à 4"},
+a04:{p:"Un réducteur échange de la vitesse contre du couple. Il ne crée rien.",
+ i:"Le petit braquet d'un vélo : ça pousse fort dans la côte, mais on n'avance pas vite.",
+ f:["i = Z₂/Z₁","n₂ = n₁ / i","C₂ = C₁ · i · η","P = C · Ω"],
+ g:"Les rendements se MULTIPLIENT. Trois organes à 90 % donnent 73 %, pas 90 %.",
+ r:"Contrôle systématique : la puissance de sortie est toujours plus petite que celle d'entrée."},
+a05:{p:"La plaque donne la puissance sur l'arbre, pas celle prise au réseau.",
+ i:"Le prix affiché en vitrine et le prix payé en caisse : le rendement, c'est la différence.",
+ f:["P absorbée = P utile / η","I = P / (√3 U cos φ η)","P = C · Ω"],
+ g:"Confondre puissance utile et puissance absorbée fausse à la fois le câble, la protection et le calcul de couple.",
+ r:"En 400 V, environ 2 A par kW."},
+a06:{p:"Chauffer coûte de l'énergie ; isoler, c'est freiner ce qui passe.",
+ i:"Une casserole d'eau met bien plus longtemps à chauffer qu'une poêle vide : l'eau encaisse énormément.",
+ f:["Q = m · c · ΔT","Φ = λ · S · ΔT / e","P = Q / t"],
+ g:"L'épaisseur se met en MÈTRES dans le flux, alors que toute la mécanique se fait en millimètres.",
+ r:"eau 4185 · acier 460 J/(kg·K) · λ isolant 0,04 contre acier 45"},
+a07:{p:"Boucler, c'est mesurer ce qu'on obtient et corriger l'écart.",
+ i:"Conduire les yeux ouverts plutôt que fermés : on rectifie en permanence au lieu d'espérer.",
+ f:["écart = consigne − mesure","63 % à 1τ, terminé à 5τ"],
+ g:"Rapidité, précision, stabilité : on ne peut pas avoir les trois au maximum. Trop de gain et le système oscille.",
+ r:"Boucle ouverte : la perturbation est subie. Boucle fermée : elle est corrigée."},
+a08:{p:"Aucune pièce n'est exacte : on l'accepte entre deux limites.",
+ i:"Une porte et son cadre : trop juste elle coince, trop large elle bat. L'intervalle, c'est le jeu acceptable.",
+ f:["maxi = nominale + écart sup","IT = écart sup − écart inf","u = √(u₁² + u₂²)"],
+ g:"Les incertitudes se composent en quadrature, pas en s'additionnant : 2 % et 3 % font 3,6 %, pas 5 %.",
+ r:"Diviser un intervalle de tolérance par deux ne double pas le prix : il explose."},
+a09:{p:"Un vérin pousse d'autant plus fort que sa surface et sa pression sont grandes.",
+ i:"Appuyer avec la paume ou avec un doigt : même force, la pression change tout.",
+ f:["F = p · S","S = π d² / 4","1 MPa = 10 bars"],
+ g:"Toujours calculer la section AVANT tout le reste : c'est là que l'erreur se glisse.",
+ r:"Un réseau d'air d'atelier travaille vers 6 à 7 bars."},
+a10:{p:"Un calcul juste sans unité ni conclusion ne vaut rien.",
+ i:"Un devis sans total : personne ne peut décider avec ça.",
+ f:["coût = matière + (heures × taux) + charges"],
+ g:"La solution la moins chère à l'achat n'est pas toujours la moins chère à l'usage. Le bon calcul est celui du coût global.",
+ r:"Écris toujours : ce que tu cherches, tes hypothèses, le calcul, le résultat AVEC son unité, et la phrase qui répond."}
+});
+
+/* =========================================================================
    LE PARCOURS DU BTS ATI
    Cinq blocs, alignés sur le référentiel : concevoir un cahier des charges,
    vérifier des performances mécaniques et électriques, constituer un
@@ -7050,6 +7237,12 @@ function voir(m,p,silencieux){
     '<span class="tag">Pas <b>'+(p+1)+" / "+mod.steps.length+'</b></span>'+
     '<span class="tag">Validés <b>'+faitsDuModule(m)+"</b></span>"+
     (nt?'<span class="tag">Note <b>'+nb(nt.note,1)+" / 20</b></span>":"")+"</div>";
+  if(FICHES[mod.id]){
+    const bf=document.createElement("button");bf.className="btn btn-secondaire btn-fin";
+    bf.textContent="Fiche du module";bf.style.marginTop="14px";
+    bf.addEventListener("click",()=>fiches(m));
+    tete.querySelector(".infos").appendChild(bf);
+  }
   sc.appendChild(tete);
 
   const frise=document.createElement("div");frise.className="frise";
@@ -7325,6 +7518,47 @@ function menuCompte(){
   sc.appendChild(w);majRail();majGlobal();window.scrollTo({top:0});
 }
 
+/* ---- L'affichage d'une fiche ---- */
+function blocFiche(mod){
+  const f=FICHES[mod.id];if(!f)return "";
+  return '<article class="fiche"><header><span class="fiche-num">'+mod.num+'</span>'+
+    "<h3>"+mod.titre+"</h3></header>"+
+    '<div class="fiche-idee">'+f.p+"</div>"+
+    '<div class="fiche-case fiche-image"><span class="k">L\'image</span><p>'+f.i+"</p></div>"+
+    '<div class="fiche-case fiche-formule"><span class="k">À savoir écrire</span>'+
+      f.f.map(x=>"<code>"+x+"</code>").join("")+"</div>"+
+    '<div class="fiche-case fiche-piege"><span class="k">Le piège</span><p>'+f.g+"</p></div>"+
+    '<div class="fiche-case fiche-repere"><span class="k">Le repère</span><p>'+f.r+"</p></div>"+
+    "</article>";
+}
+function fiches(unSeul){
+  etat.vue="fiches";redessins=[];anims=[];
+  const sc=$("#scene");sc.innerHTML="";
+  const liste=unSeul!==undefined?[MODULES[unSeul]]
+    :MODULES.filter(m=>!m.examen&&FICHES[m.id]&&visible(m));
+  const tete=document.createElement("header");tete.className="verre entete monte";
+  tete.innerHTML='<div class="sur"><i></i>Fiches</div><h1>'+
+    (unSeul!==undefined?"La fiche du module "+MODULES[unSeul].num:"Tes fiches de révision")+"</h1>"+
+    "<p>Une fiche par module, toujours bâtie pareil : l'idée en une phrase, l'image qui la fait comprendre, ce qu'il faut savoir écrire, le piège, et le repère à retenir. C'est ce qu'on relit la veille.</p>";
+  sc.appendChild(tete);
+  const w=document.createElement("section");w.className="verre feuille monte";
+  w.innerHTML=liste.length?liste.map(blocFiche).join(""):"<p class='sourdine'>Aucune fiche pour cette sélection.</p>";
+  sc.appendChild(w);
+  const pied=document.createElement("nav");pied.className="verre pied";
+  const b1=document.createElement("button");b1.className="btn btn-principal";b1.textContent="Retour au parcours";
+  b1.addEventListener("click",()=>voir(etat.pos.m,etat.pos.p));
+  pied.appendChild(b1);
+  if(unSeul!==undefined){const b2=document.createElement("button");b2.className="btn btn-secondaire";
+    b2.textContent="Voir toutes les fiches";b2.addEventListener("click",()=>fiches());pied.appendChild(b2);}
+  const b3=document.createElement("button");b3.className="btn btn-secondaire btn-fin";b3.textContent="Imprimer";
+  b3.addEventListener("click",()=>window.print());pied.appendChild(b3);
+  const as=document.createElement("span");as.className="astuce";
+  as.textContent=liste.length+" fiche"+(liste.length>1?"s":"");
+  pied.appendChild(as);
+  sc.appendChild(pied);
+  majRail();majGlobal();window.scrollTo({top:0});
+}
+
 /* ---- Comment ça marche : la page qu'on voit en arrivant ---- */
 const BLOCS_BTS=[
  ["1 — Étude préliminaire","Interpréter un besoin, modéliser, dimensionner, proposer une architecture","01 à 14, 21"],
@@ -7468,6 +7702,8 @@ function carnet(){
     b.textContent="Reprendre "+m.num;
     const at=m.steps.findIndex(x=>x.k==="a");
     b.addEventListener("click",()=>voir(i,at<0?0:at));out.appendChild(b);});
+  const bfi=document.createElement("button");bfi.className="btn btn-secondaire";bfi.textContent="Mes fiches de révision";
+  bfi.addEventListener("click",()=>fiches());out.appendChild(bfi);
   const cont=document.createElement("button");cont.className="btn btn-principal";
   const suivant=MODULES.findIndex((m,i)=>faitsDuModule(i)<m.steps.length);
   cont.textContent=suivant<0?"Revoir le module 01":"Reprendre au module "+MODULES[suivant<0?0:suivant].num;
@@ -7593,6 +7829,38 @@ canvas.manip{cursor:grab;touch-action:none}
 canvas.manip:active{cursor:grabbing}
 
 /* ---- La correction pas à pas : flèches et code couleur ---- */
+/* ---- Les fiches ---- */
+.fiche{break-inside:avoid;page-break-inside:avoid;margin:0 0 26px;padding-bottom:22px;border-bottom:1px solid var(--border)}
+.fiche:last-child{border-bottom:0;margin-bottom:0}
+.fiche header{display:flex;align-items:baseline;gap:11px;margin-bottom:12px}
+.fiche-num{font-family:"IBM Plex Mono",monospace;font-size:12px;font-weight:600;color:var(--on-primary);
+  background:var(--primary);padding:3px 9px;border-radius:7px;flex:none}
+.fiche header h3{font-size:19px;margin:0}
+.fiche-idee{font-size:17px;font-weight:500;line-height:1.5;color:var(--text);
+  border-left:3px solid var(--primary);padding:2px 0 2px 16px;margin-bottom:14px;max-width:64ch}
+.fiche-case{border-radius:11px;padding:12px 15px;margin-bottom:9px;max-width:70ch}
+.fiche-case .k{display:block;font-size:10.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px}
+.fiche-case p{margin:0;font-size:14.6px;line-height:1.55;color:var(--text)}
+.fiche-image{background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--border)}
+.fiche-image .k{color:var(--muted)}
+.fiche-formule{background:color-mix(in srgb,var(--primary) 8%,var(--surface));
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--primary) 22%,transparent)}
+.fiche-formule .k{color:var(--primary)}
+.fiche-formule code{display:block;font-family:"IBM Plex Mono",monospace;font-size:14.5px;
+  padding:3px 0;color:var(--text)}
+.fiche-piege{background:color-mix(in srgb,var(--danger) 8%,var(--surface));
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--danger) 22%,transparent)}
+.fiche-piege .k{color:var(--danger)}
+.fiche-repere{background:color-mix(in srgb,var(--success) 9%,var(--surface));
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--success) 24%,transparent)}
+.fiche-repere .k{color:var(--success)}
+@media print{
+  .barre,.rail,.pied,.fil{display:none!important}
+  .page{display:block;padding:0}
+  .verre{background:#fff!important;box-shadow:none!important;border:0!important;backdrop-filter:none!important}
+  body{background:#fff!important}
+  .fiche{border-bottom:1px solid #ccc}
+}
 /* ---- Portail : connexion et catalogue ---- */
 .portail{max-width:760px;margin:0 auto;padding:34px 34px 30px}
 .portail-marque{text-align:center;margin-bottom:26px}

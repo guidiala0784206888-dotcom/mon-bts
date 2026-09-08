@@ -29,6 +29,9 @@ dessus, sans jamais fermer le reste.
   boucle est fermée. Les réceptivités sont à compléter avant que le cycle parte.
   Puis **traduction en langage à contacts** : les cinq équations d'étape à
   écrire, et le ladder qui s'exécute barreau par barreau à côté du GRAFCET.
+- **35 fiches de révision** — une par module, toujours bâties pareil : l'idée
+  en une phrase, l'image qui la fait comprendre, ce qu'il faut savoir écrire,
+  le piège, le repère à retenir. Imprimables.
 - **Câblage à faire soi-même** — quatre bancs : circuit de commande à
   auto-maintien, circuit de puissance, inversion de sens, tableau divisionnaire.
   On relie les bornes, l'app vérifie, puis on met sous tension.
