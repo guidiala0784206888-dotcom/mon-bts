@@ -11,7 +11,13 @@ du calcul de base jusqu'à la transition énergétique.
 - **Exercices tirés au sort** — les valeurs changent à chaque tour. Une erreur
   déclenche une correction fléchée, étape par étape, avec une couleur par
   grandeur.
-- **Contrôle noté sur 20** par module. En dessous de 12, retour à l'atelier.
+- **Câblage à faire soi-même** — quatre bancs : circuit de commande à
+  auto-maintien, circuit de puissance, inversion de sens, tableau divisionnaire.
+  On relie les bornes, l'app vérifie, puis on met sous tension.
+- **Trois paliers d'exercices** — nombres ronds, puis valeurs de terrain, puis
+  exercices composés qui enchaînent deux ou trois notions comme en examen.
+- **Contrôle noté sur 20** par module, et un **examen de palier** en fin de bloc :
+  12 sur 20 pour ouvrir le bloc suivant.
 - **Démarrage en douceur** — la première rencontre d'une notion se fait avec des
   nombres ronds ; les valeurs de terrain viennent ensuite.
 - **Mémoire des erreurs** — l'app retient les notions qui résistent, les repropose

@@ -221,6 +221,12 @@ button,input,select{font:inherit;color:inherit}
 .lien[data-etat="fait"] .jeton{background:color-mix(in srgb,var(--success) 16%,var(--surface));color:var(--success);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--success) 40%,transparent)}
 .lien .nom{font-size:13.6px;font-weight:500;line-height:1.3;color:var(--text);min-width:0}
 .lien[data-etat="a-faire"] .nom{color:var(--muted)}
+.lien-examen .jeton{background:color-mix(in srgb,var(--primary) 18%,var(--surface));color:var(--primary);
+  box-shadow:inset 0 0 0 1.5px var(--primary)}
+.lien-examen .nom{font-weight:600}
+.lien-ferme{opacity:.55}
+.lien-ferme .jeton{background:var(--surface-2);color:var(--muted);box-shadow:inset 0 0 0 1px var(--border)}
+.cadenas{font-size:12px;opacity:.7}
 .note-mini{font-family:"IBM Plex Mono",monospace;font-size:11px;font-weight:600;color:var(--success)}
 .anneau{width:22px;height:22px;flex:none}
 .anneau circle{fill:none;stroke-width:3}
@@ -1011,6 +1017,267 @@ Object.assign(GEN,{
 });
 
 /* =========================================================================
+   EXERCICES COMPOSÉS — le troisième palier
+   Ceux-là enchaînent DEUX ou TROIS notions : c'est le format des sujets
+   d'examen, et c'est là qu'on voit si une notion est vraiment acquise ou
+   seulement reconnue. Ils alimentent le dernier palier des ateliers et les
+   examens de fin de bloc.
+   ========================================================================= */
+Object.assign(GEN,{
+"x-moteur-cable":{t:"Du moteur au câble",u:"%",tol:0.04,dur:true,
+ rappel:"I = P/(√3·U·cos φ·η) puis ΔU = √3·ρ·L·I·cos φ/S, enfin ΔU/U×100",
+ tirer(){return {p:P([7.5,11,15,18.5,22]),k:P([0.82,0.85,0.87]),e:P([0.88,0.9,0.92]),
+   l:P([60,80,100,120]),s:P([10,16,25]),m:0.023};},
+ enonce(p){return "Un moteur de <span class='val'>"+F(p.p)+" kW</span> utiles (cos φ <span class='val'>"+F(p.k,2)+"</span>, rendement <span class='val'>"+F(p.e,2)+"</span>) est alimenté en <span class='val'>400 V</span> triphasé par <span class='val'>"+p.l+" m</span> de câble cuivre de <span class='val'>"+p.s+" mm²</span>. Quelle chute de tension, en pourcentage ?";},
+ rep(p){const I=p.p*1000/(SQ3*400*p.k*p.e);return SQ3*p.m*p.l*I*p.k/p.s/400*100;},
+ pas(p){const I=p.p*1000/(SQ3*400*p.k*p.e),dU=SQ3*p.m*p.l*I*p.k/p.s;return [
+  {t:"Premier temps : la plaque donne la puissance UTILE. Le réseau doit fournir plus.",op:"P absorbée = "+F(p.p)+" / "+F(p.e,2)+" = "+F(p.p/p.e,2)+" kW"},
+  {t:"Deuxième temps : le courant de ligne.",op:"I = "+F(p.p/p.e*1000,0)+" / (1,732 × 400 × "+F(p.k,2)+") = "+F(I,2)+" A"},
+  {t:"Troisième temps : la chute dans le câble.",op:"ΔU = 1,732 × 0,023 × "+p.l+" × "+F(I,2)+" × "+F(p.k,2)+" / "+p.s+" = "+F(dU,2)+" V"},
+  {t:"On rapporte à la tension du réseau.",op:F(dU,2)+" / 400 × 100 = "+F(dU/400*100,2)+" %"},
+  {t:"Verdict : "+(dU/400*100<=5?"conforme, on reste sous les 5 % admis":"HORS LIMITE, il faut augmenter la section")+". C'est la question qui tombe en fin de sujet : trois formules enchaînées, et une conclusion à formuler."}];}},
+
+"x-compensation-gain":{t:"Ce que la compensation fait gagner",u:"A",tol:0.03,dur:true,
+ rappel:"S = P/cos φ puis I = S/(√3·U) — avant et après",
+ tirer(){return {p:P([80,120,150,200]),a:P([0.7,0.75,0.78]),b:P([0.95,0.98])};},
+ enonce(p){return "Une installation de <span class='val'>"+p.p+" kW</span> sous <span class='val'>400 V</span> passe d'un cos φ de <span class='val'>"+F(p.a,2)+"</span> à <span class='val'>"+F(p.b,2)+"</span>. De combien d'ampères le courant de ligne diminue-t-il ?";},
+ rep(p){return (p.p/p.a-p.p/p.b)*1000/(SQ3*400);},
+ pas(p){const S1=p.p/p.a,S2=p.p/p.b,I1=S1*1000/(SQ3*400),I2=S2*1000/(SQ3*400);return [
+  {t:"La puissance ACTIVE ne change pas : compenser ne modifie pas le travail fourni.",op:"P = "+p.p+" kW avant comme après"},
+  {t:"Puissance apparente avant.",op:"S₁ = "+p.p+" / "+F(p.a,2)+" = "+F(S1,1)+" kVA"},
+  {t:"Puissance apparente après.",op:"S₂ = "+p.p+" / "+F(p.b,2)+" = "+F(S2,1)+" kVA"},
+  {t:"Les deux courants de ligne.",op:"I₁ = "+F(I1,1)+" A     I₂ = "+F(I2,1)+" A"},
+  {t:"La différence.",op:F(I1,1)+" − "+F(I2,1)+" = "+F(I1-I2,1)+" A"},
+  {t:"Soit "+F((I1-I2)/I1*100,0)+" % de courant en moins dans le câble, et des pertes divisées par "+F((I1/I2)*(I1/I2),2)+" puisqu'elles suivent le carré."}];}},
+
+"x-transfo-icc":{t:"Du transformateur au pouvoir de coupure",u:"kA",tol:0.04,dur:true,
+ rappel:"In = S/(√3·U) puis Icc = In × 100 / Ucc(%)",
+ tirer(){return {s:P([250,400,630,800]),u:P([4,4.5,5,6])};},
+ enonce(p){return "Un poste comporte un transformateur de <span class='val'>"+p.s+" kVA</span>, <span class='val'>400 V</span> au secondaire, de tension de court-circuit <span class='val'>"+F(p.u,1)+" %</span>. Quel pouvoir de coupure minimal pour le disjoncteur de tête, en kA ?";},
+ rep(p){return (p.s*1000/(SQ3*400))*100/p.u/1000;},
+ pas(p){const In=p.s*1000/(SQ3*400);return [
+  {t:"Le courant nominal du transformateur.",op:"I_n = "+(p.s*1000)+" / (1,732 × 400) = "+F(In,0)+" A"},
+  {t:"La tension de court-circuit dit quelle fraction de la tension suffit à faire passer I_n dans un secondaire en court-circuit.",op:"I_cc = I_n × 100 / U_cc"},
+  {t:"On remplace.",op:F(In,0)+" × 100 / "+F(p.u,1)+" = "+F(In*100/p.u,0)+" A"},
+  {t:"En kiloampères.",op:"I_cc ≈ "+F(In*100/p.u/1000,2)+" kA"},
+  {t:"Le disjoncteur doit avoir un pouvoir de coupure SUPÉRIEUR à cette valeur. On choisira donc le calibre normalisé au-dessus : un appareil trop faible n'ouvre pas, il explose."}];}},
+
+"x-plaque-complete":{t:"Tout tirer d'une plaque",u:"N·m",tol:0.03,dur:true,
+ rappel:"n_s au-dessus de n → g ; Ω = 2πn/60 ; T = P/Ω",
+ tirer(){const p=P([1,2,3]),ns=3000/p;return {p:p,ns:ns,n:Math.round(ns*(1-P([0.03,0.04,0.05]))),
+   pu:P([4,5.5,7.5,11,15])};},
+ enonce(p){return "Plaque : <span class='val'>"+F(p.pu)+" kW</span>, <span class='val'>"+p.n+" tr/min</span>, <span class='val'>400 V</span>, 50 Hz. Quel est le couple nominal sur l'arbre ?";},
+ rep(p){return p.pu*1000/(2*Math.PI*p.n/60);},
+ pas(p){const O=2*Math.PI*p.n/60;return [
+  {t:"On repère d'abord la vitesse de synchronisme : la valeur normalisée juste AU-DESSUS de "+p.n+".",op:"n_s = "+p.ns+" tr/min ⟹ "+(2*p.p)+" pôles"},
+  {t:"Au passage, le glissement.",op:"g = ("+p.ns+" − "+p.n+") / "+p.ns+" = "+F((p.ns-p.n)/p.ns*100,1)+" %"},
+  {t:"La vitesse angulaire, en radians par seconde.",op:"Ω = 2π × "+p.n+" / 60 = "+F(O,2)+" rad/s"},
+  {t:"Le couple.",op:"T = "+(p.pu*1000)+" / "+F(O,2)+" = "+F(p.pu*1000/O,2)+" N·m"},
+  {t:"Contrôle de tête : vers 1500 tr/min, T ≈ 6,5 × P(kW). Ici cela donnerait "+F(p.pu*6.5,0)+" N·m, du bon ordre de grandeur."}];}},
+
+"x-rc-temps":{t:"Combien de temps pour se charger",u:"ms",tol:0.04,dur:true,
+ rappel:"τ = R·C, puis 95 % à 3τ et 99 % à 5τ",
+ tirer(){return {r:P([1,2,5,10]),c:P([100,220,470]),q:P([3,5])};},
+ enonce(p){return "Un condensateur de <span class='val'>"+p.c+" µF</span> se charge à travers <span class='val'>"+p.r+" kΩ</span>. Au bout de combien de millisecondes atteint-il <span class='val'>"+(p.q===3?"95":"99")+" %</span> de sa tension finale ?";},
+ rep(p){return p.r*1000*p.c*1e-6*p.q*1000;},
+ pas(p){const tau=p.r*1000*p.c*1e-6;return [
+  {t:"On convertit en unités de base.",op:p.r+" kΩ = "+(p.r*1000)+" Ω     "+p.c+" µF = "+(p.c*1e-6).toExponential(2)+" F"},
+  {t:"La constante de temps.",op:"τ = "+(p.r*1000)+" × "+(p.c*1e-6).toExponential(2)+" = "+F(tau*1000,2)+" ms"},
+  {t:(p.q===3?"95 % correspond à 3 constantes de temps.":"99 % correspond à 5 constantes de temps."),op:p.q+" × "+F(tau*1000,2)+" = "+F(tau*p.q*1000,1)+" ms"},
+  {t:"Raccourci qui évite les puissances de dix : des kΩ multipliés par des µF donnent directement des millisecondes. "+p.r+" × "+p.c+" / 1000 = "+F(tau*1000,2)+" ms."}];}},
+
+"x-impedance-puissance":{t:"De l'impédance à la puissance",u:"W",tol:0.04,dur:true,
+ rappel:"X_L = 2πfL ; Z = √(R²+X²) ; I = U/Z ; P = R·I²",
+ tirer(){return {r:P([15,20,30,40]),l:P([50,80,100,120]),u:230};},
+ enonce(p){return "Un enroulement de <span class='val'>"+p.r+" Ω</span> et <span class='val'>"+p.l+" mH</span> est alimenté sous <span class='val'>230 V</span> à 50 Hz. Quelle puissance ACTIVE consomme-t-il ?";},
+ rep(p){const X=2*Math.PI*50*p.l/1000,Z=Math.hypot(p.r,X),I=230/Z;return p.r*I*I;},
+ pas(p){const X=2*Math.PI*50*p.l/1000,Z=Math.hypot(p.r,X),I=230/Z;return [
+  {t:"La réactance de la bobine.",op:"X_L = 2π × 50 × "+F(p.l/1000,3)+" = "+F(X,2)+" Ω"},
+  {t:"L'impédance, par Pythagore — jamais par addition.",op:"Z = √("+p.r+"² + "+F(X,2)+"²) = "+F(Z,2)+" Ω"},
+  {t:"Le courant.",op:"I = 230 / "+F(Z,2)+" = "+F(I,2)+" A"},
+  {t:"Seule la RÉSISTANCE consomme : la réactance ne fait qu'échanger.",op:"P = R · I² = "+p.r+" × "+F(I,2)+"² = "+F(p.r*I*I,1)+" W"},
+  {t:"Contrôle : la puissance apparente vaut S = 230 × "+F(I,2)+" = "+F(230*I,0)+" VA, et cos φ = "+F(p.r/Z,3)+". On retrouve bien P = S · cos φ."}];}},
+
+"x-cout":{t:"Ce que ça coûte à l'année",u:"€",tol:0.03,dur:true,
+ rappel:"kWh = kW × heures, puis × prix du kWh",
+ tirer(){return {p:P([1500,2200,3000,5500]),h:P([4,6,8,10]),j:P([200,250,300]),e:P([0.18,0.2,0.25])};},
+ enonce(p){return "Un équipement de <span class='val'>"+p.p+" W</span> fonctionne <span class='val'>"+p.h+" h</span> par jour, <span class='val'>"+p.j+" jours</span> par an, au prix de <span class='val'>"+F(p.e,2)+" € le kWh</span>. Quel coût annuel ?";},
+ rep(p){return p.p/1000*p.h*p.j*p.e;},
+ pas(p){const kwh=p.p/1000*p.h*p.j;return [
+  {t:"On passe en kilowatts.",op:p.p+" W = "+F(p.p/1000,3)+" kW"},
+  {t:"Le nombre d'heures dans l'année.",op:p.h+" × "+p.j+" = "+(p.h*p.j)+" h"},
+  {t:"L'énergie consommée.",op:F(p.p/1000,3)+" × "+(p.h*p.j)+" = "+F(kwh,0)+" kWh"},
+  {t:"Le coût.",op:F(kwh,0)+" × "+F(p.e,2)+" = "+F(kwh*p.e,2)+" €"},
+  {t:"C'est ce calcul qui justifie un investissement : un variateur qui économise 40 % rend ici "+F(kwh*p.e*0.4,0)+" € par an."}];}},
+
+"x-section-mini":{t:"Remonter à la section",u:"mm²",tol:0.06,dur:true,
+ rappel:"on isole S : S = √3·ρ·L·I·cos φ / ΔU admissible",
+ tirer(){return {l:P([80,100,150,200]),i:P([32,40,63,80]),k:0.85,lim:P([3,5])};},
+ enonce(p){return "Ligne triphasée <span class='val'>400 V</span> de <span class='val'>"+p.l+" m</span>, courant <span class='val'>"+p.i+" A</span>, cos φ <span class='val'>0,85</span>, cuivre. Quelle section minimale pour rester sous <span class='val'>"+p.lim+" %</span> de chute ?";},
+ rep(p){const dU=400*p.lim/100;return SQ3*0.023*p.l*p.i*p.k/dU;},
+ pas(p){const dU=400*p.lim/100,S=SQ3*0.023*p.l*p.i*p.k/dU;
+  const SEC=[1.5,2.5,4,6,10,16,25,35,50,70,95,120,150];
+  const ret=SEC.find(x=>x>=S)||240;return [
+  {t:"On traduit la limite en volts.",op:p.lim+" % × 400 = "+F(dU,1)+" V"},
+  {t:"On part de la formule de la chute et on isole la section.",op:"ΔU = √3·ρ·L·I·cos φ / S   ⟹   S = √3·ρ·L·I·cos φ / ΔU"},
+  {t:"On remplace.",op:"S = 1,732 × 0,023 × "+p.l+" × "+p.i+" × 0,85 / "+F(dU,1)},
+  {t:"Résultat du calcul.",op:"S = "+F(S,2)+" mm²"},
+  {t:"On retient la section NORMALISÉE immédiatement supérieure : "+ret+" mm². Jamais celle du dessous — le calcul donne un minimum, pas un choix."}];}},
+
+"x-pv-onduleur":{t:"La chaîne PV tient-elle ?",qcm:true,dur:true,
+ rappel:"U_oc au froid = U_oc(25°) × [1 + β·(θ−25)], multipliée par le nombre de modules",
+ tirer(){const n=P([16,18,20,22]),uoc=P([41,45,49]);return {n:n,uoc:uoc,th:-10,b:-0.28,lim:1000};},
+ enonce(p){const U=p.n*p.uoc*(1+p.b/100*(p.th-25));
+  return "Une chaîne de <span class='val'>"+p.n+" modules</span> à <span class='val'>"+p.uoc+" V</span> de tension à vide, coefficient <span class='val'>−0,28 %/°C</span>, par <span class='val'>−10 °C</span>. L'onduleur admet <span class='val'>1000 V</span>. Que fais-tu ?";},
+ opts(p){const U=p.n*p.uoc*(1+p.b/100*(p.th-25));
+  return U>1000
+   ?["La chaîne monte à "+F(U,0)+" V : c'est trop, il faut retirer des modules","La chaîne est à "+F(p.n*p.uoc,0)+" V, ça passe","On ajoute des modules pour lisser la tension"]
+   :["La chaîne monte à "+F(U,0)+" V : on reste sous 1000 V, ça passe","La chaîne dépasse 1000 V, il faut retirer des modules","Le froid fait baisser la tension, aucun risque"];},
+ pas(p){const k=1+p.b/100*(p.th-25),U=p.n*p.uoc*k;return [
+  {t:"L'écart de température par rapport aux conditions d'essai.",op:"−10 − 25 = −35 °C"},
+  {t:"Coefficient négatif × écart négatif = positif : la tension MONTE quand il fait froid.",op:"1 + (−0,0028 × −35) = "+F(k,4)},
+  {t:"Tension d'un module au froid.",op:p.uoc+" × "+F(k,4)+" = "+F(p.uoc*k,1)+" V"},
+  {t:"Les modules sont en série : on additionne.",op:p.n+" × "+F(p.uoc*k,1)+" = "+F(U,0)+" V"},
+  {t:"Verdict : "+(U>1000?"au-dessus de 1000 V — l'onduleur serait détruit dès la première gelée ensoleillée.":"sous les 1000 V — la chaîne est correctement dimensionnée.")+" On dimensionne TOUJOURS au plus froid, jamais au plus chaud."}];}},
+
+"x-neutre-verdict":{t:"Le neutre est-il en danger ?",qcm:true,dur:true,
+ rappel:"somme vectorielle des trois courants à 120°, puis comparaison au courant de phase",
+ tirer(){return P([{a:30,b:8,c:6},{a:25,b:24,c:23},{a:32,b:5,c:0},{a:20,b:20,c:20}]);},
+ enonce(p){return "Trois circuits monophasés répartis sur les phases : <span class='val'>"+p.a+" A</span>, <span class='val'>"+p.b+" A</span>, <span class='val'>"+p.c+" A</span>. Que dis-tu du conducteur de neutre ?";},
+ opts(p){const x=p.a-p.b/2-p.c/2,y=SQ3/2*(p.c-p.b),In=Math.hypot(x,y);
+  const mx=Math.max(p.a,p.b,p.c);
+  return In<2
+   ?["Il ne transporte presque rien ("+F(In,1)+" A) : la répartition est équilibrée","Il transporte plus que les phases, il faut le renforcer","Il transporte "+F(p.a+p.b+p.c,0)+" A, somme des trois"]
+   :["Il transporte "+F(In,1)+" A à cause du déséquilibre : il faut le dimensionner en conséquence",
+     "Il ne transporte rien, la somme des courants triphasés est toujours nulle",
+     "Il transporte "+F(p.a+p.b+p.c,0)+" A, somme arithmétique des trois"];},
+ pas(p){const x=p.a-p.b/2-p.c/2,y=SQ3/2*(p.c-p.b),In=Math.hypot(x,y);return [
+  {t:"Les trois courants sont déphasés de 120° : on ne les additionne pas, on les projette.",op:"x = "+p.a+" − "+F(p.b/2,1)+" − "+F(p.c/2,1)+" = "+F(x,2)},
+  {t:"Puis sur l'axe vertical.",op:"y = 0,866 × ("+p.c+" − "+p.b+") = "+F(y,2)},
+  {t:"Le courant de neutre est le module de la résultante.",op:"I_N = √("+F(x,2)+"² + "+F(y,2)+"²) = "+F(In,2)+" A"},
+  {t:In<2?"Équilibré : la somme s'annule, le neutre ne transporte rien. C'est ce qui permet de le réduire.":"Déséquilibré : le neutre porte "+F(In,1)+" A. Et avec des charges à harmoniques de rang 3, ce courant peut même dépasser celui d'une phase."}];}}
+});
+
+/* =========================================================================
+   LE BANC DE CÂBLAGE
+   On ne comprend un schéma qu'en le câblant. Ici les bornes sont vraies,
+   les repères sont ceux de l'armoire (A1-A2, 95-96, 13-14), et tant qu'une
+   liaison manque, rien ne démarre. Quand tout est juste, on met sous
+   tension et le courant circule sous les yeux.
+   ========================================================================= */
+const CABLAGE={
+
+"commande-moteur":{
+ t:"Le circuit de commande d'un départ moteur",
+ consigne:"Relie les bornes pour obtenir un démarrage à auto-maintien, avec priorité à l'arrêt.",
+ ordre:["Partir de la phase et descendre jusqu'au neutre, en passant par toutes les sécurités.",
+        "L'arrêt et le thermique sont EN SÉRIE : si l'un s'ouvre, tout s'arrête.",
+        "Le bouton marche et le contact d'auto-maintien KM 13-14 sont EN PARALLÈLE."],
+ comps:[
+  {k:"rail",x1:.06,y1:.10,x2:.94,y2:.10,lab:"Ph"},
+  {k:"rail",x1:.06,y1:.92,x2:.94,y2:.92,lab:"N"},
+  {k:"boite",x:.12,y:.20,w:.16,h:.11,lab:"F1",sous:"thermique 95-96"},
+  {k:"boite",x:.12,y:.40,w:.16,h:.11,lab:"S1",sous:"arrêt · NF"},
+  {k:"boite",x:.12,y:.60,w:.16,h:.11,lab:"S2",sous:"marche · NO"},
+  {k:"boite",x:.44,y:.60,w:.16,h:.11,lab:"KM",sous:"13-14 · maintien"},
+  {k:"bobine",x:.72,y:.55,w:.15,h:.20,lab:"KM",sous:"A1-A2"}],
+ bornes:{
+  P:{x:.09,y:.10,lab:"Ph",cote:"haut"},
+  F1:{x:.12,y:.255,lab:"95",cote:"gauche"}, F2:{x:.28,y:.255,lab:"96",cote:"droite"},
+  A1:{x:.12,y:.455,lab:"1",cote:"gauche"},  A2:{x:.28,y:.455,lab:"2",cote:"droite"},
+  M1:{x:.12,y:.655,lab:"3",cote:"gauche"},  M2:{x:.28,y:.655,lab:"4",cote:"droite"},
+  K1:{x:.44,y:.655,lab:"13",cote:"gauche"}, K2:{x:.60,y:.655,lab:"14",cote:"droite"},
+  B1:{x:.72,y:.60,lab:"A1",cote:"gauche"},  B2:{x:.795,y:.75,lab:"A2",cote:"bas"},
+  N:{x:.795,y:.92,lab:"N",cote:"bas"}},
+ liens:[["P","F1"],["F2","A1"],["A2","M1"],["A2","K1"],["M2","B1"],["K2","B1"],["B2","N"]],
+ verdict:"La bobine KM est alimentée dès l'appui sur S2, et le contact 13-14 prend le relais quand tu relâches. S1 ou le thermique ouvrent la chaîne et tout retombe."},
+
+"puissance-moteur":{
+ t:"Le circuit de puissance",
+ consigne:"Amène les trois phases jusqu'au moteur, en passant par le sectionnement, la commutation et la protection.",
+ ordre:["L'ordre ne se discute pas : sectionner, commuter, protéger, puis le moteur.",
+        "Les trois phases suivent le même chemin, chacune sur sa colonne.",
+        "Le relais thermique se place APRÈS le contacteur, au plus près du moteur."],
+ comps:[
+  {k:"rail",x1:.06,y1:.09,x2:.94,y2:.09,lab:"réseau 400 V"},
+  {k:"boite",x:.16,y:.20,w:.30,h:.12,lab:"Q1",sous:"sectionneur"},
+  {k:"boite",x:.16,y:.44,w:.30,h:.12,lab:"KM1",sous:"contacteur"},
+  {k:"boite",x:.16,y:.66,w:.30,h:.12,lab:"F1",sous:"relais thermique"},
+  {k:"moteur",x:.72,y:.62,r:.13,lab:"M",sous:"3 ~"}],
+ bornes:{
+  L1:{x:.20,y:.09,lab:"L1",cote:"haut"}, L2:{x:.31,y:.09,lab:"L2",cote:"haut"}, L3:{x:.42,y:.09,lab:"L3",cote:"haut"},
+  Q1:{x:.20,y:.20,lab:"1",cote:"haut"},  Q2:{x:.20,y:.32,lab:"2",cote:"bas"},
+  Q3:{x:.31,y:.20,lab:"3",cote:"haut"},  Q4:{x:.31,y:.32,lab:"4",cote:"bas"},
+  Q5:{x:.42,y:.20,lab:"5",cote:"haut"},  Q6:{x:.42,y:.32,lab:"6",cote:"bas"},
+  K1:{x:.20,y:.44,lab:"1",cote:"haut"},  K2:{x:.20,y:.56,lab:"2",cote:"bas"},
+  K3:{x:.31,y:.44,lab:"3",cote:"haut"},  K4:{x:.31,y:.56,lab:"4",cote:"bas"},
+  K5:{x:.42,y:.44,lab:"5",cote:"haut"},  K6:{x:.42,y:.56,lab:"6",cote:"bas"},
+  F1:{x:.20,y:.66,lab:"1",cote:"haut"},  F2:{x:.20,y:.78,lab:"2",cote:"bas"},
+  F3:{x:.31,y:.66,lab:"3",cote:"haut"},  F4:{x:.31,y:.78,lab:"4",cote:"bas"},
+  F5:{x:.42,y:.66,lab:"5",cote:"haut"},  F6:{x:.42,y:.78,lab:"6",cote:"bas"},
+  U:{x:.63,y:.55,lab:"U",cote:"gauche"}, V:{x:.63,y:.66,lab:"V",cote:"gauche"}, W:{x:.63,y:.77,lab:"W",cote:"gauche"}},
+ liens:[["L1","Q1"],["L2","Q3"],["L3","Q5"],
+        ["Q2","K1"],["Q4","K3"],["Q6","K5"],
+        ["K2","F1"],["K4","F3"],["K6","F5"],
+        ["F2","U"],["F4","V"],["F6","W"]],
+ verdict:"Sectionner, commuter, protéger, alimenter. Le thermique est en dernier : il doit mesurer le courant qui va RÉELLEMENT au moteur."},
+
+"tableau":{
+ t:"Câbler un tableau divisionnaire",
+ consigne:"Depuis l'arrivée, alimente le différentiel, puis les trois disjoncteurs, puis leurs circuits.",
+ ordre:["L'arrivée entre sur le différentiel : phase ET neutre, jamais l'un sans l'autre.",
+        "Les disjoncteurs sont alimentés EN PARALLÈLE depuis la sortie du différentiel — c'est le rôle des peignes.",
+        "Chaque départ repart avec SA phase et LE neutre commun. Et le conducteur de protection ne passe par aucun appareil."],
+ comps:[
+  {k:"rail",x1:.06,y1:.09,x2:.94,y2:.09,lab:"arrivée"},
+  {k:"boite",x:.10,y:.24,w:.30,h:.13,lab:"ID 30 mA",sous:"type A · 40 A"},
+  {k:"boite",x:.08,y:.50,w:.15,h:.12,lab:"Q1",sous:"16 A · prises"},
+  {k:"boite",x:.29,y:.50,w:.15,h:.12,lab:"Q2",sous:"10 A · éclairage"},
+  {k:"boite",x:.50,y:.50,w:.15,h:.12,lab:"Q3",sous:"20 A · plaque"},
+  {k:"boite",x:.74,y:.50,w:.18,h:.12,lab:"Circuits",sous:"vers les récepteurs"}],
+ bornes:{
+  PH:{x:.14,y:.09,lab:"Ph",cote:"haut"}, NE:{x:.26,y:.09,lab:"N",cote:"haut"},
+  D1:{x:.14,y:.24,lab:"1",cote:"haut"},  D3:{x:.26,y:.24,lab:"3",cote:"haut"},
+  D2:{x:.14,y:.37,lab:"2",cote:"bas"},   D4:{x:.26,y:.37,lab:"4",cote:"bas"},
+  A1:{x:.12,y:.50,lab:"1",cote:"haut"},  A2:{x:.12,y:.62,lab:"2",cote:"bas"},
+  B1:{x:.33,y:.50,lab:"1",cote:"haut"},  B2:{x:.33,y:.62,lab:"2",cote:"bas"},
+  C1:{x:.54,y:.50,lab:"1",cote:"haut"},  C2:{x:.54,y:.62,lab:"2",cote:"bas"},
+  R1:{x:.78,y:.50,lab:"ph1",cote:"haut"},R2:{x:.83,y:.50,lab:"ph2",cote:"haut"},
+  R3:{x:.88,y:.50,lab:"ph3",cote:"haut"},RN:{x:.83,y:.62,lab:"N",cote:"bas"}},
+ liens:[["PH","D1"],["NE","D3"],
+        ["D2","A1"],["D2","B1"],["D2","C1"],
+        ["A2","R1"],["B2","R2"],["C2","R3"],
+        ["D4","RN"]],
+ verdict:"Le différentiel protège les PERSONNES et surveille l'ensemble ; les disjoncteurs protègent chacun LEUR câble. Le neutre traverse le différentiel puis rejoint le bornier commun : il ne passe par aucun disjoncteur divisionnaire dans ce montage."},
+
+"inversion-sens":{
+ t:"L'inversion de sens de rotation",
+ consigne:"Câble le second contacteur pour inverser deux phases — et une seule fois deux, jamais trois.",
+ ordre:["Inverser le sens, c'est croiser DEUX phases sur les trois. Croiser les trois ne change rien.",
+        "Les deux contacteurs partent du même point : les entrées sont en parallèle.",
+        "KM1 va droit, KM2 croise L1 et L3."],
+ comps:[
+  {k:"rail",x1:.06,y1:.10,x2:.94,y2:.10,lab:"après sectionnement"},
+  {k:"boite",x:.10,y:.28,w:.26,h:.12,lab:"KM1",sous:"sens direct"},
+  {k:"boite",x:.56,y:.28,w:.26,h:.12,lab:"KM2",sous:"sens inverse"},
+  {k:"moteur",x:.46,y:.76,r:.12,lab:"M",sous:"3 ~"}],
+ bornes:{
+  L1:{x:.16,y:.10,lab:"L1",cote:"haut"}, L2:{x:.23,y:.10,lab:"L2",cote:"haut"}, L3:{x:.30,y:.10,lab:"L3",cote:"haut"},
+  A1:{x:.14,y:.28,lab:"1",cote:"haut"},  A2:{x:.14,y:.40,lab:"2",cote:"bas"},
+  A3:{x:.23,y:.28,lab:"3",cote:"haut"},  A4:{x:.23,y:.40,lab:"4",cote:"bas"},
+  A5:{x:.32,y:.28,lab:"5",cote:"haut"},  A6:{x:.32,y:.40,lab:"6",cote:"bas"},
+  B1:{x:.60,y:.28,lab:"1",cote:"haut"},  B2:{x:.60,y:.40,lab:"2",cote:"bas"},
+  B3:{x:.69,y:.28,lab:"3",cote:"haut"},  B4:{x:.69,y:.40,lab:"4",cote:"bas"},
+  B5:{x:.78,y:.28,lab:"5",cote:"haut"},  B6:{x:.78,y:.40,lab:"6",cote:"bas"},
+  U:{x:.38,y:.70,lab:"U",cote:"gauche"}, V:{x:.46,y:.62,lab:"V",cote:"haut"}, W:{x:.54,y:.70,lab:"W",cote:"droite"}},
+ liens:[["L1","A1"],["L2","A3"],["L3","A5"],
+        ["L1","B5"],["L2","B3"],["L3","B1"],
+        ["A2","U"],["A4","V"],["A6","W"],
+        ["B2","U"],["B4","V"],["B6","W"]],
+ verdict:"KM2 reçoit L1 sur sa colonne 5 et L3 sur sa colonne 1 : deux phases croisées, le champ tourne dans l'autre sens. ⚠️ En vrai, un verrouillage mécanique ET électrique interdit que les deux contacteurs collent en même temps — ce serait un court-circuit entre phases."}
+};
+
+/* =========================================================================
    PREMIER CONTACT AVEC UNE NOTION : DES NOMBRES RONDS
    La première fois qu'un atelier propose une notion, il la tire ici : des
    valeurs choisies pour que le calcul tombe juste et que l'attention aille
@@ -1018,6 +1285,19 @@ Object.assign(GEN,{
    fois, on repasse au tirage normal, avec des valeurs de terrain.
    ========================================================================= */
 const CU={n:"cuivre",r:0.023};
+/* Quand une notion est acquise à deux reprises, elle revient sous sa forme
+   composée : deux ou trois calculs enchaînés, comme dans un sujet. */
+const DUR={"courant-moteur":"x-moteur-cable","puis-tri":"x-moteur-cable",
+ "chute-tension":"x-section-mini","compensation":"x-compensation-gain",
+ "capacite-comp":"x-compensation-gain","icc":"x-transfo-icc",
+ "transfo-rapport":"x-transfo-icc","transfo-rendement":"x-transfo-icc",
+ "couple":"x-plaque-complete","glissement":"x-plaque-complete","synchronisme":"x-plaque-complete",
+ "rc-tau":"x-rc-temps","expo-tau":"x-rc-temps","energie-condo":"x-rc-temps",
+ "impedance-rl":"x-impedance-puissance","reactance":"x-impedance-puissance",
+ "joule":"x-cout","puissance-dc":"x-cout",
+ "pv-tension":"x-pv-onduleur","pv-prod":"x-pv-onduleur",
+ "neutre":"x-neutre-verdict","tri-uv":"x-neutre-verdict",
+ "resistivite":"x-section-mini","ddr":"x-transfo-icc"};
 const FACILE={
  "prefixe":()=>({c:P([{de:"kΩ",vers:"Ω",f:1e3},{de:"kV",vers:"V",f:1e3},{de:"MW",vers:"W",f:1e6}]),v:P([2,3,4,5,10])}),
  "scientifique":()=>({a:P([2,3,5]),n:P([1,2,3]),m:P([2,3]),k:P([1,2])}),
@@ -2201,119 +2481,89 @@ I₁ − I₂ = 6</span></li>
  {k:"c",t:"Contrôle",gen:["carre","pythagore","proportion","pourcent"],n:6}
 ]},
 
-{id:"m04",num:"04",bloc:"Les maths d'abord",titre:"Trigonométrie utile",duree:"28 min",
- resume:"Sinus, cosinus, tangente : trois rapports dans un triangle, et tout le régime alternatif en découle.",
+{id:"m04",num:"04",bloc:"Les maths d'abord",titre:"La trigonométrie utile",duree:"18 min",
+ resume:"Trois rapports dans un triangle. Tout le régime alternatif en découle.",
  steps:[
- {k:"l",t:"Trois rapports, rien de plus",h:`
-  <p>Dans un triangle rectangle, on nomme les côtés par rapport à l'angle qu'on regarde. Les trois fonctions trigonométriques ne sont que des rapports entre ces côtés.</p>
-  <div class="formule">cos φ = adjacent / hypoténuse
-sin φ = opposé / hypoténuse
-tan φ = opposé / adjacent = sin φ / cos φ</div>
+ {k:"l",t:"Cosinus et sinus sont des projections",h:`
+  <p>Oublie les définitions apprises par cœur. Retiens l'image : le cosinus est la projection <strong>horizontale</strong>, le sinus la projection <strong>verticale</strong>.</p>
   <figure data-anim="cercle-trigo"></figure>
-  <p>Fais tourner l'angle ci-dessus. Le cosinus est la <strong>projection horizontale</strong>, le sinus la <strong>projection verticale</strong>. Retiens cette image plutôt que la définition : c'est elle que tu utiliseras en électrotechnique.</p>
-  <div class="encart e-cle"><span class="chapo">Les valeurs à connaître sans calculatrice</span>
-   <p><span class="mono">cos 0° = 1 · cos 30° = 0,866 · cos 45° = 0,707 · cos 60° = 0,5 · cos 90° = 0</span></p>
-   <p>Le 0,707, c'est <span class="mono">1/√2</span> : tu le retrouveras dans la valeur efficace. Le 0,866, c'est <span class="mono">√3/2</span> : tu le retrouveras dans le triphasé.</p></div>`},
- {k:"l",t:"Retrouver un angle, retrouver un côté",h:`
-  <p>Deux situations, deux gestes inverses.</p>
-  <h3>On connaît l'angle, on cherche un côté</h3>
-  <div class="resolu"><span class="chapo">Exemple résolu</span>
-   <p>Une puissance apparente de 100 kVA avec un déphasage de 25°. Quelle puissance active ?</p>
+  <div class="formule">cos φ = adjacent / hypoténuse        sin φ = opposé / hypoténuse
+tan φ = opposé / adjacent</div>
+  <div class="encart e-cle"><span class="chapo">Les trois valeurs à connaître</span><p><span class="mono">cos 0° = 1</span> · <span class="mono">cos 45° = 0,707</span> · <span class="mono">cos 60° = 0,5</span>. Le 0,707 est <span class="mono">1/√2</span> : tu le retrouveras dans la valeur efficace. Le 0,866 est <span class="mono">√3/2</span> : il t'attend dans le triphasé.</p></div>`},
+ {k:"a",t:"Atelier — projeter",gen:["trigo-cote","radian"],but:3,h:`
+  <p>Calculer un côté quand on connaît l'angle. C'est exactement le passage de S à P.</p>`},
+ {k:"l",t:"Remonter à l'angle",h:`
+  <p>Quand on connaît deux côtés et qu'on cherche l'angle, il faut la fonction inverse : <span class="mono">cos⁻¹</span>, <span class="mono">sin⁻¹</span> ou <span class="mono">tan⁻¹</span>, souvent en seconde fonction sur la calculatrice.</p>
+  <div class="resolu"><span class="chapo">Un exemple qui servira tout le temps</span>
+   <p>Une installation absorbe 80 kW pour 100 kVA. Quel angle φ, et quel réactif ?</p>
    <ol>
-    <li>La puissance active est la projection horizontale de S : c'est donc le cosinus qui intervient.<span class="op">P = S · cos φ</span></li>
-    <li>On calcule le cosinus.<span class="op">cos 25° = 0,906</span></li>
-    <li>On multiplie.<span class="op">P = 100 × 0,906 = 90,6 kW</span></li>
+    <li>Le rapport P/S est par définition le cosinus.<span class="op">cos φ = 80 / 100 = 0,80</span></li>
+    <li>Fonction inverse.<span class="op">φ = arccos(0,80) = 36,9°</span></li>
+    <li>Et la tangente donne directement le réactif.<span class="op">tan φ = 0,75  ⟹  Q = 80 × 0,75 = 60 kvar</span></li>
    </ol>
-   <div class="final">P = 90,6 kW — et au passage Q = 100 × sin 25° = 42,3 kvar</div></div>
-  <h3>On connaît deux côtés, on cherche l'angle</h3>
-  <p>Il faut alors la fonction inverse : <span class="mono">arccos</span>, <span class="mono">arcsin</span> ou <span class="mono">arctan</span>, notées <span class="mono">cos⁻¹</span>, <span class="mono">sin⁻¹</span>, <span class="mono">tan⁻¹</span> sur la calculatrice (souvent en seconde fonction).</p>
-  <div class="resolu"><span class="chapo">Exemple résolu</span>
-   <p>Une installation absorbe 80 kW pour 100 kVA. Quel est l'angle φ ?</p>
-   <ol>
-    <li>Le rapport P/S est par définition le cosinus de φ.<span class="op">cos φ = 80 / 100 = 0,80</span></li>
-    <li>On applique la fonction inverse.<span class="op">φ = arccos(0,80)</span></li>
-   </ol>
-   <div class="final">φ = 36,9° — et tan φ = 0,75, ce qui donnera directement Q = 80 × 0,75 = 60 kvar</div></div>
-  <div class="encart e-piege"><span class="chapo">Mode DEG, toujours</span><p>Une calculatrice en mode RAD donnera <span class="mono">cos 25 = 0,991</span> au lieu de 0,906. Le résultat reste plausible, donc l'erreur passe inaperçue et fausse tout le devoir. Vérifie le mode avant de commencer : <span class="mono">cos 60</span> doit donner exactement 0,5.</p></div>`},
- {k:"a",t:"Atelier — trigonométrie",gen:["trigo-cote","trigo-angle","radian","pythagore"],but:4,h:`
-  <p>Ces quatre gestes reviendront à chaque calcul de puissance et d'impédance. Autant les rendre automatiques maintenant.</p>`},
- {k:"c",t:"Contrôle",gen:["trigo-cote","trigo-angle","radian","pythagore","carre"],n:8}
+   <div class="final">φ = 36,9° et Q = 60 kvar</div></div>
+  <div class="encart e-piege"><span class="chapo">Mode DEG, toujours</span><p>Une calculatrice en radians donne <span class="mono">cos 25 = 0,991</span> au lieu de 0,906. Le résultat reste plausible, donc l'erreur passe inaperçue et fausse tout le devoir. Vérifie avant de commencer : <span class="mono">cos 60</span> doit tomber exactement sur 0,5.</p></div>`},
+ {k:"a",t:"Atelier — retrouver l'angle",gen:["trigo-angle","pythagore"],but:3,h:`
+  <p>Deux notions, trois bonnes réponses d'affilée.</p>`},
+ {k:"c",t:"Contrôle",gen:["trigo-cote","trigo-angle","radian","pythagore"],n:6}
 ]},
 
-{id:"m05",num:"05",bloc:"Les maths d'abord",titre:"Vecteurs et nombres complexes",duree:"26 min",
- resume:"Additionner deux grandeurs déphasées. L'outil qui rend le régime alternatif calculable.",
+{id:"m05",num:"05",bloc:"Les maths d'abord",titre:"Vecteurs et nombres complexes",duree:"18 min",
+ resume:"Additionner deux grandeurs déphasées. Le pivot de tout le parcours.",
  steps:[
- {k:"l",t:"Pourquoi les vecteurs",h:`
-  <p>En courant continu, 60 V plus 80 V font 140 V. En alternatif, si les deux tensions ne sont pas en phase, ce résultat est faux — parfois de 40 %.</p>
-  <p>Une grandeur alternative sinusoïdale porte deux informations : une <strong>amplitude</strong> et une <strong>phase</strong>. Un simple nombre n'en porte qu'une. Il faut donc un objet à deux composantes : le vecteur.</p>
-  <div class="formule">longueur du vecteur = valeur efficace
-angle du vecteur = phase<span class="note">On l'appelle un phaseur, ou vecteur de Fresnel.</span></div>
-  <h3>Additionner deux vecteurs perpendiculaires</h3>
-  <div class="formule">résultante = √(a² + b²)          angle = arctan(b / a)<span class="note">C'est Pythagore et la trigonométrie du module précédent, appliqués tels quels.</span></div>
-  <div class="resolu"><span class="chapo">Exemple résolu</span>
-   <p>Une résistance de 60 V en série avec une bobine de 80 V (déphasage 90°). Tension totale ?</p>
+ {k:"l",t:"Pourquoi 60 + 80 ne font pas 140",h:`
+  <p>En continu, 60 V et 80 V en série font 140 V. En alternatif, si les deux ne montent pas en même temps, ce résultat est faux.</p>
+  <p>Une grandeur alternative porte <strong>deux</strong> informations : une amplitude et une phase. Un simple nombre n'en porte qu'une. D'où le vecteur : sa longueur est la valeur efficace, son angle la phase.</p>
+  <div class="formule">à 90° :  résultante = √(a² + b²)        angle = arctan(b / a)<span class="note">C'est Pythagore et la trigonométrie des deux modules précédents, appliqués tels quels.</span></div>
+  <div class="resolu"><span class="chapo">Un exemple</span>
+   <p>Une résistance de 60 V en série avec une bobine de 80 V, déphasées de 90°.</p>
    <ol>
-    <li>Les deux tensions sont perpendiculaires dans le plan de Fresnel.<span class="op">U = √(60² + 80²)</span></li>
-    <li>On calcule.<span class="op">U = √(3600 + 6400) = √10 000</span></li>
-    <li>Et l'angle du vecteur résultant.<span class="op">φ = arctan(80 / 60) = 53,1°</span></li>
+    <li>Les deux tensions sont perpendiculaires.<span class="op">U = √(60² + 80²) = √10 000</span></li>
+    <li>Résultat.<span class="op">U = 100 V</span></li>
    </ol>
-   <div class="final">U = 100 V à 53,1° — l'addition naïve aurait donné 140 V, soit 40 % de trop.</div></div>`},
- {k:"l",t:"Le nombre complexe : le même vecteur, écrit autrement",h:`
-  <p>Un nombre complexe n'est rien d'autre qu'un vecteur écrit en une seule ligne. En électrotechnique on note <span class="mono">j</span> l'unité imaginaire (et non <span class="mono">i</span>, déjà pris par le courant).</p>
-  <div class="formule">Z = R + j·X<span class="note">R : partie réelle, sur l'axe horizontal — X : partie imaginaire, sur l'axe vertical</span></div>
-  <div class="tabl"><table>
-   <tr><th>Forme</th><th>Écriture</th><th>Utile pour</th></tr>
-   <tr><td>Algébrique</td><td class="mono">Z = R + jX</td><td>additionner deux impédances en série</td></tr>
-   <tr><td>Polaire</td><td class="mono">Z = |Z| ∠ φ</td><td>multiplier, diviser, lire un déphasage</td></tr>
-  </table></div>
-  <div class="formule">|Z| = √(R² + X²)          φ = arctan(X / R)
-R = |Z| · cos φ           X = |Z| · sin φ<span class="note">Passer d'une forme à l'autre, c'est exactement le module précédent.</span></div>
-  <div class="encart e-cle"><span class="chapo">Le sens physique, à retenir</span>
-   <p>La partie <strong>réelle</strong> est ce qui <strong>consomme</strong> : la résistance, la puissance active.</p>
-   <p>La partie <strong>imaginaire</strong> est ce qui <strong>échange sans consommer</strong> : la réactance, la puissance réactive.</p>
-   <p>C'est pour cela que la même figure sert au triangle des impédances et au triangle des puissances : ce sont deux vecteurs de même angle φ.</p></div>`},
- {k:"a",t:"Atelier — vecteurs et complexes",gen:["vecteur-somme","complexe-module","trigo-angle","pythagore"],but:4,h:`
-  <p>Ce module est le pivot du parcours : tout le bloc « régime alternatif » repose dessus. Prends le temps qu'il faut ici, tu le regagneras trois fois plus loin.</p>`},
- {k:"c",t:"Contrôle",gen:["vecteur-somme","complexe-module","trigo-angle","trigo-cote"],n:8}
+   <div class="final">100 V, et non 140 V. Une erreur de 40 %.</div></div>`},
+ {k:"a",t:"Atelier — composer deux vecteurs",gen:["vecteur-somme","trigo-angle"],but:3,h:`
+  <p>Le geste qui reviendra à chaque impédance et à chaque triangle des puissances.</p>`},
+ {k:"l",t:"Le complexe, c'est le même vecteur en une ligne",h:`
+  <p>On note <span class="mono">j</span> l'unité imaginaire, parce que <span class="mono">i</span> désigne déjà le courant.</p>
+  <div class="formule">Z = R + j·X<span class="note">R : partie réelle, axe horizontal — X : partie imaginaire, axe vertical</span></div>
+  <div class="formule">|Z| = √(R² + X²)        φ = arctan(X / R)</div>
+  <div class="encart e-cle"><span class="chapo">Le sens physique, à retenir une fois pour toutes</span>
+   <p>La partie <strong>réelle</strong> est ce qui <strong>consomme</strong> : résistance, puissance active.</p>
+   <p>La partie <strong>imaginaire</strong> est ce qui <strong>échange sans consommer</strong> : réactance, puissance réactive.</p>
+   <p>C'est pour cela que le triangle des impédances et le triangle des puissances ont exactement le même angle φ.</p></div>`},
+ {k:"a",t:"Atelier — module et argument",gen:["complexe-module","vecteur-somme"],but:3,h:`
+  <p>Prends le temps ici : tout le bloc « régime alternatif » repose sur ce module.</p>`},
+ {k:"c",t:"Contrôle",gen:["vecteur-somme","complexe-module","trigo-angle","pythagore"],n:6}
 ]},
 
-{id:"m06",num:"06",bloc:"Les maths d'abord",titre:"Ce qui varie dans le temps",duree:"24 min",
- resume:"Fréquence, période, pulsation, exponentielle : lire une grandeur qui bouge.",
+{id:"m06",num:"06",bloc:"Les maths d'abord",titre:"Ce qui varie dans le temps",duree:"17 min",
+ resume:"Période, fréquence, pulsation, et l'exponentielle qui décrit toute mise en route.",
  steps:[
- {k:"l",t:"Période, fréquence, pulsation",h:`
-  <p>Trois façons de dire la même chose. Elles servent toutes les trois, dans des formules différentes.</p>
-  <div class="formule">T = 1 / f          f = 1 / T          ω = 2 · π · f<span class="note">T en secondes · f en hertz · ω en radians par seconde</span></div>
-  <div class="tabl"><table>
-   <tr><th>Grandeur</th><th>À 50 Hz</th><th>Où elle sert</th></tr>
-   <tr><td>Période T</td><td class="mono">20 ms</td><td>lire un oscillogramme, régler une base de temps</td></tr>
-   <tr><td>Fréquence f</td><td class="mono">50 Hz</td><td>plaques signalétiques, vitesse de synchronisme</td></tr>
-   <tr><td>Pulsation ω</td><td class="mono">314 rad/s</td><td>X_L = L·ω, X_C = 1/(C·ω)</td></tr>
-  </table></div>
-  <div class="encart e-cle"><span class="chapo">Trois nombres à mémoriser</span><p><span class="mono">50 Hz → 20 ms → 314 rad/s</span>. Avec ces trois-là, tu lis n'importe quel oscillogramme du réseau et tu calcules n'importe quelle réactance de tête.</p></div>`},
+ {k:"l",t:"Trois façons de dire la même chose",h:`
+  <div class="formule">T = 1 / f          ω = 2 · π · f<span class="note">T en secondes · f en hertz · ω en radians par seconde</span></div>
+  <div class="encart e-cle"><span class="chapo">Les trois nombres du réseau</span><p><span class="mono">50 Hz</span> → <span class="mono">20 ms</span> → <span class="mono">314 rad/s</span>. Avec ces trois-là tu lis n'importe quel oscillogramme et tu calcules n'importe quelle réactance de tête.</p></div>`},
+ {k:"a",t:"Atelier — période et pulsation",gen:["periode","radian"],but:3,h:`<p>Court, mais à automatiser.</p>`},
  {k:"l",t:"L'exponentielle, ou comment les choses s'installent",h:`
-  <p>Quand un condensateur se charge, quand un moteur monte en vitesse, quand une bobine s'établit, rien ne se fait instantanément. Le passage suit toujours la même forme mathématique.</p>
+  <p>Un condensateur qui se charge, un moteur qui monte en vitesse : rien n'est instantané, et tout suit la même forme.</p>
   <figure data-anim="rc-charge"></figure>
-  <div class="formule">croissance : u(t) = U · (1 − e<sup>−t/τ</sup>)
-décroissance : u(t) = U · e<sup>−t/τ</sup><span class="note">τ (tau) est la constante de temps : elle dit à quelle vitesse ça se passe.</span></div>
+  <div class="formule">τ = R · C<span class="note">La constante de temps : elle dit à quelle vitesse ça se passe.</span></div>
   <div class="tabl"><table>
-   <tr><th>Temps écoulé</th><th>Croissance atteinte</th><th>Décroissance restante</th></tr>
-   <tr><td class="mono">1 τ</td><td class="mono">63 %</td><td class="mono">37 %</td></tr>
-   <tr><td class="mono">2 τ</td><td class="mono">86 %</td><td class="mono">14 %</td></tr>
-   <tr><td class="mono">3 τ</td><td class="mono">95 %</td><td class="mono">5 %</td></tr>
-   <tr><td class="mono">5 τ</td><td class="mono">99 %</td><td class="mono">1 %</td></tr>
+   <tr><th>Temps écoulé</th><th class="mono">1 τ</th><th class="mono">3 τ</th><th class="mono">5 τ</th></tr>
+   <tr><td>Chemin parcouru</td><td class="mono">63 %</td><td class="mono">95 %</td><td class="mono">99 %</td></tr>
   </table></div>
-  <p>Ces quatre lignes remplacent la plupart des calculs : on ne demande presque jamais une valeur intermédiaire, on demande « au bout de combien de temps est-ce terminé ». La réponse est <strong>5 τ</strong>.</p>
-  <div class="encart e-terrain"><span class="chapo">Ce que ça veut dire sur le terrain</span><p>L'étiquette d'un variateur indique un temps d'attente avant ouverture — typiquement 5 à 15 minutes. Ce n'est pas une précaution administrative : c'est le 5τ de la décharge du bus continu à travers ses résistances de décharge. Avant ce délai, le condensateur reste mortel.</p></div>`},
- {k:"l",t:"Dérivée : la notion, sans le formalisme",h:`
-  <p>Deux formules du métier contiennent une dérivée. Tu n'as pas besoin de savoir dériver pour les comprendre — il faut juste lire <span class="mono">d/dt</span> comme « à quelle vitesse ça change ».</p>
-  <div class="formule">i = C · du/dt<span class="note">Le courant dans un condensateur est proportionnel à la VITESSE de variation de sa tension. Tension constante ⟹ courant nul : il bloque le continu.</span></div>
-  <div class="formule">u = L · di/dt<span class="note">La tension aux bornes d'une bobine est proportionnelle à la VITESSE de variation du courant. Courant constant ⟹ tension nulle : elle laisse passer le continu.</span></div>
-  <div class="encart e-piege"><span class="chapo">La conséquence dangereuse</span><p>Si on coupe brutalement le courant d'une bobine, <span class="mono">di/dt</span> devient énorme, donc <span class="mono">u</span> aussi. Une bobine de contacteur alimentée en 24 V peut ainsi produire plusieurs centaines de volts à l'ouverture. C'est ce qui détruit les contacts et les sorties d'automate — et c'est la raison d'être de la diode de roue libre, que tu verras au module 10.</p></div>`},
- {k:"a",t:"Atelier — temps et exponentielle",gen:["periode","expo-tau","rc-tau","radian"],but:4,h:`<p>Dernier atelier du bloc mathématique. Après lui, on entre dans l'électricité — avec tous les outils en main.</p>`},
- {k:"c",t:"Contrôle du bloc mathématique",gen:["periode","expo-tau","rc-tau","transpose","carre","vecteur-somme","trigo-angle","prefixe"],n:10}
+  <p>Ces trois repères remplacent presque tous les calculs : on demande rarement une valeur intermédiaire, on demande « quand est-ce terminé ». La réponse est <strong>5 τ</strong>.</p>
+  <div class="encart e-terrain"><span class="chapo">Ce que ça veut dire sur le terrain</span><p>Le délai d'attente affiché sur un variateur avant ouverture, c'est le 5 τ de la décharge de son bus continu. Avant ce délai, le condensateur reste mortel.</p></div>`},
+ {k:"a",t:"Atelier — constante de temps",gen:["rc-tau","expo-tau"],but:3,h:`
+  <p>Attention aux unités : c'est ici que les µF et les kΩ font le plus de dégâts.</p>`},
+ {k:"l",t:"Lire « d/dt » sans savoir dériver",h:`
+  <p>Deux formules du métier contiennent une dérivée. Il suffit de lire <span class="mono">d/dt</span> comme « à quelle vitesse ça change ».</p>
+  <div class="formule">i = C · du/dt<span class="note">Tension constante ⟹ courant nul : le condensateur bloque le continu.</span></div>
+  <div class="formule">u = L · di/dt<span class="note">Courant constant ⟹ tension nulle : la bobine laisse passer le continu.</span></div>
+  <div class="encart e-piege"><span class="chapo">La conséquence dangereuse</span><p>Couper brutalement le courant d'une bobine rend <span class="mono">di/dt</span> énorme, donc <span class="mono">u</span> aussi. Une bobine de contacteur en 24 V peut produire plusieurs centaines de volts à l'ouverture. C'est toute la raison d'être de la diode de roue libre, au module 10.</p></div>`},
+ {k:"c",t:"Contrôle",gen:["periode","expo-tau","rc-tau","radian","prefixe"],n:8}
 ]},
 
-/* ═══════════════ BLOC 2 — LE SOCLE ÉLECTRIQUE ═══════════════ */
 {id:"m07",num:"07",bloc:"Socle électrique",titre:"Grandeurs et loi d'Ohm",duree:"26 min",
  resume:"Tension, courant, résistance, puissance : ce qu'elles sont vraiment, et la relation qui les lie.",
  steps:[
@@ -2776,6 +3026,10 @@ S = √3 · U · I<span class="note">U : tension COMPOSÉE — I : courant de LI
    <tr><td class="mono">30</td><td class="mono">9 à 30 s</td><td>centrifugeuses, broyeurs</td></tr>
   </table></div>
   <div class="encart e-terrain"><span class="chapo">Un thermique qui déclenche : la bonne démarche</span><p>Avant de changer quoi que ce soit, mesure les <strong>trois</strong> courants de ligne. Un déséquilibre supérieur à 5 % signale une phase faible, un contact de contacteur piqué ou un enroulement en défaut. Perdre une phase double presque le courant dans les deux autres — c'est précisément ce que détecte un relais différentiel.</p></div>`},
+ {k:"w",t:"Câbler le circuit de puissance",cab:"puissance-moteur",h:`
+  <p>Assez lu. Relie les bornes toi-même : clique une borne, puis une seconde, et le fil se pose. Un fil se retire en cliquant dessus.</p>`},
+ {k:"w",t:"Câbler une inversion de sens",cab:"inversion-sens",h:`
+  <p>Deux contacteurs, et une seule question : lesquelles des trois phases faut-il croiser ?</p>`},
  {k:"s",t:"Banc d'essai — plaque moteur",sim:"moteur",h:`<p>Entre les valeurs d'une plaque : le banc déduit le nombre de pôles, le glissement, le couple, le courant et la plage de réglage du thermique.</p>`},
  {k:"a",t:"Atelier — machine asynchrone",gen:["synchronisme","glissement","couple","courant-moteur","couplage"],but:5,h:`<p>Cinq d'affilée. Ce sont les cinq calculs qu'on te demandera devant n'importe quelle machine.</p>`},
  {k:"c",t:"Contrôle",gen:["synchronisme","glissement","couple","courant-moteur","couplage","puis-tri"],n:10}
@@ -2976,6 +3230,8 @@ PD3 triphasé : U<sub>moy</sub> = 3·√2·U/π ≈ 1,35 · U<sub>composée</sub
    <li><strong>Chronométrique</strong> — l'appareil amont est temporisé, laissant l'aval éliminer le défaut d'abord.</li>
    <li><strong>Logique</strong> — l'aval envoie un ordre d'attente à l'amont. La plus rapide, réservée aux disjoncteurs électroniques.</li>
   </ul>`},
+ {k:"w",t:"Câbler un tableau divisionnaire",cab:"tableau",h:`
+  <p>Le tableau d'un logement, en plus petit : une arrivée, un différentiel, trois départs. Chaque appareil a son rôle, et il ne protège pas la même chose que son voisin.</p>`},
  {k:"a",t:"Atelier — protections",gen:["ddr","icc","courant-moteur","pourcent"],but:4,h:`<p>Le calcul du différentiel maximal et celui de l'Icc reviennent dans tous les dossiers d'installation.</p>`},
  {k:"c",t:"Contrôle",gen:["ddr","icc","courant-moteur","puis-tri","transfo-rapport"],n:9}
 ]},
@@ -3150,6 +3406,8 @@ triphasé :  ΔU = √3 · ρ · L · I · cos φ / S<span class="note">ρ = 0,0
    <tr><td>Saut / reprise</td><td>flèche de retour</td><td>sauter des étapes ou boucler</td></tr>
   </table></div>
   <div class="encart e-cle"><span class="chapo">Le réflexe de lecture</span><p>Sur une divergence en <strong>OU</strong>, les réceptivités doivent être <strong>exclusives</strong>. Sur une divergence en <strong>ET</strong>, la convergence attend toutes les branches. Un GRAFCET bloqué, c'est presque toujours une réceptivité jamais vraie, ou une convergence ET dont une branche n'aboutit pas.</p></div>`},
+ {k:"w",t:"Câbler le circuit de commande",cab:"commande-moteur",h:`
+  <p>C'est LE circuit à savoir dessiner de mémoire. Tu vas le poser fil par fil, puis le mettre sous tension.</p>`},
  {k:"a",t:"Atelier — automatismes",gen:["grafcet","securite","transpose"],but:4,h:`<p>Les règles du GRAFCET sont normatives : elles ne se devinent pas, elles se connaissent.</p>`},
  {k:"c",t:"Contrôle",gen:["grafcet","securite","transpose","equation1"],n:8}
 ]},
@@ -3591,6 +3849,47 @@ Object.assign(ANIM,{
    mono(c,l[1],px,h*0.14+i*(h*0.16)+15,13,l[2]);});
  }}
 });
+
+/* =========================================================================
+   LES EXAMENS DE PALIER
+   Chaque bloc se termine par une épreuve qui puise dans TOUTES ses notions,
+   forme composée comprise. 12 sur 20 pour valider et ouvrir le palier
+   suivant. On peut passer outre, mais on le fait en connaissance de cause.
+   ========================================================================= */
+(function(){
+  const blocs=[];
+  MODULES.forEach((m,i)=>{
+    let b=blocs.find(x=>x.nom===m.bloc);
+    if(!b){b={nom:m.bloc,gen:new Set(),fin:i};blocs.push(b);}
+    b.fin=i;
+    m.steps.forEach(s=>(s.gen||[]).forEach(g=>b.gen.add(g)));
+  });
+  /* on ajoute la forme composée de chaque notion présente dans le bloc */
+  blocs.forEach(b=>{[...b.gen].forEach(g=>{if(DUR[g]&&GEN[DUR[g]])b.gen.add(DUR[g]);});});
+  /* insertion en partant de la fin, pour ne pas décaler les index */
+  blocs.slice().reverse().forEach((b,r)=>{
+    const n=blocs.length-r;
+    const gen=[...b.gen].filter(g=>GEN[g]);
+    MODULES.splice(b.fin+1,0,{
+      id:"ex"+n,num:"E"+n,bloc:b.nom,examen:true,
+      titre:"Examen — "+b.nom,duree:"20 min",
+      resume:"L'épreuve qui valide le palier « "+b.nom+" ». Toutes les notions du bloc, sous leur forme composée quand elle existe. 12 sur 20 pour ouvrir la suite.",
+      steps:[{k:"c",t:"Examen de palier",gen:gen,n:Math.min(12,Math.max(10,gen.length)),seuil:12}]
+    });
+  });
+})();
+
+/* Un palier reste fermé tant que l'examen précédent n'est pas franchi. */
+function examenAvant(i){
+  for(let k=i-1;k>=0;k--)if(MODULES[k].examen)return k;
+  return -1;
+}
+function estVerrouille(i){
+  const e=examenAvant(i);if(e<0)return false;
+  if(etat.forcer&&etat.forcer[MODULES[e].id])return false;
+  const n=etat.notes[MODULES[e].id];
+  return !(n&&n.note>=12);
+}
 
 /* =========================================================================
    4. FIGURES MANIPULABLES
@@ -4371,10 +4670,10 @@ requestAnimationFrame(boucle);
    ========================================================================= */
 const CLE="fil-conducteur-v2";
 const TOTAL=MODULES.reduce((s,m)=>s+m.steps.length,0);
-let etat={pos:{m:0,p:0},faits:{},notes:{},essais:{},vue:"module",rail:null,erreurs:{},acquis:{}};
+let etat={pos:{m:0,p:0},faits:{},notes:{},essais:{},vue:"module",rail:null,erreurs:{},acquis:{},forcer:{}};
 let base=null,tSauve=null;
 function localCharger(){try{const b=localStorage.getItem(CLE);if(b)Object.assign(etat,JSON.parse(b));}catch(e){}
-  etat.erreurs=etat.erreurs||{};etat.acquis=etat.acquis||{};}
+  etat.erreurs=etat.erreurs||{};etat.acquis=etat.acquis||{};etat.forcer=etat.forcer||{};}
 /* Le carnet des erreurs : on retient QUELLE notion résiste, pas seulement
    la note du module. C'est ce registre qui alimente la révision ciblée. */
 function noter(id,ok){
@@ -4433,8 +4732,12 @@ function majRail(){
     const b=document.createElement("button");b.className="lien";b.type="button";
     b.dataset.etat=f===tot?"fait":(i===etat.pos.m?"cours":"a-faire");
     if(i===etat.pos.m&&etat.vue==="module")b.setAttribute("aria-current","true");
-    b.innerHTML='<span class="jeton">'+m.num+'</span><span class="nom">'+m.titre+"</span>"+
-      (nt?'<span class="note-mini">'+nb(nt.note,0)+"</span>":anneau(pct));
+    const verrou=estVerrouille(i);
+    if(m.examen)b.classList.add("lien-examen");
+    if(verrou)b.classList.add("lien-ferme");
+    b.innerHTML='<span class="jeton">'+(verrou?"&#9679;":m.num)+'</span><span class="nom">'+m.titre+"</span>"+
+      (verrou?'<span class="cadenas" title="Palier fermé">&#128274;</span>'
+        :nt?'<span class="note-mini">'+nb(nt.note,0)+"</span>":anneau(pct));
     b.addEventListener("click",()=>{
       let p=m.steps.findIndex((_,k)=>!estFait(i,k));voir(i,p<0?0:p);
       if(innerWidth<=1040){etat.rail="off";poserRail(false);}});
@@ -4548,12 +4851,16 @@ function rendreAtelier(hote,mi,pi,pas){
      puis la suivante. Et la première rencontre se fait avec des nombres
      ronds — le tirage de terrain vient après. */
   const dessine=()=>{
-    id=pas.gen[idx%pas.gen.length];idx++;g=GEN[id];
-    const neuf=!etat.acquis[id]&&FACILE[id];palier=neuf?1:2;
-    p=neuf?FACILE[id]():g.tirer();aide=false;
+    id=pas.gen[idx%pas.gen.length];idx++;
+    const niv=etat.acquis[id]||0;
+    /* 0 → nombres ronds · 1 → valeurs de terrain · 2 et plus → exercice composé */
+    const compose=niv>=2&&DUR[id]&&GEN[DUR[id]];
+    palier=compose?3:(niv===0&&FACILE[id])?1:2;
+    g=compose?GEN[DUR[id]]:GEN[id];
+    p=palier===1?FACILE[id]():g.tirer();aide=false;
     box.innerHTML='<div class="at-tete"><span class="t">'+g.t+'</span>'+
-      '<span class="palier" data-e="'+(palier===1?"doux":"normal")+'">'+
-        (palier===1?"pour commencer":"valeurs de terrain")+'</span>'+
+      '<span class="palier" data-e="'+["","doux","normal","dur"][palier]+'">'+
+        ["","pour commencer","valeurs de terrain","comme en examen"][palier]+'</span>'+
       '<span class="d">objectif : '+but+' bonnes réponses d\'affilée</span>'+
       '<span class="perles">'+Array.from({length:but},(_,i)=>'<i data-e="'+(i<serie?"ok":"")+'"></i>').join("")+"</span></div>"+
       '<div class="at-corps"><p class="enonce">'+g.enonce(p)+"</p></div>";
@@ -4592,7 +4899,7 @@ function rendreAtelier(hote,mi,pi,pas){
   };
   const repondre=(ok,cont,cible,ordre,abandon)=>{
     total++;if(ok)justes++;
-    noter(id,ok);if(ok)etat.acquis[id]=1;
+    noter(id,ok);if(ok)etat.acquis[id]=Math.min(3,(etat.acquis[id]||0)+1);
     const corps=box.querySelector(".at-corps");
     corps.querySelectorAll("button,input").forEach(x=>{x.disabled=true;});
     if(ordre&&cont){[...cont.children].forEach((b,k)=>{
@@ -4629,6 +4936,153 @@ function rendreAtelier(hote,mi,pi,pas){
     pied.querySelector("button").focus();
   };
   dessine();
+}
+
+/* ---- Le moteur du banc de câblage : dessin, gestes, vérification ---- */
+function rendreCablage(hote,mi,pi,pas){
+  const ex=CABLAGE[pas.cab];if(!ex)return;
+  const attendus=ex.liens.map(l=>[l[0],l[1]].sort().join("|"));
+  let liens=[],sel=null,verifie=false,sousTension=false,indice=0,tempo=0;
+
+  const box=document.createElement("div");box.className="verre cablage";hote.appendChild(box);
+  box.innerHTML='<div class="cab-tete"><span class="t">'+ex.t+'</span>'+
+    '<span class="cab-compte" id="cab-compte">0 / '+attendus.length+' liaisons</span></div>'+
+    '<p class="cab-consigne">'+ex.consigne+"</p>";
+  const zone=document.createElement("div");zone.className="cab-zone";box.appendChild(zone);
+  const outils=document.createElement("div");outils.className="outils cab-outils";box.appendChild(outils);
+  const msg=document.createElement("div");msg.className="cab-msg";box.appendChild(msg);
+
+  const cle=(a,b)=>[a,b].sort().join("|");
+  const juste=l=>attendus.indexOf(cle(l[0],l[1]))>=0;
+  const faits=()=>liens.filter(juste).length;
+
+  const rendu=toile(zone,1.55,(c,w,h)=>{
+    const X=v=>v*w, Y=v=>v*h;
+    /* les composants */
+    (ex.comps||[]).forEach(o=>{
+      if(o.k==="rail"){
+        c.strokeStyle=CM();c.lineWidth=2.4;
+        c.beginPath();c.moveTo(X(o.x1),Y(o.y1));c.lineTo(X(o.x2),Y(o.y2));c.stroke();
+        txt(c,o.lab,X(o.x1)-6,Y(o.y1),11.5,CM(),"right",true);
+      }else if(o.k==="moteur"){
+        c.strokeStyle=sousTension?C2():CM();c.lineWidth=2.4;
+        c.beginPath();c.arc(X(o.x),Y(o.y),Math.min(X(o.r),Y(o.r*1.55)),0,TAU);c.stroke();
+        if(sousTension){c.fillStyle=C2();c.globalAlpha=.10;c.fill();c.globalAlpha=1;}
+        c.font='700 22px Rubik, sans-serif';c.textAlign="center";c.textBaseline="middle";
+        c.fillStyle=sousTension?C2():CI();c.fillText(o.lab,X(o.x),Y(o.y)-4);
+        txt(c,o.sous,X(o.x),Y(o.y)+16,11,CM(),"center");
+        if(sousTension){
+          const a=performance.now()/380;
+          for(let k=0;k<3;k++){const an=a+k*TAU/3,r=Math.min(X(o.r),Y(o.r*1.55))*0.55;
+            c.strokeStyle=C2();c.lineWidth=2.4;c.beginPath();
+            c.arc(X(o.x),Y(o.y),r,an,an+0.7);c.stroke();}
+        }
+      }else{
+        const bx=X(o.x),by=Y(o.y),bw=X(o.w),bh=Y(o.h);
+        c.strokeStyle=o.k==="bobine"&&sousTension?C2():CB();c.lineWidth=o.k==="bobine"?2.4:1.8;
+        c.fillStyle=CS();c.beginPath();c.roundRect(bx,by,bw,bh,8);c.fill();c.stroke();
+        if(o.k==="bobine"&&sousTension){c.fillStyle=C2();c.globalAlpha=.12;
+          c.beginPath();c.roundRect(bx,by,bw,bh,8);c.fill();c.globalAlpha=1;}
+        c.font='600 13px Rubik, sans-serif';c.textAlign="center";c.textBaseline="middle";
+        c.fillStyle=CI();c.fillText(o.lab,bx+bw/2,by+bh/2-6);
+        txt(c,o.sous,bx+bw/2,by+bh/2+9,10,CM(),"center");
+      }
+    });
+    /* les fils posés */
+    liens.forEach(l=>{
+      const a=ex.bornes[l[0]],b=ex.bornes[l[1]];
+      const ok=juste(l);
+      c.strokeStyle=verifie?(ok?C2():C3()):C1();
+      c.lineWidth=3;c.lineCap="round";
+      c.beginPath();c.moveTo(X(a.x),Y(a.y));
+      const mx=(X(a.x)+X(b.x))/2;
+      c.bezierCurveTo(mx,Y(a.y),mx,Y(b.y),X(b.x),Y(b.y));c.stroke();
+      if(sousTension&&ok){
+        const f=(performance.now()/1400)%1;
+        const t=f,u=1-t;
+        const px=u*u*u*X(a.x)+3*u*u*t*mx+3*u*t*t*mx+t*t*t*X(b.x);
+        const py=u*u*u*Y(a.y)+3*u*u*t*Y(a.y)+3*u*t*t*Y(b.y)+t*t*t*Y(b.y);
+        c.fillStyle=C2();c.beginPath();c.arc(px,py,4,0,TAU);c.fill();
+      }
+    });
+    /* les bornes */
+    for(const id in ex.bornes){
+      const b=ex.bornes[id],x=X(b.x),y=Y(b.y);
+      const pris=liens.some(l=>l[0]===id||l[1]===id);
+      c.fillStyle=id===sel?C1():pris?CS():CS();
+      c.strokeStyle=id===sel?C1():pris?C1():CB();c.lineWidth=id===sel?3:2;
+      c.beginPath();c.arc(x,y,6,0,TAU);c.fill();c.stroke();
+      const d=8;
+      const px=b.cote==="gauche"?x-d:b.cote==="droite"?x+d:x;
+      const py=b.cote==="haut"?y-d-4:b.cote==="bas"?y+d+4:y-11;
+      txt(c,b.lab,px,py,10.5,id===sel?C1():CM(),
+        b.cote==="gauche"?"right":b.cote==="droite"?"left":"center",id===sel);
+    }
+    if(sel)txt(c,"clique une seconde borne pour poser le fil",w/2,h-8,11,C1(),"center",true);
+  });
+
+  const cv=zone.querySelector("canvas");
+  cv.classList.add("manip");
+  cv.addEventListener("pointerdown",e=>{
+    const r=cv.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top;
+    /* d'abord : cliquer un fil pour l'enlever */
+    for(let i=0;i<liens.length;i++){
+      const a=ex.bornes[liens[i][0]],b=ex.bornes[liens[i][1]];
+      const cx=(a.x+b.x)/2*r.width,cy=(a.y+b.y)/2*r.height;
+      if(Math.hypot(mx-cx,my-cy)<11){liens.splice(i,1);verifie=false;sousTension=false;maj();return;}
+    }
+    let best=null,d=1e9;
+    for(const id in ex.bornes){const b=ex.bornes[id];
+      const dd=Math.hypot(mx-b.x*r.width,my-b.y*r.height);
+      if(dd<d){d=dd;best=id;}}
+    if(d>18){sel=null;rendu();return;}
+    if(!sel){sel=best;}
+    else if(sel===best){sel=null;}
+    else{
+      const k=cle(sel,best);
+      if(!liens.some(l=>cle(l[0],l[1])===k))liens.push([sel,best]);
+      sel=null;verifie=false;sousTension=false;maj();return;
+    }
+    rendu();
+  });
+
+  const maj=()=>{
+    $("#cab-compte").textContent=faits()+" / "+attendus.length+" liaisons";
+    rendu();
+  };
+  const bouton=(cl,lab,fn)=>{const b=document.createElement("button");
+    b.className="btn "+cl;b.textContent=lab;b.addEventListener("click",fn);outils.appendChild(b);return b;};
+
+  const bv=bouton("btn-principal","Vérifier",()=>{
+    verifie=true;
+    const bons=faits(),faux=liens.length-bons,manque=attendus.length-bons;
+    if(manque===0&&faux===0){
+      msg.dataset.e="ok";
+      msg.innerHTML="<b>Câblage correct.</b> "+ex.verdict+
+        "<span class='cab-suite'>Mets sous tension pour voir le courant circuler.</span>";
+      bt.disabled=false;if(mi>=0)marquer(mi,pi);
+    }else{
+      msg.dataset.e="ko";
+      msg.innerHTML="<b>Pas encore.</b> "+
+        (faux?"<span class='cab-rouge'>"+faux+" fil"+(faux>1?"s":"")+" en trop ou mal placé"+(faux>1?"s":"")+"</span> (en rouge). ":"")+
+        (manque?manque+" liaison"+(manque>1?"s":"")+" manquante"+(manque>1?"s":"")+".":"")+
+        "<span class='cab-suite'>Enlève un fil en cliquant dessus.</span>";
+    }
+    maj();
+  });
+  bouton("btn-secondaire btn-fin","Indice",()=>{
+    msg.dataset.e="aide";
+    msg.innerHTML="<b>Piste "+(indice+1)+" sur "+ex.ordre.length+"</b> "+ex.ordre[indice];
+    indice=Math.min(ex.ordre.length-1,indice+1);
+  });
+  bouton("btn-secondaire btn-fin","Tout effacer",()=>{
+    liens=[];sel=null;verifie=false;sousTension=false;msg.dataset.e="";msg.innerHTML="";
+    bt.disabled=true;maj();});
+  const bt=bouton("btn-positif","Mettre sous tension",()=>{
+    sousTension=!sousTension;bt.textContent=sousTension?"Couper":"Mettre sous tension";});
+  bt.disabled=true;
+  anims.push({t:0,jouer:true,rendu:()=>{if(sousTension)rendu();}});
+  maj();
 }
 
 /* =========================================================================
@@ -4694,13 +5148,14 @@ function rendreControle(hote,mi,pi,pas){
     if(acquis)marquer(mi,pi);
     sauver();majGlobal();majRail();
     box.innerHTML='<span class="qn">Résultat du contrôle</span>'+
-      '<div class="qt">'+(acquis?"Module validé.":"On ne s'arrête pas là.")+"</div>"+
+      '<div class="qt">'+(acquis?(mod.examen?"Palier franchi.":"Module validé."):(mod.examen?"Le palier n'est pas encore franchi.":"On ne s'arrête pas là."))+"</div>"+
       '<div class="bulletin">'+
        '<div><span class="k">Note</span><span class="v" data-ton="'+(acquis?"ok":"ko")+'">'+nb(note,1)+'<u> / 20</u></span></div>'+
        '<div><span class="k">Bonnes réponses</span><span class="v">'+justes+'<u> / '+n+'</u></span></div>'+
        '<div><span class="k">Tentative</span><span class="v" data-ton="ac">'+ess+"</span></div></div>"+
       "<p style='color:var(--muted);max-width:62ch'>"+
-      (acquis?"Tu peux passer au module suivant. Tu pourras revenir refaire ce contrôle quand tu veux : les valeurs changent à chaque tirage."
+      (acquis?(mod.examen?"Le palier suivant est ouvert. Tu peux repasser cet examen quand tu veux : les valeurs changent à chaque tirage."
+        :"Tu peux passer au module suivant. Tu pourras revenir refaire ce contrôle quand tu veux : les valeurs changent à chaque tirage.")
        :"En dessous de 12 sur 20, on reprend. Retourne à l'atelier du module : les exercices seront tirés avec de nouveaux nombres, et la correction détaille chaque ligne. On recommence autant de fois qu'il faut.")+"</p>";
     const pied=document.createElement("div");pied.className="outils";pied.style.marginTop="18px";
     const at=mod.steps.findIndex(s=>s.k==="a");
@@ -4750,7 +5205,25 @@ function voir(m,p,silencieux){
     b.addEventListener("click",()=>voir(m,k));frise.appendChild(b);});
   sc.appendChild(frise);
 
-  const et=pas.k==="c"?"Contrôle noté":pas.k==="a"?"Atelier d'exercices":pas.k==="s"?"Banc d'essai":"Leçon";
+  if(estVerrouille(m)){
+    const e=examenAvant(m),ex=MODULES[e],n=etat.notes[ex.id];
+    const v=document.createElement("section");v.className="verre feuille monte";
+    v.innerHTML='<span class="etiquette">Palier fermé</span><h2>Il reste l\'examen à passer</h2>'+
+      "<p>Ce module appartient au palier suivant. Avant d'y entrer, il faut franchir <strong>"+ex.titre+
+      "</strong> avec au moins <strong>12 sur 20</strong>."+
+      (n?" Ta meilleure note pour l'instant : <strong>"+nb(n.note,1)+" / 20</strong>.":" Tu ne l'as pas encore passé.")+"</p>"+
+      "<p class='sourdine'>Ce n'est pas une punition : les modules suivants s'appuient sur ces notions. Les aborder sans elles fait perdre plus de temps qu'on n'en gagne.</p>";
+    const o=document.createElement("div");o.className="outils";o.style.marginTop="6px";
+    const ba=document.createElement("button");ba.className="btn btn-principal";
+    ba.textContent="Passer l'examen "+ex.num;
+    ba.addEventListener("click",()=>voir(e,0));
+    const bf=document.createElement("button");bf.className="btn btn-secondaire btn-fin";
+    bf.textContent="Entrer quand même";
+    bf.addEventListener("click",()=>{etat.forcer[ex.id]=1;sauver();voir(m,p);});
+    o.appendChild(ba);o.appendChild(bf);v.appendChild(o);
+    sc.appendChild(v);majRail();majGlobal();window.scrollTo({top:0});return;
+  }
+  const et=pas.k==="c"?(mod.examen?"Examen de palier":"Contrôle noté"):pas.k==="a"?"Atelier d'exercices":pas.k==="s"?"Banc d'essai":pas.k==="w"?"Câblage à faire":"Leçon";
   const feuille=document.createElement("section");feuille.className="verre feuille monte";
   feuille.innerHTML='<span class="etiquette">'+et+"</span>"+
     (pas.t?"<h2>"+pas.t+"</h2>":"<h2>Contrôle du module</h2>")+(pas.h||"");
@@ -4758,9 +5231,10 @@ function voir(m,p,silencieux){
   feuille.querySelectorAll("[data-anim]").forEach(f=>monterFigure(f,f.dataset.anim));
   if(pas.k==="s"&&SIMS[pas.sim])SIMS[pas.sim](feuille);
   if(pas.k==="a")rendreAtelier(sc,m,p,pas);
+  if(pas.k==="w")rendreCablage(sc,m,p,pas);
   if(pas.k==="c")rendreControle(sc,m,p,pas);
 
-  if(pas.k==="l"||pas.k==="s"){
+  if(pas.k==="l"||pas.k==="s"||pas.k==="w"){
     const pied=document.createElement("nav");pied.className="verre pied";
     const prec=document.createElement("button");prec.className="btn btn-secondaire";prec.textContent="← Précédent";
     prec.disabled=(m===0&&p===0);prec.addEventListener("click",reculer);
@@ -5090,10 +5564,33 @@ canvas.manip:active{cursor:grabbing}
   .corr-etapes>li>.n{width:24px;height:24px;font-size:11px}
   .corr-etapes>li.fl .tige{left:11px}.corr-etapes>li.fl .tete{left:6px}}
 .atelier{overflow:hidden}
+.cablage{overflow:hidden}
+.cab-tete{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:16px 22px;border-bottom:1px solid var(--border)}
+.cab-tete .t{font-weight:600;font-size:15px;flex:1;min-width:0}
+.cab-compte{font-family:"IBM Plex Mono",monospace;font-size:12.5px;font-weight:600;color:var(--primary);
+  background:color-mix(in srgb,var(--primary) 10%,transparent);padding:5px 12px;border-radius:999px;white-space:nowrap}
+.cab-consigne{margin:0;padding:15px 22px 0;font-size:15px;color:var(--text);max-width:70ch}
+.cab-zone{padding:14px 18px 0}
+.cablage canvas{background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--border)}
+.cab-outils{padding:16px 22px 0}
+.cab-msg{margin:16px 22px 22px;padding:0;border-radius:11px;font-size:14.7px;line-height:1.55}
+.cab-msg[data-e]{padding:13px 16px}
+.cab-msg[data-e=""]{display:none;padding:0}
+.cab-msg[data-e="ok"]{background:color-mix(in srgb,var(--success) 12%,var(--surface));
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--success) 30%,transparent)}
+.cab-msg[data-e="ok"] b{color:var(--success)}
+.cab-msg[data-e="ko"]{background:color-mix(in srgb,var(--danger) 10%,var(--surface));
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--danger) 26%,transparent)}
+.cab-msg[data-e="ko"] b{color:var(--danger)}
+.cab-msg[data-e="aide"]{background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--border)}
+.cab-msg[data-e="aide"] b{color:var(--primary)}
+.cab-rouge{color:var(--danger);font-weight:500}
+.cab-suite{display:block;margin-top:6px;font-size:13.5px;color:var(--muted)}
 .palier{font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
   padding:3px 10px;border-radius:999px}
 .palier[data-e="doux"]{background:color-mix(in srgb,var(--success) 14%,var(--surface));color:var(--success)}
 .palier[data-e="normal"]{background:var(--surface-2);color:var(--muted)}
+.palier[data-e="dur"]{background:color-mix(in srgb,var(--danger) 13%,var(--surface));color:var(--danger)}
 .autrement{margin-top:14px}
 .autre-corps{border-radius:10px;padding:13px 16px;
   background:color-mix(in srgb,var(--primary) 8%,var(--surface));
