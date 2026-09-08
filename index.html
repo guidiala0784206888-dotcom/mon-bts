@@ -7110,7 +7110,8 @@ function connexion(mode){
     '<label><span class="lg">Mot de passe<b>'+(mode==="creer"?"8 caractères minimum":"&nbsp;")+'</b></span><input type="password" id="ch-mdp" autocomplete="'+(mode==="creer"?"new-password":"current-password")+'" placeholder="••••••••"></label>'+
     "</div>"+
     '<div class="outils portail-actions"></div><div class="cab-msg" id="portail-msg"></div>'+
-    '<p class="portail-note">Un compte sert à retrouver ta progression sur un autre appareil. Tu peux aussi commencer tout de suite : tout fonctionne sans compte, la progression reste alors sur cet appareil.</p>';
+    '<p class="portail-note">Un compte sert à retrouver ta progression sur un autre appareil. Tu peux aussi commencer tout de suite : tout fonctionne sans compte, la progression reste alors sur cet appareil.</p>'+
+    (mode==="creer"?'<p class="portail-note portail-avert">⚠ La récupération de mot de passe par courriel n\'est pas encore en place. Note bien le tien : en cas d\'oubli, il faudra créer un autre compte.</p>':"");
   sc.appendChild(w);
   w.querySelectorAll(".portail-onglets button").forEach(b=>b.addEventListener("click",()=>connexion(b.dataset.m)));
   const act=w.querySelector(".portail-actions"),msg=w.querySelector("#portail-msg");
@@ -7520,6 +7521,7 @@ canvas.manip:active{cursor:grabbing}
   background:var(--surface);font-family:Rubik,sans-serif;font-size:15px}
 .portail-champs input:focus{border-color:var(--primary);outline:none}
 .portail-actions{justify-content:center;max-width:400px;margin:0 auto}
+.portail-avert{color:var(--danger);max-width:46ch;margin-top:10px}
 .portail-note{margin:20px auto 0;max-width:52ch;text-align:center;font-size:13px;color:var(--muted);line-height:1.6}
 .recherche{display:flex;align-items:center;gap:12px;max-width:560px;margin:0 auto 26px;
   background:var(--surface);border-radius:16px;padding:4px 6px 4px 18px;
