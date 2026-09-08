@@ -4,7 +4,9 @@ Révision d'un BTS, pas à pas. Deux spécialités couvertes :
 **l'électrotechnique** (25 modules) et **l'assistance technique d'ingénieur**
 (10 modules) — du calcul de base jusqu'au dossier technique.
 
-Un **compte** permet de retrouver sa progression sur n'importe quel appareil ;
+Un **compte** permet de retrouver sa progression sur n'importe quel appareil —
+avec récupération de mot de passe et suppression définitive du compte en un
+bouton ;
 sans réseau ni compte, tout continue de fonctionner en local. À l'entrée, on
 cherche son BTS puis on indique son **année d'étude** : le parcours se règle
 dessus, sans jamais fermer le reste.

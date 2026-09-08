@@ -5466,6 +5466,37 @@ async function connecter(mail,mdp){
   if(r.ok&&r.d&&r.d.access_token){SB.ok=true;poserSession(r.d);return {ok:true};}
   return {ok:false,msg:messageAuth(r.d)};
 }
+async function demanderMotDePasse(mail){
+  /* redirect_to est un paramètre d'ADRESSE, pas un en-tête. */
+  const retour=encodeURIComponent(location.href.split("#")[0]);
+  const r=await sbFetch("/auth/v1/recover?redirect_to="+retour,{method:"POST",anon:true,body:{email:mail}});
+  /* Supabase répond 200 même si l'adresse est inconnue : c'est voulu, cela
+     évite de révéler qui a un compte. On dit donc la même chose dans les
+     deux cas. */
+  if(r.status===0)return {ok:false,msg:messageAuth(r.d)};
+  if(r.status===429)return {ok:false,msg:"Trop de demandes pour l'instant. Le service d'envoi gratuit est limité à quelques messages par heure : réessaie dans un moment."};
+  return {ok:true};
+}
+async function changerMotDePasse(mdp){
+  const r=await sbFetch("/auth/v1/user",{method:"PUT",body:{password:mdp}});
+  if(r.ok)return {ok:true};
+  return {ok:false,msg:messageAuth(r.d)};
+}
+async function supprimerCompte(){
+  const r=await sbFetch("/rest/v1/rpc/supprimer_mon_compte",{method:"POST",body:{}});
+  return r.ok;
+}
+/* Retour depuis le courriel de réinitialisation : le jeton arrive dans le
+   fragment de l'adresse. On le récupère, puis on nettoie l'adresse. */
+function jetonDansAdresse(){
+  const h=location.hash||"";
+  if(h.indexOf("access_token=")<0)return null;
+  const p={};h.replace(/^#/,"").split("&").forEach(x=>{const [a,b]=x.split("=");p[a]=decodeURIComponent(b||"");});
+  history.replaceState(null,"",location.pathname+location.search);
+  if(!p.access_token)return null;
+  poserSession({access_token:p.access_token,refresh_token:p.refresh_token||"",user:null});
+  return p.type||"recovery";
+}
 async function deconnecter(){
   if(SB.session)await sbFetch("/auth/v1/logout",{method:"POST"});
   poserSession(null);
@@ -7111,7 +7142,7 @@ function connexion(mode){
     "</div>"+
     '<div class="outils portail-actions"></div><div class="cab-msg" id="portail-msg"></div>'+
     '<p class="portail-note">Un compte sert à retrouver ta progression sur un autre appareil. Tu peux aussi commencer tout de suite : tout fonctionne sans compte, la progression reste alors sur cet appareil.</p>'+
-    (mode==="creer"?'<p class="portail-note portail-avert">⚠ La récupération de mot de passe par courriel n\'est pas encore en place. Note bien le tien : en cas d\'oubli, il faudra créer un autre compte.</p>':"");
+    (mode==="creer"?'<p class="portail-note portail-avert">⚠ La récupération par courriel fonctionne, mais l\'envoi gratuit est limité à quelques messages par heure. Note quand même ton mot de passe.</p>':"");
   sc.appendChild(w);
   w.querySelectorAll(".portail-onglets button").forEach(b=>b.addEventListener("click",()=>connexion(b.dataset.m)));
   const act=w.querySelector(".portail-actions"),msg=w.querySelector("#portail-msg");
@@ -7128,6 +7159,23 @@ function connexion(mode){
   };
   bp.addEventListener("click",envoyer);
   w.querySelectorAll("input").forEach(i=>i.addEventListener("keydown",e=>{if(e.key==="Enter")envoyer();}));
+  if(mode==="entrer"){
+    const bo=document.createElement("button");bo.className="btn btn-secondaire btn-fin";
+    bo.textContent="Mot de passe oublié";
+    bo.addEventListener("click",async()=>{
+      const mail=w.querySelector("#ch-mail").value.trim();
+      if(!mail){msg.dataset.e="aide";msg.innerHTML="<b>Ton adresse d'abord.</b> Écris-la au-dessus, puis reclique.";
+        w.querySelector("#ch-mail").focus();return;}
+      bo.disabled=true;bo.textContent="Envoi…";
+      const r=await demanderMotDePasse(mail);
+      bo.disabled=false;bo.textContent="Mot de passe oublié";
+      if(r.ok){msg.dataset.e="ok";
+        msg.innerHTML="<b>Si un compte existe avec cette adresse, un lien vient d'y être envoyé.</b> "+
+          "Regarde aussi tes indésirables. Le lien vaut une heure.<span class='cab-suite'>"+
+          "L'envoi gratuit est limité à quelques messages par heure : si rien n'arrive, réessaie plus tard.</span>";}
+      else{msg.dataset.e="ko";msg.innerHTML="<b>Envoi impossible.</b> "+r.msg;}});
+    act.appendChild(bo);
+  }
   const bl=document.createElement("button");bl.className="btn btn-secondaire";
   bl.textContent="Continuer sans compte";
   bl.addEventListener("click",()=>{accueil();});
@@ -7136,6 +7184,31 @@ function connexion(mode){
   setTimeout(()=>w.querySelector("#ch-mail").focus(),60);
 }
 
+function nouveauMotDePasse(){
+  const sc=cadreVue("motdepasse");
+  const w=document.createElement("section");w.className="verre feuille monte portail";
+  w.innerHTML='<div class="portail-marque"><h1>Choisis un nouveau mot de passe</h1>'+
+    "<p>Ce lien est valable une heure. Note bien le mot de passe que tu vas choisir.</p></div>"+
+    '<div class="portail-champs"><label><span class="lg">Nouveau mot de passe<b>8 caractères minimum</b></span>'+
+    '<input type="password" id="ch-neuf" autocomplete="new-password" placeholder="••••••••"></label></div>'+
+    '<div class="outils portail-actions"></div><div class="cab-msg" id="portail-msg"></div>';
+  sc.appendChild(w);
+  const b=document.createElement("button");b.className="btn btn-principal";b.textContent="Enregistrer";
+  const msg=w.querySelector("#portail-msg");
+  b.addEventListener("click",async()=>{
+    const v=w.querySelector("#ch-neuf").value;
+    if(!v||v.length<8){msg.dataset.e="ko";msg.innerHTML="<b>Trop court.</b> Il faut au moins 8 caractères.";return;}
+    b.disabled=true;b.textContent="Un instant…";
+    const r=await changerMotDePasse(v);
+    b.disabled=false;b.textContent="Enregistrer";
+    if(r.ok){majCompte();msg.dataset.e="ok";msg.innerHTML="<b>C'est fait.</b> Tu es connecté avec ton nouveau mot de passe.";
+      setTimeout(accueil,1200);}
+    else{msg.dataset.e="ko";msg.innerHTML="<b>Impossible.</b> "+r.msg;}});
+  w.querySelector(".portail-actions").appendChild(b);
+  w.querySelector("#ch-neuf").addEventListener("keydown",e=>{if(e.key==="Enter")b.click();});
+  majRail();majGlobal();window.scrollTo({top:0});
+  setTimeout(()=>w.querySelector("#ch-neuf").focus(),60);
+}
 function accueil(){
   const sc=cadreVue("accueil");
   const w=document.createElement("section");w.className="verre feuille monte portail";
@@ -7233,9 +7306,22 @@ function menuCompte(){
   b1.addEventListener("click",()=>{document.querySelector(".page").dataset.rail=innerWidth>1040?"on":"off";voir(etat.pos.m,etat.pos.p);});
   const b2=document.createElement("button");b2.className="btn btn-secondaire";b2.textContent="Changer de BTS";
   b2.addEventListener("click",accueil);
-  const b3=document.createElement("button");b3.className="btn btn-destructif btn-fin";b3.textContent="Se déconnecter";
+  const b3=document.createElement("button");b3.className="btn btn-secondaire btn-fin";b3.textContent="Se déconnecter";
   b3.addEventListener("click",async()=>{await deconnecter();majCompte();connexion();});
-  o.appendChild(b1);o.appendChild(b2);o.appendChild(b3);w.appendChild(o);
+  const b4=document.createElement("button");b4.className="btn btn-destructif btn-fin";b4.textContent="Supprimer mon compte";
+  b4.addEventListener("click",async()=>{
+    if(!confirm("Supprimer définitivement ton compte et toute ta progression enregistrée sur le serveur ?\n\nCette action est irréversible."))return;
+    b4.disabled=true;b4.textContent="Suppression…";
+    const ok=await supprimerCompte();
+    if(ok){poserSession(null);try{localStorage.clear();}catch(e){}majCompte();
+      alert("Ton compte et tes données ont été supprimés.");location.reload();}
+    else{b4.disabled=false;b4.textContent="Supprimer mon compte";
+      alert("La suppression n'a pas abouti. Réessaie dans un instant.");}});
+  o.appendChild(b1);o.appendChild(b2);o.appendChild(b3);o.appendChild(b4);w.appendChild(o);
+  const note=document.createElement("p");note.className="sourdine";note.style.cssText="font-size:13px;margin-top:16px;max-width:60ch";
+  note.innerHTML="Ce qui est enregistré sur le serveur : ton adresse électronique, ta progression, tes notes et ton temps de travail. Rien d'autre. "+
+    "Tu peux tout effacer d'un bouton ci-dessus, et la suppression est immédiate et définitive.";
+  w.appendChild(note);
   sc.appendChild(w);majRail();majGlobal();window.scrollTo({top:0});
 }
 
@@ -7467,6 +7553,7 @@ addEventListener("resize",()=>{clearTimeout(tr);tr=setTimeout(()=>redessins.forE
    Si le serveur ne répond pas, rien ne bloque : on travaille en local. */
 (async function demarrer(){
   poserRail(false);
+  if(jetonDansAdresse()){majCompte();nouveauMotDePasse();brancherBase();return;}
   let dernier=null;try{dernier=localStorage.getItem(CLE_BASE+"-bts");}catch(e){}
   const connecte=await reprendreSession();
   majCompte();
