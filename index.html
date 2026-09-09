@@ -13485,9 +13485,87 @@ Object.assign(GEN,{
  pas(p){return [{t:"Réponse.",op:p.c.b},
   {t:"Sur un aller-retour dont le retour est vide, la moitié des kilomètres ne rapporte rien. Trouver du fret retour double presque la recette du même trajet : aucune négociation tarifaire n'approche ce résultat."}];}},
 
+
+"gt-entrepot":{t:"Surface d'entreposage",u:"m²",tol:0.02,
+ rappel:"surface = palettes / niveaux × emprise, plus les allées",
+ tirer(){return {pal:R(200,6000,50),niveaux:P([2,3,4,5]),emprise:P([0.96,1.2,1.44]),allees:R(30,60,5)};},
+ enonce(p){return v(F(p.pal,0)+" palettes")+" à stocker sur "+v(p.niveaux+" niveaux")+", "+
+  v(F(p.emprise,2)+" m²")+" d'emprise au sol par palette, "+v(F(p.allees,0)+" %")+
+  " de la surface en allées. Quelle surface d'entrepôt ?";},
+ rep(p){return p.pal/p.niveaux*p.emprise/(1-p.allees/100);},
+ pas(p){const util=p.pal/p.niveaux*p.emprise;return [
+  {t:"Emplacements au sol.",op:F(p.pal,0)+" ÷ "+p.niveaux+" = "+F(p.pal/p.niveaux,0)},
+  {t:"Surface utile.",op:F(p.pal/p.niveaux,0)+" × "+F(p.emprise,2)+" = "+F(util,0)+" m²"},
+  {t:"Avec les allées.",op:F(util,0)+" ÷ ("+"100 − "+F(p.allees,0)+" %) = "+F(util/(1-p.allees/100),0)+" m²"},
+  {t:"Monter d'un niveau divise la surface au sol d'autant — et impose un chariot capable d'y aller. C'est l'arbitrage de tout entrepôt : du foncier contre de la manutention."}];}},
+
+"gt-preparation":{t:"Temps de préparation d'une commande",u:"min",tol:0.02,
+ rappel:"déplacement + prélèvement + contrôle, ligne par ligne",
+ tirer(){return {lignes:R(3,40,1),deplacement:R(0.3,2.5,0.1),prise:R(0.2,1.2,0.1),controle:R(1,6,0.5)};},
+ enonce(p){return "Une commande de "+v(F(p.lignes,0)+" lignes")+", "+v(F(p.deplacement,1)+" min")+
+  " de déplacement et "+v(F(p.prise,1)+" min")+" de prélèvement par ligne, "+v(F(p.controle,1)+" min")+
+  " de contrôle final. Quel temps de préparation ?";},
+ rep(p){return p.lignes*(p.deplacement+p.prise)+p.controle;},
+ pas(p){const t=p.lignes*(p.deplacement+p.prise)+p.controle;return [
+  {t:"Temps par ligne.",op:F(p.deplacement,1)+" + "+F(p.prise,1)+" = "+F(p.deplacement+p.prise,1)+" min"},
+  {t:"Temps total.",op:F(p.lignes,0)+" × "+F(p.deplacement+p.prise,1)+" + "+F(p.controle,1)+" = "+F(t,1)+" min"},
+  {t:"Le déplacement pèse souvent plus que le prélèvement : ranger les références qui sortent le plus près du quai fait gagner davantage qu'un préparateur de plus."}];}},
+
+"gt-stock-secu":{t:"Stock de sécurité",u:"unités",tol:0.02,
+ rappel:"il couvre l'aléa pendant le délai de réapprovisionnement",
+ tirer(){return {conso:R(20,900,10),ecart:R(5,120,5),delai:R(2,30,1),service:P([1.65,2.05,2.33])};},
+ enonce(p){return "Une consommation de "+v(F(p.conso,0)+" par jour")+", un écart type de "+
+  v(F(p.ecart,0))+", un délai de "+v(F(p.delai,0)+" jours")+", coefficient de service "+
+  v(F(p.service,2))+". Quel stock de sécurité ?";},
+ rep(p){return p.service*p.ecart*Math.sqrt(p.delai);},
+ pas(p){const ss=p.service*p.ecart*Math.sqrt(p.delai);return [
+  {t:"Racine du délai.",op:"√"+F(p.delai,0)+" = "+F(Math.sqrt(p.delai),2)},
+  {t:"Stock de sécurité.",op:F(p.service,2)+" × "+F(p.ecart,0)+" × "+F(Math.sqrt(p.delai),2)+" = "+F(ss,0)+" unités"},
+  {t:"Le stock de sécurité couvre l'ALÉA, pas la consommation : c'est l'écart type qui le dimensionne, pas la moyenne. Un fournisseur régulier permet un stock faible même avec un long délai."}];}},
+
+"gt-douane":{t:"Valeur en douane et droits",u:"€",tol:0.02,
+ rappel:"les droits se calculent sur la valeur CAF, la TVA sur le tout",
+ tirer(){return {marchandise:R(2000,90000,500),fret:R(200,6000,50),assurance:R(20,900,10),
+                 droits:R(0,17,0.5)};},
+ enonce(p){return "Une importation de "+v(eur(p.marchandise,0))+", "+v(eur(p.fret,0))+" de fret, "+
+  v(eur(p.assurance,0))+" d'assurance, droits de douane "+v(F(p.droits,1)+" %")+
+  ". Quel montant de droits ?";},
+ rep(p){const caf=p.marchandise+p.fret+p.assurance;return caf*p.droits/100;},
+ pas(p){const caf=p.marchandise+p.fret+p.assurance, d=caf*p.droits/100;return [
+  {t:"Valeur en douane (CAF).",op:eur(p.marchandise,0)+" + "+eur(p.fret,0)+" + "+eur(p.assurance,0)+" = "+eur(caf,0)},
+  {t:"Droits.",op:eur(caf,0)+" × "+F(p.droits,1)+" % = "+eur(d,0)},
+  {t:"TVA à l'importation.",op:"("+eur(caf,0)+" + "+eur(d,0)+") × 20 % = "+eur((caf+d)*0.2,0)},
+  {t:"Le fret entre dans la base des droits : négocier un incoterm départ ne fait pas disparaître le transport de la valeur en douane, il change seulement qui l'organise."}];}},
+
+"gt-entrepot-qcm":{t:"Conduire un entrepôt",qcm:true,
+ rappel:"un entrepôt se juge sur ce qui sort juste, pas sur ce qui rentre vite",
+ tirer(){return {c:P([
+  {q:"Ranger les références qui tournent le plus près du quai…",
+   b:"fait gagner du déplacement sur chaque commande de l'année",
+   f:["complique le rangement pour un gain marginal","n'a d'effet que sur les grosses commandes"]},
+  {q:"Le stock de sécurité se dimensionne sur…",
+   b:"l'écart type de la demande, pas sur la moyenne",
+   f:["la consommation moyenne pendant le délai","le montant que l'entreprise accepte d'immobiliser"]},
+  {q:"Un inventaire tournant, comparé à un inventaire annuel…",
+   b:"trouve l'écart quand on peut encore en chercher la cause",
+   f:["coûte plus cher pour un résultat équivalent","ne satisfait pas aux obligations comptables"]},
+  {q:"Une erreur de préparation coûte…",
+   b:"le retour, la re-préparation et la confiance du client",
+   f:["le prix de l'article expédié par erreur","le seul transport de la pièce manquante"]},
+  {q:"Monter d'un niveau de stockage…",
+   b:"divise la surface au sol et impose un chariot qui y accède",
+   f:["augmente la capacité sans autre conséquence","suppose seulement des racks plus solides"]}])};},
+ enonce(p){return p.c.q;}, opts(p){return [p.c.b,...p.c.f];},
+ pas(p){return [{t:"Réponse.",op:p.c.b},
+  {t:"Un écart trouvé six mois après ne s'explique plus : ni le préparateur, ni le transporteur, ni le client ne s'en souviennent. L'inventaire tournant vaut par sa fraîcheur, pas par sa précision."}];}},
+
 });
 
 Object.assign(FACILE,{
+"gt-entrepot":()=>({pal:1200,niveaux:P([3,4]),emprise:1.2,allees:40}),
+"gt-preparation":()=>({lignes:10,deplacement:1,prise:P([0.5,1]),controle:2}),
+"gt-stock-secu":()=>({conso:100,ecart:P([20,40]),delai:4,service:2.05}),
+"gt-douane":()=>({marchandise:10000,fret:1000,assurance:100,droits:P([5,10])}),
 "gt-prix-revient":()=>({fixes:4000,km:P([8000,10000]),gasoil:1.5,conso:30,autres:0.2}),
 "gt-retour-vide":()=>({aller:400,retour:P([0,200]),prix:1.5,revient:1.2}),
 "gt-tournee":()=>({km:200,vit:50,pts:P([6,12]),arret:15}),
@@ -15175,13 +15253,99 @@ Object.assign(GEN,{
  pas(p){return [{t:"Réponse.",op:p.c.b},
   {t:"Un vêtement vendu au prix fort et un vêtement soldé n'ont pas le même modèle économique. Une collection se calcule sur le pourcentage de pièces qu'on prévoit de solder — pas sur le prix de lancement."}];}},
 
+
+"mo-sourcing":{t:"Choisir un fournisseur",u:"€",tol:0.02,
+ rappel:"prix rendu = prix usine + transport + droits + risque de retard",
+ tirer(){return {usine:R(4,60,0.5),transport:R(0.2,3.5,0.1),droits:R(0,12,1),
+                 delai:R(15,150,5),retard:R(0,25,5),q:R(200,6000,100)};},
+ enonce(p){return "Un vêtement à "+v(eur(p.usine))+" départ usine, "+v(eur(p.transport))+
+  " de transport, "+v(F(p.droits,0)+" %")+" de droits de douane. Quel prix rendu à l'unité ?";},
+ rep(p){return (p.usine+p.transport)*(1+p.droits/100);},
+ pas(p){const rendu=(p.usine+p.transport)*(1+p.droits/100);return [
+  {t:"Prix départ usine et transport.",op:eur(p.usine)+" + "+eur(p.transport)+" = "+eur(p.usine+p.transport)},
+  {t:"Avec les droits.",op:eur(p.usine+p.transport)+" × ("+"100 + "+F(p.droits,0)+" %) = "+eur(rendu)},
+  {t:"Le prix rendu ne dit pas tout : à "+F(p.delai,0)+" jours de délai et "+F(p.retard,0)+
+   " % de risque de retard, une collection peut arriver après la saison. Un fournisseur proche et plus cher livre parfois moins cher, tout compté."}];}},
+
+"mo-qualite":{t:"Contrôle à réception",u:"%",tol:0.02,
+ rappel:"on prélève, on compte les défauts, on décide sur le lot entier",
+ tirer(){return {lot:R(200,4000,50),n:R(20,200,5),defauts:R(0,14,1),seuil:R(2,8,1)};},
+ enonce(p){const n=Math.min(p.n,p.lot);
+  return "Sur "+v(F(n,0)+" pièces")+" prélevées dans un lot de "+v(F(p.lot,0))+", "+
+  v(F(p.defauts,0)+" défauts")+". Quel taux de défaut constaté ?";},
+ rep(p){const n=Math.min(p.n,p.lot);return p.defauts/n*100;},
+ pas(p){const n=Math.min(p.n,p.lot), t=p.defauts/n*100;return [
+  {t:"Taux constaté.",op:F(p.defauts,0)+" ÷ "+F(n,0)+" = "+F(t,2)+" %"},
+  {t:"Comparé au seuil de "+F(p.seuil,0)+" %.",op:t<=p.seuil? "lot accepté" : "lot refusé"},
+  {t:"Un prélèvement de vingt pièces sur deux mille ne prouve pas grand-chose : la taille de l'échantillon décide de ce qu'on peut affirmer. Refuser un lot sur un échantillon trop petit se conteste — l'accepter aussi."}];}},
+
+"mo-fiche-technique":{t:"Temps de montage d'un modèle",u:"min",tol:0.02,
+ rappel:"on additionne les opérations, puis on ajoute les aléas d'atelier",
+ tirer(){return {ops:R(8,40,1),moyen:R(0.4,4,0.1),alea:R(8,25,1),taux:R(9,38,1)};},
+ enonce(p){return v(F(p.ops,0)+" opérations")+" de "+v(F(p.moyen,1)+" min")+" en moyenne, "+
+  v(F(p.alea,0)+" %")+" d'aléas d'atelier. Quel temps de montage par vêtement ?";},
+ rep(p){return p.ops*p.moyen*(1+p.alea/100);},
+ pas(p){const t=p.ops*p.moyen*(1+p.alea/100);return [
+  {t:"Temps des opérations.",op:F(p.ops,0)+" × "+F(p.moyen,1)+" = "+F(p.ops*p.moyen,1)+" min"},
+  {t:"Avec les aléas.",op:F(p.ops*p.moyen,1)+" × ("+"100 + "+F(p.alea,0)+" %) = "+F(t,1)+" min"},
+  {t:"Coût de main-d'œuvre.",op:F(t,1)+" ÷ 60 × "+eur(p.taux,0)+" = "+eur(t/60*p.taux)},
+  {t:"Supprimer une opération vaut mieux que l'accélérer : c'est le nombre d'opérations, pas leur vitesse, qui fait le temps de montage — et il se décide au patronage."}];}},
+
+"mo-matiere":{t:"Matières et entretien",qcm:true,
+ rappel:"une matière s'achète pour ce qu'elle devient après vingt lavages",
+ tirer(){return {c:P([
+  {q:"Un tissu en maille comparé à un tissu chaîne et trame…",
+   b:"s'étire et se coud autrement : aiguille, point et patron changent",
+   f:["se coud de la même façon, avec une aiguille simplement plus fine","demande seulement un point plus serré au moment de la piqûre"]},
+  {q:"Un mélange coton-élasthanne…",
+   b:"perd son élasticité au lavage chaud, définitivement",
+   f:["se comporte exactement comme du coton pur au lavage en machine","retrouve toute son élasticité après un séchage à plat"]},
+  {q:"Le sens du droit-fil sur un patron…",
+   b:"se respecte, sinon le vêtement vrille au premier lavage",
+   f:["se choisit librement pour économiser du tissu au moment du placement","n'a d'importance que sur les tissus rayés ou à motif"]},
+  {q:"Une doublure choisie plus fine que le tissu extérieur…",
+   b:"se déchire aux coutures avant le vêtement lui-même",
+   f:["allège le vêtement sans aucune autre conséquence","améliore la tenue et le tombé général du modèle"]},
+  {q:"L'étiquette d'entretien engage…",
+   b:"le fabricant : elle doit être vérifiée, pas recopiée du fournisseur",
+   f:["le fournisseur du tissu, qui l'a communiquée au fabricant","le distributeur qui met le vêtement en rayon dans son magasin"]}])};},
+ enonce(p){return p.c.q;}, opts(p){return [p.c.b,...p.c.f];},
+ pas(p){return [{t:"Réponse.",op:p.c.b},
+  {t:"Le droit-fil est la direction dans laquelle le tissu ne s'allonge pas. Un patron posé de travers donne un vêtement qui tourne autour du corps dès le premier lavage — et le client ne saura pas dire pourquoi, il saura seulement qu'il ne le remet pas."}];}},
+
+"mo-collection":{t:"Construire une collection",qcm:true,
+ rappel:"une collection se juge sur ce qu'elle laisse en fin de saison",
+ tirer(){return {c:P([
+  {q:"Un modèle qui ne se vend qu'en solde…",
+   b:"a coûté sa place en rayon toute la saison",
+   f:["reste rentable puisqu'il finit par se vendre","sert à attirer le client vers les autres modèles"]},
+  {q:"La profondeur d'une collection, c'est…",
+   b:"le nombre de coloris et de tailles par modèle",
+   f:["le nombre de modèles différents proposés","le nombre de saisons couvertes par la gamme"]},
+  {q:"Un modèle d'appel très remisé…",
+   b:"doit être compensé par des modèles à forte marque, sinon la collection perd",
+   f:["se rentabilise par le volume qu'il génère à lui seul","n'a pas d'incidence sur la marge globale"]},
+  {q:"Commander en une seule fois toute la saison…",
+   b:"fige le stock avant de savoir ce qui se vend",
+   f:["fait baisser le prix unitaire, c'est donc toujours gagnant","permet de mieux négocier les délais de livraison"]},
+  {q:"Le réassort en cours de saison…",
+   b:"coûte plus cher à l'unité et vend au prix fort",
+   f:["coûte moins cher, les moules étant déjà faits","ne se pratique plus dans l'habillement"]}])};},
+ enonce(p){return p.c.q;}, opts(p){return [p.c.b,...p.c.f];},
+ pas(p){return [{t:"Réponse.",op:p.c.b},
+  {t:"Un réassort payé plus cher mais vendu plein tarif rapporte souvent plus qu'une commande initiale généreuse soldée à moitié prix. C'est le calcul que la première commande doit intégrer."}];}},
+
 });
 
 Object.assign(FACILE,{
+"mo-sourcing":()=>({usine:20,transport:1,droits:P([0,10]),delai:60,retard:10,q:1000}),
+"mo-qualite":()=>({lot:1000,n:100,defauts:P([2,5]),seuil:5}),
+"mo-fiche-technique":()=>({ops:20,moyen:1,alea:P([10,20]),taux:20}),
 "mo-metrage":()=>({lg:P([10,20]),n:10,chute:10}),
 "mo-cout-vetement":()=>({m:2,prixM:P([10,20]),fourn:2,minutes:60,taux:12}),
 "mo-serie":()=>({serie:P([1000,2000]),part:P([20,25])}),
 "mo-marge-collection":()=>({revient:20,coef:3,tva:20,demarque:P([0,20])}),
+
 });
 
 
@@ -20352,6 +20516,26 @@ gt06:{p:"« Sous réserve de déballage » ne vaut rien.",
  f:[],
  g:"Émettre des réserves vagues : la livraison est réputée conforme.",
  r:"La lettre de voiture est le contrat : elle engage les trois parties."},
+gt07:{p:"Monter d'un niveau divise la surface au sol.",
+ i:"Un rack qui grimpe, et le chariot qu'il faut pour y aller.",
+ f:["surface = palettes / niveaux × emprise ÷ (1 − allées)"],
+ g:"Dimensionner sur la seule surface utile : les allées prennent le tiers à la moitié.",
+ r:"Tout entrepôt arbitre du foncier contre de la manutention."},
+gt08:{p:"Le déplacement pèse souvent plus que le prélèvement.",
+ i:"Un préparateur qui marche plus qu'il ne prend.",
+ f:["temps = lignes × (déplacement + prise) + contrôle"],
+ g:"Ajouter un préparateur au lieu de ranger les références qui tournent près du quai.",
+ r:"Une erreur de préparation coûte le retour, la reprise et la confiance — pas l'article."},
+gt09:{p:"Le stock de sécurité couvre l'aléa, pas la consommation.",
+ i:"Une courbe de demande qui tremble, et la marge qu'on garde pour ça.",
+ f:["stock = coefficient de service × écart type × √délai"],
+ g:"Dimensionner sur la consommation moyenne : c'est l'écart type qui commande.",
+ r:"Un fournisseur régulier coûte moins de stock, même avec un long délai."},
+gt10:{p:"Le fret entre dans la base des droits de douane.",
+ i:"Une valeur qui s'empile : marchandise, fret, assurance.",
+ f:["CAF = marchandise + fret + assurance","TVA sur (CAF + droits)"],
+ g:"Croire qu'un achat départ usine sort le transport de la valeur en douane.",
+ r:"L'incoterm dit qui ORGANISE le transport, pas ce qui entre dans la valeur."},
 });
 
 
@@ -20690,6 +20874,26 @@ mo06:{p:"C'est la part soldée qui décide de l'année.",
  f:["marge HT = prix soldé TTC / 1,2 − revient"],
  g:"Se rassurer sur un coefficient de 3 : la TVA en prend un sixième.",
  r:"Une collection se calcule sur le pourcentage de pièces qu'on prévoit de solder."},
+mo07:{p:"C'est le NOMBRE d'opérations qui fait le temps, pas leur vitesse.",
+ i:"Une opération retirée du patron, et toute la série qui va plus vite.",
+ f:["temps = opérations × temps moyen × (1 + aléas)"],
+ g:"Chiffrer sur le temps théorique : les aléas d'atelier valent 10 à 25 %.",
+ r:"Une poche plaquée au lieu d'une passepoilée se décide au patronage, pas à l'atelier."},
+mo08:{p:"Un fournisseur proche et plus cher livre parfois moins cher, tout compté.",
+ i:"Trois colonnes : prix usine, prix rendu, prix d'une saison manquée.",
+ f:["rendu = (usine + transport) × (1 + droits)"],
+ g:"Refuser un lot sur vingt pièces prélevées : l'échantillon ne prouve rien.",
+ r:"Le délai et le risque de le rater se chiffrent, au même titre que le transport."},
+mo09:{p:"Une matière s'achète pour ce qu'elle devient après vingt lavages.",
+ i:"Un vêtement qui tourne autour du corps après le premier lavage.",
+ f:[],
+ g:"Recopier l'étiquette d'entretien du fournisseur : c'est le fabricant qu'elle engage.",
+ r:"Le droit-fil est la direction où le tissu ne s'allonge pas — il ne se néglige jamais."},
+mo10:{p:"Une collection se juge sur ce qu'elle laisse en stock au dernier jour.",
+ i:"Un portant de fin de saison, et ce qui y reste.",
+ f:[],
+ g:"Tout commander d'avance : le stock est figé avant de savoir ce qui se vend.",
+ r:"Le réassort coûte plus cher à l'unité et se vend au prix fort — souvent le meilleur calcul."},
 });
 
 
@@ -27097,6 +27301,53 @@ const MODULES_GT=[
  {k:"c",t:"Contrôle",gen:["gt-reglementation","gt-exploitation","gt-marge-affretement","gt-tournee"],n:8}
 ]},
 
+
+{id:"gt07",num:"07",bloc:"Entreposer",an:1,titre:"L'entrepôt et sa surface",duree:"18 min",
+ resume:"Monter d'un niveau divise la surface au sol — et impose un chariot capable d'y aller.",
+ steps:[
+ {k:"l",t:"Palettes, niveaux, allées",h:`
+  <div class="formule">surface = palettes / niveaux × emprise, divisée par (1 − part des allées)</div>
+  <div class="encart e-cle"><span class="chapo">Du foncier contre de la manutention</span><p>C'est l'arbitrage de tout entrepôt. Le mètre carré se paie une fois par an ; le chariot qui monte à dix mètres se paie une fois, mais il ralentit chaque prélèvement.</p></div>
+  <div class="encart e-piege"><span class="chapo">Oublier les allées</span><p>Elles occupent le tiers à la moitié de la surface. Un entrepôt dimensionné sur la seule surface utile est un entrepôt qu'on ne peut pas exploiter.</p></div>`},
+ {k:"a",t:"Atelier — la surface",gen:["gt-entrepot","gt-preparation","gt-entrepot-qcm"],but:4},
+ {k:"c",t:"Contrôle",gen:["gt-entrepot","gt-preparation","gt-entrepot-qcm","gt-remplissage"],n:8}
+]},
+
+{id:"gt08",num:"08",bloc:"Entreposer",an:2,titre:"Préparer et contrôler",duree:"18 min",
+ resume:"Le déplacement pèse souvent plus que le prélèvement lui-même.",
+ steps:[
+ {k:"l",t:"Ce que coûte une ligne de commande",h:`
+  <div class="formule">temps = lignes × (déplacement + prélèvement) + contrôle</div>
+  <div class="encart e-cle"><span class="chapo">Ranger vaut mieux que courir</span><p>Placer les références qui sortent le plus près du quai fait gagner du déplacement sur CHAQUE commande de l'année. C'est presque toujours plus rentable qu'un préparateur de plus.</p></div>
+  <div class="encart e-piege"><span class="chapo">L'erreur de préparation</span><p>Elle coûte le retour, la re-préparation et la confiance du client — jamais le seul prix de l'article. C'est pour cela qu'on contrôle avant d'expédier, pas après réclamation.</p></div>`},
+ {k:"a",t:"Atelier — la préparation",gen:["gt-preparation","gt-entrepot-qcm","gt-stock-secu"],but:4},
+ {k:"c",t:"Contrôle",gen:["gt-preparation","gt-entrepot-qcm","gt-stock-secu","gt-entrepot"],n:8}
+]},
+
+{id:"gt09",num:"09",bloc:"Entreposer",an:2,titre:"Le stock de sécurité",duree:"18 min",
+ resume:"Il couvre l'aléa, pas la consommation : c'est l'écart type qui le dimensionne.",
+ steps:[
+ {k:"l",t:"Ce que le stock protège",h:`
+  <div class="formule">stock de sécurité = coefficient de service × écart type × √délai</div>
+  <div class="encart e-cle"><span class="chapo">Un fournisseur régulier coûte moins de stock</span><p>Même avec un long délai. C'est la variabilité qui se paie en immobilisation, pas l'attente — d'où l'intérêt de négocier la RÉGULARITÉ avant le délai.</p></div>`},
+ {k:"a",t:"Atelier — le stock",gen:["gt-stock-secu","gt-entrepot","gt-preparation"],but:4},
+ {k:"c",t:"Contrôle",gen:["gt-stock-secu","gt-entrepot","gt-preparation","gt-entrepot-qcm"],n:8}
+]},
+
+{id:"gt10",num:"10",bloc:"Vendre",an:2,titre:"Import, douane et valeur",duree:"18 min",
+ resume:"Le fret entre dans la base des droits : changer d'incoterm ne l'en sort pas.",
+ steps:[
+ {k:"l",t:"La valeur en douane",h:`
+  <div class="formule">valeur CAF = marchandise + fret + assurance &nbsp;·&nbsp; droits = CAF × taux</div>
+  <div class="tabl"><table>
+   <tr><th>Base</th><th>Ce qu'on calcule dessus</th></tr>
+   <tr><td class="mono">valeur CAF</td><td class="mono">les droits de douane</td></tr>
+   <tr><td>CAF + droits</td><td>la TVA à l'importation</td></tr>
+  </table></div>
+  <div class="encart e-piege"><span class="chapo">« On achète départ usine, donc pas de fret dans la valeur »</span><p>Faux : l'incoterm dit qui organise le transport, pas ce qui entre dans la valeur en douane. Le fret jusqu'à la frontière y entre dans tous les cas.</p></div>`},
+ {k:"a",t:"Atelier — la douane",gen:["gt-douane","gt-marge-affretement","ci-incoterms"],but:4},
+ {k:"c",t:"Contrôle",gen:["gt-douane","gt-marge-affretement","ci-incoterms","gt-reglementation"],n:8}
+]},
 ];
 const PARCOURS_GT=MODULES_GT;
 
@@ -28167,6 +28418,58 @@ const MODULES_MO=[
  {k:"c",t:"Contrôle",gen:["mo-marge-collection","mo-cout-vetement","mo-serie","mo-patronage"],n:8}
 ]},
 
+
+{id:"mo07",num:"07",bloc:"Le modèle",an:2,titre:"La fiche technique",duree:"18 min",
+ resume:"Supprimer une opération vaut mieux que l'accélérer : c'est leur NOMBRE qui fait le temps.",
+ steps:[
+ {k:"l",t:"Du croquis à l'atelier",h:`
+  <div class="formule">temps de montage = opérations × temps moyen × (1 + aléas)</div>
+  <div class="encart e-cle"><span class="chapo">Le temps se décide au patronage</span><p>Une poche plaquée au lieu d'une poche passepoilée, une doublure montée à la machine plutôt qu'à la main : chaque opération retirée se paie sur toutes les pièces de la série, et elle se retire sur le patron, pas à l'atelier.</p></div>
+  <div class="encart e-piege"><span class="chapo">Le temps théorique</span><p>Il ignore les changements de fil, les reprises, les pauses machine. Les aléas d'atelier valent dix à vingt-cinq pour cent — les oublier fait sous-évaluer chaque devis de la saison.</p></div>`},
+ {k:"a",t:"Atelier — le temps de montage",gen:["mo-fiche-technique","mo-cout-vetement","mo-patronage"],but:4},
+ {k:"c",t:"Contrôle",gen:["mo-fiche-technique","mo-cout-vetement","mo-patronage","mo-industrie"],n:8}
+]},
+
+{id:"mo08",num:"08",bloc:"La production",an:2,titre:"Sourcer et contrôler",duree:"20 min",
+ resume:"Un fournisseur proche et plus cher livre parfois moins cher, tout compté.",
+ steps:[
+ {k:"l",t:"Le prix rendu, et ce qu'il ne dit pas",h:`
+  <div class="formule">prix rendu = (prix usine + transport) × (1 + droits)</div>
+  <div class="tabl"><table>
+   <tr><th>Ce qu'on compare</th><th>Ce qu'on oublie</th></tr>
+   <tr><td class="mono">le prix départ usine</td><td class="mono">le transport et les droits</td></tr>
+   <tr><td>le prix rendu</td><td>le délai, et le risque de le rater</td></tr>
+   <tr><td class="mono">le délai annoncé</td><td class="mono">ce que coûte une saison manquée</td></tr>
+  </table></div>
+  <div class="encart e-piege"><span class="chapo">L'échantillon de vingt pièces</span><p>Sur un lot de deux mille, il ne prouve pas grand-chose. La taille du prélèvement décide de ce qu'on peut affirmer — et refuser un lot sur un échantillon trop petit se conteste devant un fournisseur.</p></div>`},
+ {k:"a",t:"Atelier — le sourcing",gen:["mo-sourcing","mo-qualite","mo-cout-vetement"],but:4},
+ {k:"c",t:"Contrôle",gen:["mo-sourcing","mo-qualite","mo-cout-vetement","mo-matiere"],n:8}
+]},
+
+{id:"mo09",num:"09",bloc:"Le modèle",an:1,titre:"Les matières",duree:"18 min",
+ resume:"Une matière s'achète pour ce qu'elle devient après vingt lavages.",
+ steps:[
+ {k:"l",t:"Maille, chaîne et trame, droit-fil",h:`
+  <div class="encart e-cle"><span class="chapo">Le droit-fil n'est pas une convention</span><p>C'est la direction dans laquelle le tissu ne s'allonge pas. Un patron posé de travers donne un vêtement qui vrille au premier lavage — le client ne saura pas dire pourquoi, il saura seulement qu'il ne le remet pas.</p></div>
+  <div class="encart e-piege"><span class="chapo">L'étiquette recopiée du fournisseur</span><p>Elle engage le fabricant, pas le fournisseur. Un entretien annoncé et non vérifié se retourne contre celui dont le nom est sur le col.</p></div>`},
+ {k:"a",t:"Atelier — les matières",gen:["mo-matiere","mo-metrage","mo-qualite"],but:4},
+ {k:"c",t:"Contrôle",gen:["mo-matiere","mo-metrage","mo-qualite","mo-patronage"],n:8}
+]},
+
+{id:"mo10",num:"10",bloc:"Le marché",an:2,titre:"Construire la collection",duree:"18 min",
+ resume:"Un réassort payé plus cher mais vendu plein tarif rapporte souvent plus qu'une grosse commande soldée.",
+ steps:[
+ {k:"l",t:"Largeur, profondeur, réassort",h:`
+  <div class="tabl"><table>
+   <tr><th>Mot</th><th>Ce qu'il désigne</th></tr>
+   <tr><td class="mono">largeur</td><td class="mono">le nombre de modèles</td></tr>
+   <tr><td>profondeur</td><td>les coloris et les tailles par modèle</td></tr>
+   <tr><td class="mono">réassort</td><td class="mono">ce qu'on recommande en cours de saison</td></tr>
+  </table></div>
+  <div class="encart e-cle"><span class="chapo">Le modèle qui ne part qu'en solde</span><p>Il a occupé sa place en rayon toute la saison. Une collection ne se juge pas sur ce qu'elle propose, mais sur ce qu'elle laisse en stock au dernier jour.</p></div>`},
+ {k:"a",t:"Atelier — la collection",gen:["mo-collection","mo-marge-collection","mo-serie"],but:4},
+ {k:"c",t:"Contrôle",gen:["mo-collection","mo-marge-collection","mo-serie","mo-sourcing"],n:8}
+]},
 ];
 const PARCOURS_MO=MODULES_MO;
 
