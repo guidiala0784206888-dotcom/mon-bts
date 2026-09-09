@@ -21671,6 +21671,7 @@ const MODULES_AE=[
   <div class="formule">jours restants = (limite − heures effectuées) / heures de vol par jour</div>
   <div class="encart e-cle"><span class="chapo">Dépasser d'une heure immobilise</span><p>La conséquence est administrative avant d'être technique : la pièce est peut-être encore bonne, l'appareil n'est plus en état de navigabilité. Et cela ne se rattrape pas après coup.</p></div>`},
  {k:"vs",t:"Banc — programmer la visite",budget:25000,dispo:0.9925},
+ {k:"zx",t:"Banc — le report de tolérance",immobilisation:9000,delai:6},
  {k:"a",t:"Atelier — les potentiels",gen:["ae-potentiel","ae-immobilisation","ae-maintenance"],but:4},
  {k:"c",t:"Contrôle",gen:["ae-potentiel","ae-immobilisation","ae-maintenance","crsa-mtbf"],n:8}
 ]},
@@ -26981,6 +26982,7 @@ const MODULES_GT=[
  {k:"l",t:"Acheter pour revendre du transport",h:`
   <div class="formule">marge = prix vendu − prix acheté − frais de dossier</div>
   <div class="encart e-cle"><span class="chapo">Ce qui compte n'est pas le pourcentage</span><p>C'est ce que l'opération laisse par heure de commercial. Un affrètement à 8 % de marge peut rapporter davantage qu'un transport en compte propre à 20 %.</p></div>`},
+ {k:"zl",t:"Banc — la ligne régulière",delai:2.0,marge:4200,km:820,rotations:8},
  {k:"a",t:"Atelier — l'affrètement",gen:["gt-marge-affretement","gt-prix-revient","gt-reglementation"],but:4},
  {k:"c",t:"Contrôle",gen:["gt-marge-affretement","gt-prix-revient","gt-reglementation","gt-retour-vide"],n:8}
 ]},
@@ -28030,6 +28032,7 @@ const MODULES_MO=[
   <div class="formule">métrage par vêtement = longueur de placement / nombre de vêtements placés</div>
   <div class="encart e-cle"><span class="chapo">Mélanger les tailles dans un placement</span><p>Les petites pièces d'une taille comblent les vides d'une autre. On retourne, on imbrique, on mélange — dans les limites du droit-fil et du sens du tissu.</p></div>`},
  {k:"kt",t:"Banc — lancer la collection",marge:30000,solde:0.34},
+ {k:"zy",t:"Banc — le plan de coupe",rendement:0.90,serie:240,budget:5200,prixTissu:14},
  {k:"a",t:"Atelier — le placement",gen:["mo-metrage","mo-cout-vetement","mo-industrie"],but:4},
  {k:"c",t:"Contrôle",gen:["mo-metrage","mo-cout-vetement","mo-industrie","mo-serie"],n:8}
 ]},
@@ -28283,6 +28286,7 @@ const MODULES_MV=[
  {k:"l",t:"Barème, pièces, devis",h:`
   <div class="formule">montant HT = temps barémé × taux horaire + pièces remisées</div>
   <div class="encart e-piege"><span class="chapo">Le dépassement de devis</span><p>Il suppose un nouvel accord du client, AVANT d'être engagé. Découvrir un travail nécessaire ne dispense pas de rappeler : cela oblige à rappeler.</p></div>`},
+ {k:"zd",t:"Banc — chiffrer la réparation",valeur:4200,taux:78,fiabilite:0.94,marge:260,immobilisation:4},
  {k:"a",t:"Atelier — le devis",gen:["mv-devis","mv-rentabilite","mv-atelier"],but:4},
  {k:"c",t:"Contrôle",gen:["mv-devis","mv-rentabilite","mv-atelier","mv-diagnostic"],n:8}
 ]},
@@ -28344,6 +28348,7 @@ const MODULES_MZ=[
   <div class="formule">agents = postes × heures / durée de vacation × coefficient de relève</div>
   <div class="encart e-cle"><span class="chapo">Ce que couvre le coefficient</span><p>Pauses, absences, imprévus. Il n'est pas une marge commerciale : c'est la condition pour que le dispositif existe encore le mardi suivant.</p></div>`},
  {k:"ds",t:"Banc — monter le dispositif",budget:9200,couverture:0.95},
+ {k:"zq",t:"Banc — le poste de sûreté",couverture:0.85,budget:11000},
  {k:"a",t:"Atelier — l'effectif",gen:["mz-effectif","mz-cout-dispositif","mz-ronde"],but:4},
  {k:"c",t:"Contrôle",gen:["mz-effectif","mz-cout-dispositif","mz-ronde","mz-conduite"],n:8}
 ]},
@@ -29046,6 +29051,7 @@ const MODULES_NO=[
   <div class="formule">droits de mutation = (prix − mobilier justifié) × taux</div>
   <div class="encart e-piege"><span class="chapo">La liste de complaisance</span><p>Gonfler le mobilier pour réduire les droits engage vendeur, acquéreur et rédacteur. L'économie est modeste ; le risque, lui, ne l'est pas.</p></div>
   <div class="encart e-cle"><span class="chapo">Le prorata est un usage</span><p>La taxe foncière est due par le propriétaire au 1er janvier. Le partage entre vendeur et acquéreur n'existe que parce que l'acte le prévoit — l'administration ne le connaît pas.</p></div>`},
+ {k:"za",t:"Banc — le plan de financement",endettement:0.30,reste:1600,prix:248000,revenus:4100},
  {k:"a",t:"Atelier — les frais",gen:["no-mutation","no-prorata","no-plusvalue"],but:4},
  {k:"c",t:"Contrôle",gen:["no-mutation","no-prorata","no-plusvalue","no-actes"],n:8}
 ]},
@@ -29148,6 +29154,7 @@ const MODULES_OL=[
   <div class="formule">effet prismatique (Δ) = puissance (δ) × décentrement (cm)</div>
   <div class="encart e-cle"><span class="chapo">La mesure la plus banale de l'atelier</span><p>Et l'une des plus lourdes de conséquences : sur un −8, deux millimètres font 1,6 dioptrie prismatique. Le porteur ne saura pas dire pourquoi il a mal à la tête.</p></div>`},
  {k:"oq",t:"Banc — composer l'équipement",reste:350},
+ {k:"zw",t:"Banc — le montage",tolerance:1.0,sphere:-6.5},
  {k:"a",t:"Atelier — le montage",gen:["ol-prisme","ol-transposition","ol-adaptation"],but:4},
  {k:"c",t:"Contrôle",gen:["ol-prisme","ol-transposition","ol-adaptation","ol-equivalent"],n:8}
 ]},
@@ -41620,6 +41627,576 @@ function rendreConges(hote,mi,pi,pas){
    },mi,pi,"conges");
 }
 
+/* ---- bancs-seuls2.js.txt ---- */
+/* ============================================================
+   LES SECONDS BANCS DES PARCOURS ISOLÉS (1/2)
+   GTLA : exploiter une ligne régulière — le compte propre ne se
+     justifie que si la ligne est pleine dans les deux sens.
+   Maintenance des véhicules : chiffrer la réparation — au-delà
+     d'un certain montant, la décision cesse d'être technique.
+   Aéronautique : le report de tolérance — un équipement en panne
+     ne cloue pas toujours l'avion, sous conditions écrites.
+   Mode : le plan de coupe — la chute se décide au placement.
+   ============================================================ */
+const S2C={bleu:"#4b6ea9", vert:"#3f8c66", rouge:"#c0603f", or:"#c2963c", gris:"#8a8f99"};
+
+/* ---------------- 1. La ligne régulière (GTLA) ---------------- */
+const S2_MODE=[{n:"compte propre, un conducteur",fixe:4200,km:0.62,delai:2.0},
+               {n:"compte propre, deux conducteurs",fixe:6900,km:0.74,delai:1.0},
+               {n:"affrètement au coup par coup",fixe:0,km:1.28,delai:1.6},
+               {n:"combiné rail-route",fixe:900,km:0.48,delai:2.4}];
+function calculLigne2(pas,p){
+  const DELAI=(pas&&pas.delai)||2.0, MARGE=(pas&&pas.marge)||4200;
+  const KM=(pas&&pas.km)||820, ROT=(pas&&pas.rotations)||8;
+  const mo=S2_MODE[p.mode];
+  const charge=[0.62,0.80,1.0][p.charge];
+  const retour=[0,0.55,0.9][p.retour];           /* taux de remplissage au retour */
+  const recette=ROT*(KM*1.42*charge+KM*1.42*retour*0.82);
+  const cout=mo.fixe+ROT*KM*mo.km*(1+retour*0.02)+(p.retour>0? ROT*38 : 0);
+  const marge=recette-cout;
+  const delai=mo.delai+(p.retour===2? 0.3 : 0);
+  return {DELAI,MARGE,KM,ROT,mo,retour,recette,cout,marge,delai,
+          combineEtDelai:p.mode===3&&DELAI<2.4, comptePropreSansRetour:p.mode<=1&&p.retour===0};
+}
+function rendreLigne2(hote,mi,pi,pas){
+  const DELAI=(pas&&pas.delai)||2.0, MARGE=(pas&&pas.marge)||4200;
+  const KM=(pas&&pas.km)||820, ROT=(pas&&pas.rotations)||8;
+  bancATI(hote,"La ligne régulière — pleine dans les deux sens, ou rien",
+   nb(KM,0)+" km, "+nb(ROT,0)+" rotations par mois. Le compte propre immobilise un véhicule et un conducteur : il ne se tient que si la ligne est chargée à l'aller ET au retour. L'affrètement ne coûte rien à vide mais prend toute la marge. Le combiné rail-route est le moins cher du kilomètre et le plus lent — il ne convient qu'aux marchandises qui attendent.",
+   "Au moins <b>"+nb(MARGE,0)+" €</b> de marge mensuelle, avec un délai de <b>"+nb(DELAI,1)+
+   " jours</b> au plus.",
+   [{id:"mode",lib:"Mode d'exploitation",choix:S2_MODE.map(x=>x.n),val:0},
+    {id:"charge",lib:"Remplissage à l'aller",choix:["62 %","80 %","complet"],val:0},
+    {id:"retour",lib:"Fret retour",choix:["aucun","partiel (55 %)","complet (90 %)"],val:0}],
+   [["Recette","la"],["Coût","lb"],["Délai","lc"],["Marge","ld"]],
+   (c,w,h,p)=>{
+     const r=calculLigne2(pas,p);
+     const x0=w*0.30, lg=w*0.50;
+     [["recette",r.recette,S2C.vert],["coût",r.cout,S2C.rouge]].forEach(([nom,v,col],i)=>{
+       const y=h*0.22+i*h*0.18;
+       const ech=Math.max(r.recette,r.cout)*1.15;
+       c.fillStyle=CB();c.globalAlpha=.28;c.fillRect(x0,y,lg,18);c.globalAlpha=1;
+       c.fillStyle=col;c.fillRect(x0,y,lg*Math.min(1,v/ech),18);
+       txt(c,nom,w*0.03,y+9,11,CI(),"left",true);
+       mono(c,nb(v,0)+" €",x0+lg+5,y+9,10.5,CI(),"left");
+     });
+     const y2=h*0.66, ech2=Math.max(r.marge,r.MARGE)*1.8;
+     c.fillStyle=CB();c.globalAlpha=.28;c.fillRect(x0,y2,lg,20);c.globalAlpha=1;
+     c.fillStyle=r.marge>=r.MARGE?S2C.vert:S2C.rouge;
+     c.fillRect(x0,y2,lg*Math.max(0.01,Math.min(1,r.marge/ech2)),20);
+     const xm=x0+lg*(r.MARGE/ech2);
+     c.strokeStyle=CI();c.lineWidth=1.6;c.setLineDash([4,3]);
+     c.beginPath();c.moveTo(xm,y2-8);c.lineTo(xm,y2+28);c.stroke();c.setLineDash([]);
+     txt(c,"marge",w*0.03,y2+10,11,CI(),"left",true);
+     mono(c,nb(r.marge,0)+" €",x0+lg+5,y2+10,11,r.marge>=r.MARGE?S2C.vert:S2C.rouge,"left");
+     plaque(c,r.mo.n+"  ·  délai "+nb(r.delai,1)+" j",w*0.5,h*0.93,11,
+            r.delai<=r.DELAI?S2C.vert:S2C.rouge,"center");
+   },
+   (p)=>{
+     const r=calculLigne2(pas,p);
+     const ok=r.marge>=r.MARGE&&r.delai<=r.DELAI&&!r.comptePropreSansRetour;
+     const L=[["la",nb(r.recette,0),"€"],["lb",nb(r.cout,0),"€"],
+              ["lc",nb(r.delai,1),"j",r.delai<=r.DELAI?"ok":"ko"],
+              ["ld",nb(r.marge,0),"€",r.marge>=r.MARGE?"ok":"ko"]];
+     if(r.comptePropreSansRetour) return {ok:false,lectures:L,
+       pourquoi:"Un véhicule en compte propre qui revient à vide : la moitié des kilomètres ne rapporte rien, et ils coûtent le même prix de revient.",
+       indice:"Le compte propre s'achète pour une ligne chargée dans les deux sens. Sans fret retour, l'affrètement coûte moins cher — on ne paie que ce qu'on utilise."};
+     if(r.delai>r.DELAI) return {ok:false,lectures:L,
+       pourquoi:"Délai de "+nb(r.delai,1)+" jours pour "+nb(r.DELAI,1)+" promis au client.",
+       indice:"Le combiné rail-route gagne sur le kilomètre et perd sur le temps. Deux conducteurs divisent le délai et coûtent un salaire de plus : c'est le client qui tranche, pas l'exploitant."};
+     if(r.marge<r.MARGE) return {ok:false,lectures:L,
+       pourquoi:nb(r.marge,0)+" € de marge pour "+nb(r.MARGE,0)+" € visés.",
+       indice:"Le fret retour est le premier levier, avant toute négociation tarifaire : il double presque la recette du même trajet pour 38 € de manutention."};
+     return {ok:true,lectures:L,
+       pourquoi:r.mo.n+" avec un retour à "+nb(100*r.retour,0)+" % : "+nb(r.marge,0)+
+       " € de marge, délai "+nb(r.delai,1)+" jours. La ligne travaille dans les deux sens."};
+   },mi,pi,"ligneroute");
+}
+
+/* ---------------- 2. Chiffrer la réparation (Maintenance des véhicules) ---------------- */
+const S2_PIECE=[{n:"pièce d'origine",cout:1.00,fiab:1.00,garantie:2},
+                {n:"échange standard",cout:0.62,fiab:0.94,garantie:1},
+                {n:"pièce d'occasion",cout:0.34,fiab:0.78,garantie:0.25}];
+function calculDevis(pas,p){
+  const VALEUR=(pas&&pas.valeur)||4200, TAUX=(pas&&pas.taux)||78, FIAB=(pas&&pas.fiabilite)||0.94;
+  const MARGE=(pas&&pas.marge)||260;
+  const pi=S2_PIECE[p.piece];
+  const attente=[0,3,8][p.appro];
+  const base=[1.4,2.6,4.2][p.ampleur];           /* heures barémées */
+  const prixPiece=[280,640,1150][p.ampleur]*pi.cout;
+  const mo=base*TAUX;
+  const total=mo+prixPiece*(p.remise===1? 0.85 : 1);
+  /* la marge de l'atelier : la main-d'œuvre, plus ce qui reste sur la pièce */
+  const marge=mo*0.42+prixPiece*(p.remise===1? 0.85 : 1)*0.22;
+  const part=total/VALEUR;
+  const IMMO=(pas&&pas.immobilisation)||4;
+  return {VALEUR,TAUX,FIAB,MARGE,IMMO,attente,pi,base,prixPiece,mo,total,marge,part,fiab:pi.fiab,
+          tropCherPourLeVehicule:part>0.40, occasionSurOrganeVital:p.piece===2&&p.ampleur===2};
+}
+function rendreDevis(hote,mi,pi,pas){
+  const VALEUR=(pas&&pas.valeur)||4200, FIAB=(pas&&pas.fiabilite)||0.90, MARGE=(pas&&pas.marge)||120;
+  bancATI(hote,"Chiffrer la réparation — et savoir quand s'arrêter",
+   "Un véhicule qui vaut "+nb(VALEUR,0)+" €. La pièce d'origine est sûre et chère, l'échange standard tient presque aussi bien pour deux tiers du prix, l'occasion divise la facture et la fiabilité. Au-delà de la moitié de la valeur du véhicule, la décision cesse d'être technique : elle appartient au client, et il faut la lui poser AVANT d'ouvrir le moteur.",
+   "Une réparation fiable à <b>"+nb(100*FIAB,0)+" %</b> au moins, sous <b>40 %</b> de la valeur du véhicule, laissant au moins <b>"+
+   nb(MARGE,0)+" €</b> de marge à l'atelier.",
+   [{id:"ampleur",lib:"Ampleur",choix:["remplacement simple","organe périphérique","organe vital"],val:0},
+    {id:"piece",lib:"Pièce",choix:S2_PIECE.map(x=>x.n),val:0},
+    {id:"remise",lib:"Remise fournisseur",choix:["non","15 % sur la pièce"],val:0},
+    {id:"appro",lib:"Approvisionnement",choix:["pièce en stock","commande 3 jours","commande 8 jours"],val:0}],
+   [["Main-d'œuvre","da"],["Pièce","db"],["Total client","dc"],["Marge atelier","dd"]],
+   (c,w,h,p)=>{
+     const r=calculDevis(pas,p);
+     const x0=w*0.30, lg=w*0.50, ech=Math.max(r.total,r.VALEUR*0.6)*1.2;
+     [["main-d'œuvre",r.mo,S2C.bleu],["pièce",r.prixPiece,S2C.or]].forEach(([nom,v,col],i)=>{
+       const y=h*0.20+i*h*0.17;
+       c.fillStyle=CB();c.globalAlpha=.28;c.fillRect(x0,y,lg,16);c.globalAlpha=1;
+       c.fillStyle=col;c.fillRect(x0,y,lg*Math.min(1,v/ech),16);
+       txt(c,nom,w*0.03,y+8,10.5,CM(),"left");
+       mono(c,nb(v,0)+" €",x0+lg+5,y+8,10,CI(),"left");
+     });
+     const y2=h*0.60;
+     c.fillStyle=CB();c.globalAlpha=.28;c.fillRect(x0,y2,lg,20);c.globalAlpha=1;
+     c.fillStyle=r.part<=0.40?S2C.vert:S2C.rouge;
+     c.fillRect(x0,y2,lg*Math.min(1,r.total/ech),20);
+     const xs=x0+lg*(r.VALEUR*0.40/ech);
+     c.strokeStyle=CI();c.lineWidth=1.6;c.setLineDash([4,3]);
+     c.beginPath();c.moveTo(xs,y2-8);c.lineTo(xs,y2+28);c.stroke();c.setLineDash([]);
+     plaque(c,"40 % de la valeur",xs,y2-16,10,CI(),"center");
+     txt(c,"total client",w*0.03,y2+10,11,CI(),"left",true);
+     mono(c,nb(r.total,0)+" €",x0+lg+5,y2+10,11,r.part<=0.40?S2C.vert:S2C.rouge,"left");
+     plaque(c,"fiabilité "+nb(100*r.fiab,0)+" %  ·  marge "+nb(r.marge,0)+" €",
+            w*0.5,h*0.92,11,(r.fiab>=r.FIAB&&r.marge>=r.MARGE)?S2C.vert:S2C.rouge,"center");
+   },
+   (p)=>{
+     const r=calculDevis(pas,p);
+     const ok=r.fiab>=r.FIAB&&r.part<=0.40&&r.marge>=r.MARGE&&r.attente<=r.IMMO&&!r.occasionSurOrganeVital;
+     const L=[["da",nb(r.mo,0),"€"],["db",nb(r.prixPiece,0),"€"],
+              ["dc",nb(r.total,0),"€",r.part<=0.40?"ok":"ko"],
+              ["dd",nb(r.marge,0),"€",r.marge>=r.MARGE?"ok":"ko"]];
+     if(r.occasionSurOrganeVital) return {ok:false,lectures:L,
+       pourquoi:"Une pièce d'occasion sur un organe vital : trois mois de garantie sur une réparation qui immobilise le véhicule une journée entière.",
+       indice:"L'occasion se justifie sur ce qui se remplace vite et se voit tout de suite — une optique, un rétroviseur. Sur un organe vital, le client repaie la main-d'œuvre quand la pièce lâche."};
+     if(r.attente>r.IMMO) return {ok:false,lectures:L,
+       pourquoi:"Véhicule immobilisé "+nb(r.attente,0)+" jours en attente de la pièce, pour "+nb(r.IMMO,0)+" tolérés.",
+       indice:"Une pièce commandée à huit jours cloue le véhicule du client presque deux semaines. L'échange standard est presque toujours disponible plus vite que l'origine — c'est un argument autant que le prix."};
+     if(r.fiab<r.FIAB) return {ok:false,lectures:L,
+       pourquoi:"Fiabilité attendue de "+nb(100*r.fiab,0)+" % pour "+nb(100*r.FIAB,0)+" % exigés.",
+       indice:"L'échange standard est remis à neuf et garanti un an : il tient presque comme l'origine pour deux tiers du prix. C'est presque toujours le bon compromis."};
+     if(r.part>0.40) return {ok:false,lectures:L,
+       pourquoi:nb(r.total,0)+" € de réparation sur un véhicule qui vaut "+nb(r.VALEUR,0)+
+       " € — soit "+nb(100*r.part,0)+" % de sa valeur.",
+       indice:"Ce chiffre n'interdit pas de réparer : il dit que la décision appartient au client. On la lui pose AVANT le démontage, quand tout est encore réversible."};
+     if(r.marge<r.MARGE) return {ok:false,lectures:L,
+       pourquoi:"Marge de l'atelier à "+nb(r.marge,0)+" € pour "+nb(r.MARGE,0)+" € nécessaires.",
+       indice:"La marge vient surtout de la main-d'œuvre, pas de la pièce. Une remise fournisseur qu'on répercute entièrement au client ne laisse rien pour payer le pont et le temps de recherche."};
+     return {ok:true,lectures:L,
+       pourquoi:r.pi.n+" : "+nb(r.total,0)+" € pour un véhicule à "+nb(r.VALEUR,0)+" € — "+
+       nb(100*r.part,0)+" % de sa valeur, fiabilité "+nb(100*r.fiab,0)+" %, "+nb(r.marge,0)+
+       " € de marge. Le client peut décider en connaissance de cause."};
+   },mi,pi,"devisreparation");
+}
+
+/* ---------------- 3. Le report de tolérance (Aéronautique) ---------------- */
+const S2_PANNE=[{n:"éclairage de cabine",cat:"D",jours:120,impact:0},
+                {n:"un des deux systèmes de dégivrage",cat:"C",jours:10,impact:1},
+                {n:"inverseur de poussée",cat:"B",jours:3,impact:2},
+                {n:"un générateur électrique",cat:"A",jours:0,impact:3}];
+function calculReport(pas,p){
+  const IMMO=(pas&&pas.immobilisation)||9000, DELAI=(pas&&pas.delai)||6;
+  const pa=S2_PANNE[p.panne];
+  const attente=[0,2,6][p.piece];                /* jours d'attente de la pièce */
+  const reportPossible=pa.jours>0 && attente<=pa.jours && p.conditions===1;
+  /* l'immobilisation : ce que coûte l'avion cloué au sol */
+  const jours=reportPossible? 0 : attente;
+  const cout=jours*IMMO+(p.piece===0? 2600 : p.piece===1? 900 : 0);
+  const decisionJuste=(reportPossible&&p.vol===1)||(!reportPossible&&p.vol===0);
+  return {IMMO,DELAI,pa,attente,reportPossible,jours,cout,decisionJuste,
+          sansConditions:p.conditions===0,
+          reportInterdit:pa.jours===0&&p.conditions===1&&p.vol===1};
+}
+function rendreReport(hote,mi,pi,pas){
+  const IMMO=(pas&&pas.immobilisation)||9000, DELAI=(pas&&pas.delai)||6;
+  bancATI(hote,"Le report de tolérance — partir avec une panne, ou pas",
+   "Un équipement en panne au départ. La liste minimale d'équipements dit lequel autorise un report, pour combien de jours, et sous quelles conditions écrites — une procédure d'exploitation, une limitation, parfois les deux. Ce qui n'y figure pas cloue l'avion. Et chaque jour au sol coûte "+nb(IMMO,0)+" €.",
+   "Repartir en respectant la liste, avec une immobilisation d'au plus <b>"+nb(DELAI,0)+
+   " jours</b> et un coût sous <b>"+nb(IMMO*1.2,0)+" €</b>.",
+   [{id:"panne",lib:"Équipement en panne",choix:S2_PANNE.map(x=>x.n+" (cat. "+x.cat+")"),val:0},
+    {id:"piece",lib:"Approvisionnement",choix:["pièce en stock, pose immédiate","pièce sous 2 jours","pièce sous 6 jours"],val:0},
+    {id:"conditions",lib:"Conditions du report",choix:["non appliquées","appliquées et consignées"],val:0},
+    {id:"vol",lib:"Décision",choix:["avion au sol","départ en report"],val:0}],
+   [["Report autorisé","ra"],["Attente","rb"],["Immobilisation","rc"],["Coût","rd"]],
+   (c,w,h,p)=>{
+     const r=calculReport(pas,p);
+     const x0=w*0.10, lg=w*0.80, y=h*0.34;
+     /* la fenêtre de report de la catégorie, et l'attente de la pièce */
+     const ech=Math.max(12,r.pa.jours===0?12:Math.min(r.pa.jours,14));
+     c.fillStyle=CB();c.globalAlpha=.24;c.fillRect(x0,y,lg,26);c.globalAlpha=1;
+     if(r.pa.jours>0){
+       c.fillStyle=S2C.vert;c.globalAlpha=.35;
+       c.fillRect(x0,y,lg*Math.min(1,r.pa.jours/ech),26);c.globalAlpha=1;
+       mono(c,"report "+r.pa.jours+" j",x0+6,y-12,10.5,S2C.vert,"left");
+     } else {
+       mono(c,"aucun report possible",x0+6,y-12,10.5,S2C.rouge,"left");
+     }
+     const xa=x0+lg*Math.min(1,r.attente/ech);
+     c.strokeStyle=S2C.rouge;c.lineWidth=2.2;
+     c.beginPath();c.moveTo(xa,y-10);c.lineTo(xa,y+36);c.stroke();
+     mono(c,"pièce à "+r.attente+" j",xa,y+50,10.5,S2C.rouge,"center");
+     plaque(c,r.reportPossible?"l'avion repart":"l'avion reste au sol",w*0.5,h*0.12,12,
+            r.reportPossible?S2C.vert:S2C.rouge,"center");
+     mono(c,nb(r.cout,0)+" €",w*0.5,h*0.90,13,r.cout<=r.IMMO*1.2?S2C.vert:S2C.rouge,"center");
+   },
+   (p)=>{
+     const r=calculReport(pas,p);
+     const ok=r.cout<=r.IMMO*1.2&&r.jours<=r.DELAI&&!r.sansConditions&&!r.reportInterdit&&r.decisionJuste;
+     const L=[["ra",r.pa.jours>0?r.pa.jours+" j":"aucun","",r.pa.jours>0?"ok":"ko"],
+              ["rb",nb(r.attente,0),"j"],["rc",nb(r.jours,0),"j",r.jours<=r.DELAI?"ok":"ko"],
+              ["rd",nb(r.cout,0),"€",r.cout<=r.IMMO*1.2?"ok":"ko"]];
+     if(r.reportInterdit) return {ok:false,lectures:L,
+       pourquoi:"Départ en report sur un équipement de catégorie A : la liste ne l'autorise pas, quelles que soient les conditions appliquées.",
+       indice:"Une catégorie A ne se reporte pas. La liste minimale n'est pas une marge de manœuvre : c'est la limite écrite de ce que l'avion peut faire avec cette panne."};
+     if(r.sansConditions) return {ok:false,lectures:L,
+       pourquoi:"Report sans appliquer ni consigner les conditions associées : le report n'existe pas.",
+       indice:"Un report se paie en procédures — une limitation d'exploitation, une inscription au carnet, parfois une information à l'équipage. Sans elles, l'avion n'est pas en état de vol réglementaire."};
+     if(!r.decisionJuste) return {ok:false,lectures:L,
+       pourquoi:r.reportPossible? "Le report est autorisé et l'avion reste au sol : on immobilise pour rien."
+                                : "L'avion part alors que la liste ne l'autorise pas dans ces conditions.",
+       indice:"La liste minimale ne se discute pas : quand elle autorise, on repart ; quand elle refuse, on reste. C'est elle qui décide, pas la pression du programme."};
+     if(r.jours>r.DELAI) return {ok:false,lectures:L,
+       pourquoi:"Avion immobilisé "+nb(r.jours,0)+" jours pour "+nb(r.DELAI,0)+" tolérés.",
+       indice:"Quand le report est possible, l'avion repart et la pièce arrive pendant qu'il vole. C'est exactement ce à quoi sert la liste minimale."};
+     if(r.cout>r.IMMO*1.2) return {ok:false,lectures:L,
+       pourquoi:nb(r.cout,0)+" € d'immobilisation et d'approvisionnement.",
+       indice:"Une pièce en stock coûte cher à détenir et sauve trois jours d'avion cloué. Le calcul se fait sur la flotte, pas sur l'incident."};
+     return {ok:true,lectures:L,
+       pourquoi:r.pa.n+" en catégorie "+r.pa.cat+", conditions appliquées et consignées : "+
+       (r.reportPossible?"l'avion repart, la pièce arrive sous "+r.attente+" jours":"immobilisation assumée")+
+       ", pour "+nb(r.cout,0)+" €. Le report est une décision écrite, pas un arrangement."};
+   },mi,pi,"report");
+}
+
+/* ---------------- 4. Le plan de coupe (Mode) ---------------- */
+function calculPlanCoupe(pas,p){
+  const RENDMIN=(pas&&pas.rendement)||0.90, SERIE=(pas&&pas.serie)||240;
+  const laize=[1.40,1.50][p.laize];
+  /* le sens du droit-fil : imposé sur les rayures et les tissus à poil */
+  const libre=p.motif===0;
+  const senseUnique=p.motif===2;
+  const rendementBase=libre? 0.86 : senseUnique? 0.74 : 0.80;
+  /* le matelas : plus on empile, mieux on imbrique — et plus l'erreur coûte */
+  const matelas=[1,12,40][p.matelas];
+  const gain=matelas===1? 0 : matelas===12? 0.04 : 0.06;
+  const tailles=[1,3,5][p.tailles];
+  const gainTailles=tailles===1? 0 : tailles===3? 0.02 : 0.03;
+  const rendement=Math.min(0.93,rendementBase+gain+gainTailles+(p.laize===1?0.02:0));
+  const conso=1.35/rendement;                    /* mètres par vêtement */
+  const cout=conso*SERIE*(pas&&pas.prixTissu||14)+ (matelas===1? SERIE*2.2 : SERIE*0.55);
+  return {RENDMIN,SERIE,laize,rendement,conso,cout,matelas,senseUnique,
+          matelasEtPrototype:matelas===40&&p.serie===0};
+}
+function rendrePlanCoupe(hote,mi,pi,pas){
+  const RENDMIN=(pas&&pas.rendement)||0.90, SERIE=(pas&&pas.serie)||240;
+  bancATI(hote,"Le plan de coupe — la chute se décide au placement",
+   nb(SERIE,0)+" pièces à couper. Le tissu est le premier poste du prix de revient, et ce qui part en chute ne revient jamais. Un motif à sens unique interdit de retourner les pièces : le rendement tombe de six points d'un coup. Le matelas fait gagner à l'imbrication — et transforme une erreur de placement en erreur multipliée par quarante.",
+   "Un rendement matière d'au moins <b>"+nb(100*RENDMIN,0)+" %</b>, pour un coût tissu sous <b>"+
+   nb((pas&&pas.budget)||5200,0)+" €</b>.",
+   [{id:"laize",lib:"Laize",choix:["1,40 m","1,50 m"],val:0},
+    {id:"motif",lib:"Tissu",choix:["uni, sens libre","rayé, raccord","velours, sens unique"],val:0},
+    {id:"matelas",lib:"Matelas de coupe",choix:["à plat, une épaisseur","12 épaisseurs","40 épaisseurs"],val:0},
+    {id:"tailles",lib:"Tailles dans le matelas",choix:["une seule","trois","cinq"],val:0},
+    {id:"serie",lib:"Nature de la série",choix:["prototype","production"],val:1}],
+   [["Rendement","ca"],["Consommation","cb"],["Coût tissu","cc"],["Verdict","cd"]],
+   (c,w,h,p)=>{
+     const r=calculPlanCoupe(pas,p);
+     const x0=w*0.08, y0=h*0.24, W=w*0.56, H2=h*0.50;
+     c.fillStyle=CB();c.globalAlpha=.12;c.fillRect(x0,y0,W,H2);c.globalAlpha=1;
+     c.strokeStyle=CB();c.lineWidth=1.4;c.strokeRect(x0,y0,W,H2);
+     /* les pièces posées, plus ou moins imbriquées */
+     const n=10, serre=r.rendement;
+     for(let i=0;i<n;i++){
+       const bw=(W-10)/n*0.92, bh=H2*(0.42+0.34*((i%3)/2))*serre;
+       const bx=x0+5+i*((W-10)/n);
+       const by=y0+((i%2)? H2-bh-4 : 4);
+       c.fillStyle=S2C.bleu;c.globalAlpha=.34;c.fillRect(bx,by,bw,bh);c.globalAlpha=1;
+       c.strokeStyle=S2C.bleu;c.lineWidth=1;c.strokeRect(bx,by,bw,bh);
+     }
+     mono(c,"laize "+nb(r.laize,2)+" m",x0,y0-10,10.5,CM(),"left");
+     const rx=w*0.70;
+     mono(c,nb(100*r.rendement,0)+" %",rx,h*0.38,15,r.rendement>=r.RENDMIN?S2C.vert:S2C.rouge,"left");
+     txt(c,"de rendement",rx,h*0.52,10.5,CM(),"left");
+     mono(c,nb(r.conso,2)+" m/pièce",rx,h*0.68,11.5,CI(),"left");
+     plaque(c,nb(r.cout,0)+" € de tissu",w*0.5,h*0.93,11,
+            r.cout<=((pas&&pas.budget)||5200)?S2C.vert:S2C.rouge,"center");
+   },
+   (p)=>{
+     const r=calculPlanCoupe(pas,p);
+     const BUDGET=(pas&&pas.budget)||5200;
+     const ok=r.rendement>=r.RENDMIN&&r.cout<=BUDGET&&!r.matelasEtPrototype;
+     const L=[["ca",nb(100*r.rendement,0),"%",r.rendement>=r.RENDMIN?"ok":"ko"],
+              ["cb",nb(r.conso,2),"m"],["cc",nb(r.cout,0),"€",r.cout<=BUDGET?"ok":"ko"],
+              ["cd",ok?"plan tenable":"à revoir","",ok?"ok":"ko"]];
+     if(r.matelasEtPrototype) return {ok:false,lectures:L,
+       pourquoi:"Quarante épaisseurs pour un prototype : une erreur de placement se multiplie par quarante avant que quiconque ne l'ait vue.",
+       indice:"Le prototype se coupe à plat, une épaisseur, quitte à perdre du tissu. Le matelas vient quand le patron est validé — pas avant."};
+     if(r.rendement<r.RENDMIN) return {ok:false,lectures:L,
+       pourquoi:"Rendement matière de "+nb(100*r.rendement,0)+" % pour "+nb(100*r.RENDMIN,0)+" % attendus.",
+       indice:"Un tissu à sens unique coûte six points de rendement : on ne peut plus retourner les pièces pour les imbriquer. C'est le choix du TISSU qui décide ici, pas le placement."};
+     if(r.cout>BUDGET) return {ok:false,lectures:L,
+       pourquoi:nb(r.cout,0)+" € de tissu pour "+nb(BUDGET,0)+" € budgétés.",
+       indice:"Deux points de rendement sur 240 pièces valent plus qu'une négociation sur le prix du mètre. Le placement est le poste le moins visible et le plus rentable de la collection."};
+     return {ok:true,lectures:L,
+       pourquoi:"Laize "+nb(r.laize,2)+" m, "+nb(r.matelas,0)+" épaisseurs : "+
+       nb(100*r.rendement,0)+" % de rendement, "+nb(r.conso,2)+" m par pièce, "+nb(r.cout,0)+
+       " € de tissu. Ce qui part en chute ne revient jamais."};
+   },mi,pi,"plancoupe");
+}
+
+/* ---- bancs-seuls3.js.txt ---- */
+/* ============================================================
+   LES SECONDS BANCS DES PARCOURS ISOLÉS (2/2)
+   Notariat : le plan de financement — les frais d'acte et la
+     garantie se paient le jour de la signature, pas après.
+   MOS : le poste de sûreté — la vidéo ne remplace pas l'homme,
+     et la donnée conservée engage l'employeur.
+   Opticien : le montage — un verre bien choisi mal centré est
+     un verre mal choisi.
+   ============================================================ */
+const S3C={bleu:"#4b6ea9", vert:"#3f8c66", rouge:"#c0603f", or:"#c2963c", gris:"#8a8f99"};
+
+/* ---------------- 1. Le plan de financement (Notariat) ---------------- */
+function calculPlanFinancement(pas,p){
+  const ENDMAX=(pas&&pas.endettement)||0.30, RESTE=(pas&&pas.reste)||1600;
+  const PRIX=(pas&&pas.prix)||248000, REVENUS=(pas&&pas.revenus)||4100;
+  const neuf=p.bien===1;
+  /* les frais d'acte : ~7,5 % dans l'ancien, ~2,8 % dans le neuf */
+  const frais=PRIX*(neuf? 0.028 : 0.075);
+  const apport=[0,0.10,0.20][p.apport]*PRIX;
+  /* la garantie : hypothèque plus chère que la caution */
+  const garantie=p.garantie===0? PRIX*0.012 : PRIX*0.008;
+  const emprunt=PRIX+frais+garantie-apport;
+  const duree=[15,20,25][p.duree];
+  const taux=[0.031,0.034,0.037][p.duree];
+  const t=taux/12, n=duree*12;
+  const mensualite=emprunt*t/(1-Math.pow(1+t,-n));
+  const assurance=emprunt*0.0032/12;
+  const charge=mensualite+assurance;
+  const endettement=charge/REVENUS;
+  const reste=REVENUS-charge;
+  const coutTotal=charge*n-emprunt;
+  return {ENDMAX,RESTE,PRIX,REVENUS,neuf,frais,apport,garantie,emprunt,duree,taux,
+          mensualite,assurance,charge,endettement,reste,coutTotal,
+          apportNul:p.apport===0};
+}
+function rendrePlanFinancement(hote,mi,pi,pas){
+  const ENDMAX=(pas&&pas.endettement)||0.30, RESTE=(pas&&pas.reste)||1600;
+  const PRIX=(pas&&pas.prix)||248000, REVENUS=(pas&&pas.revenus)||4100;
+  bancATI(hote,"Le plan de financement — ce qui se paie le jour de l'acte",
+   "Un bien à "+nb(PRIX,0)+" €, "+nb(REVENUS,0)+" € de revenus mensuels. Les frais d'acte se paient comptant le jour de la signature : 7,5 % dans l'ancien, 2,8 % dans le neuf. La garantie aussi. Un apport nul oblige à emprunter les frais — la banque prête alors plus que la valeur du bien, et le refuse souvent.",
+   "Un taux d'endettement sous <b>"+nb(100*ENDMAX,0)+" %</b>, un reste à vivre d'au moins <b>"+
+   nb(RESTE,0)+" €</b>, avec un apport réel.",
+   [{id:"bien",lib:"Nature du bien",choix:["ancien (frais 7,5 %)","neuf (frais 2,8 %)"],val:0},
+    {id:"apport",lib:"Apport",choix:["aucun","10 % du prix","20 % du prix"],val:0},
+    {id:"garantie",lib:"Garantie",choix:["hypothèque (1,2 %)","caution (0,8 %)"],val:0},
+    {id:"duree",lib:"Durée",choix:["15 ans à 3,10 %","20 ans à 3,40 %","25 ans à 3,70 %"],val:0}],
+   [["Frais d'acte","fa"],["Emprunt","fb"],["Mensualité","fc"],["Endettement","fd"]],
+   (c,w,h,p)=>{
+     const r=calculPlanFinancement(pas,p);
+     const x0=w*0.30, lg=w*0.50;
+     /* ce qu'il faut réunir le jour de l'acte */
+     const postes=[["prix",r.PRIX,S3C.bleu],["frais d'acte",r.frais,S3C.or],
+                   ["garantie",r.garantie,S3C.gris]];
+     const tot=r.PRIX+r.frais+r.garantie;
+     let y=h*0.16;
+     postes.forEach(([nom,v,col])=>{
+       c.fillStyle=CB();c.globalAlpha=.28;c.fillRect(x0,y,lg,14);c.globalAlpha=1;
+       c.fillStyle=col;c.fillRect(x0,y,lg*v/tot,14);
+       txt(c,nom,w*0.03,y+7,10.5,CM(),"left");
+       mono(c,nb(v,0)+" €",x0+lg+5,y+7,10,CI(),"left");
+       y+=h*0.14;
+     });
+     /* l'endettement */
+     const y2=h*0.62;
+     c.fillStyle=CB();c.globalAlpha=.28;c.fillRect(x0,y2,lg,20);c.globalAlpha=1;
+     c.fillStyle=r.endettement<=r.ENDMAX?S3C.vert:S3C.rouge;
+     c.fillRect(x0,y2,lg*Math.min(1,r.endettement/0.5),20);
+     const xe=x0+lg*(r.ENDMAX/0.5);
+     c.strokeStyle=CI();c.lineWidth=1.6;c.setLineDash([4,3]);
+     c.beginPath();c.moveTo(xe,y2-8);c.lineTo(xe,y2+28);c.stroke();c.setLineDash([]);
+     txt(c,"endettement",w*0.03,y2+10,11,CI(),"left",true);
+     mono(c,nb(100*r.endettement,1)+" %",x0+lg+5,y2+10,11,
+          r.endettement<=r.ENDMAX?S3C.vert:S3C.rouge,"left");
+     plaque(c,"reste à vivre "+nb(r.reste,0)+" €  ·  coût du crédit "+nb(r.coutTotal,0)+" €",
+            w*0.5,h*0.92,11,r.reste>=r.RESTE?S3C.vert:S3C.rouge,"center");
+   },
+   (p)=>{
+     const r=calculPlanFinancement(pas,p);
+     const ok=r.endettement<=r.ENDMAX&&r.reste>=r.RESTE&&!r.apportNul;
+     const L=[["fa",nb(r.frais,0),"€"],["fb",nb(r.emprunt,0),"€"],
+              ["fc",nb(r.charge,0),"€",r.endettement<=r.ENDMAX?"ok":"ko"],
+              ["fd",nb(100*r.endettement,1),"%",r.endettement<=r.ENDMAX?"ok":"ko"]];
+     if(r.apportNul) return {ok:false,lectures:L,
+       pourquoi:"Aucun apport : il faut emprunter le prix, les frais d'acte et la garantie — la banque prêterait plus que ce que le bien vaut.",
+       indice:"L'apport sert d'abord à couvrir ce qui ne se revend pas : les frais d'acte et la garantie. C'est pour cela qu'on demande au moins 10 % — pas par principe, par arithmétique."};
+     if(r.endettement>r.ENDMAX) return {ok:false,lectures:L,
+       pourquoi:"Taux d'endettement de "+nb(100*r.endettement,1)+" % pour "+nb(100*r.ENDMAX,0)+" % admis.",
+       indice:"Allonger la durée baisse la mensualité et renchérit le crédit : à 25 ans, on paie beaucoup plus longtemps un taux plus élevé. L'apport, lui, agit sur les deux à la fois."};
+     if(r.reste<r.RESTE) return {ok:false,lectures:L,
+       pourquoi:"Reste à vivre de "+nb(r.reste,0)+" € pour "+nb(r.RESTE,0)+" € nécessaires.",
+       indice:"Le taux d'endettement ne dit pas tout : à revenus modestes, 35 % laissent trop peu pour vivre. Les deux critères se lisent ensemble, jamais l'un sans l'autre."};
+     return {ok:true,lectures:L,
+       pourquoi:(r.neuf?"Neuf":"Ancien")+", apport de "+nb(r.apport,0)+" €, "+r.duree+
+       " ans : mensualité "+nb(r.charge,0)+" €, endettement "+nb(100*r.endettement,1)+
+       " %, reste à vivre "+nb(r.reste,0)+" €. Les frais d'acte sont couverts par l'apport, comme ils doivent l'être."};
+   },mi,pi,"financement");
+}
+
+/* ---------------- 2. Le poste de sûreté (MOS) ---------------- */
+const S3_HUMAIN=[{n:"aucun agent",n2:0,cout:0},{n:"1 agent",n2:1,cout:3800},
+                 {n:"2 agents",n2:2,cout:7600},{n:"3 agents",n2:3,cout:11400}];
+const S3_TECH=[{n:"aucun équipement",det:0,cout:0},
+               {n:"vidéo 12 caméras",det:0.45,cout:1400},
+               {n:"vidéo + contrôle d'accès",det:0.65,cout:2600},
+               {n:"vidéo + accès + détection périmétrique",det:0.80,cout:4100}];
+function calculSurete(pas,p){
+  const COUV=(pas&&pas.couverture)||0.85, BUDGET=(pas&&pas.budget)||11000;
+  const hu=S3_HUMAIN[p.humain], te=S3_TECH[p.technique];
+  /* la couverture : la technique détecte, l'homme lève le doute et intervient */
+  const leveeDeDoute=hu.n2>0? 1 : 0.45;
+  const rondes=[0,0.12,0.20][p.rondes];
+  const couverture=Math.min(0.98,(te.det+hu.n2*0.22+rondes)*leveeDeDoute);
+  const cout=hu.cout+te.cout+(p.rondes>0? hu.n2*260 : 0);
+  const conservation=[30,90,180][p.conservation];
+  return {COUV,BUDGET,hu,te,couverture,cout,conservation,rondes,
+          videoSansPersonne:te.det>0&&hu.n2===0,
+          conservationTropLongue:conservation>30,
+          rondesSansAgent:p.rondes>0&&hu.n2===0};
+}
+function rendreSurete(hote,mi,pi,pas){
+  const COUV=(pas&&pas.couverture)||0.85, BUDGET=(pas&&pas.budget)||11000;
+  bancATI(hote,"Le poste de sûreté — la vidéo ne lève pas le doute",
+   "Un site à protéger la nuit. La technique DÉTECTE ; elle ne lève pas le doute et n'intervient pas. Un agent qui ronde couvre ce que les caméras ne voient pas, et c'est lui qui décide. Et les images conservées sont des données personnelles : au-delà d'un mois, il faut une raison, sinon l'employeur s'expose.",
+   "Une couverture d'au moins <b>"+nb(100*COUV,0)+" %</b>, une conservation des images conforme, pour <b>"+
+   nb(BUDGET,0)+" €</b> par mois.",
+   [{id:"humain",lib:"Effectif de nuit",choix:S3_HUMAIN.map(x=>x.n),val:0},
+    {id:"technique",lib:"Équipement",choix:S3_TECH.map(x=>x.n),val:0},
+    {id:"rondes",lib:"Rondes",choix:["aucune","2 par nuit","4 par nuit"],val:0},
+    {id:"conservation",lib:"Conservation des images",choix:["30 jours","90 jours","180 jours"],val:0}],
+   [["Détection","sa"],["Levée de doute","sb"],["Couverture","sc"],["Coût mensuel","sd"]],
+   (c,w,h,p)=>{
+     const r=calculSurete(pas,p);
+     const x0=w*0.32, lg=w*0.48;
+     [["détection technique",r.te.det,0.6,1],["couverture réelle",r.couverture,r.COUV,1]]
+      .forEach((q,i)=>{
+       const y=h*0.24+i*h*0.22;
+       const bon=q[1]>=q[2];
+       c.fillStyle=CB();c.globalAlpha=.28;c.fillRect(x0,y,lg,18);c.globalAlpha=1;
+       c.fillStyle=bon?S3C.vert:S3C.rouge;c.fillRect(x0,y,lg*Math.min(1,q[1]/q[3]),18);
+       const xc=x0+lg*(q[2]/q[3]);
+       c.strokeStyle=CI();c.lineWidth=1.4;c.setLineDash([3,3]);
+       c.beginPath();c.moveTo(xc,y-7);c.lineTo(xc,y+25);c.stroke();c.setLineDash([]);
+       txt(c,q[0],w*0.03,y+9,10.5,CI(),"left");
+       mono(c,nb(100*q[1],0)+" %",x0+lg+5,y+9,10.5,bon?S3C.vert:S3C.rouge,"left");
+     });
+     plaque(c,r.hu.n+"  ·  "+r.te.n,w*0.5,h*0.10,11,CI(),"center");
+     plaque(c,"images gardées "+r.conservation+" jours",w*0.5,h*0.72,11,
+            r.conservation<=30?S3C.vert:S3C.rouge,"center");
+     mono(c,nb(r.cout,0)+" € / mois",w*0.5,h*0.90,12.5,
+          r.cout<=r.BUDGET?S3C.vert:S3C.rouge,"center");
+   },
+   (p)=>{
+     const r=calculSurete(pas,p);
+     const ok=r.couverture>=r.COUV&&r.cout<=r.BUDGET&&!r.videoSansPersonne&&!r.conservationTropLongue;
+     const L=[["sa",nb(100*r.te.det,0),"%"],["sb",r.hu.n2>0?"agent sur site":"aucune","",r.hu.n2>0?"ok":"ko"],
+              ["sc",nb(100*r.couverture,0),"%",r.couverture>=r.COUV?"ok":"ko"],
+              ["sd",nb(r.cout,0),"€",r.cout<=r.BUDGET?"ok":"ko"]];
+     if(r.videoSansPersonne) return {ok:false,lectures:L,
+       pourquoi:"Des caméras et personne pour regarder : la détection existe, la levée de doute n'existe pas.",
+       indice:"Une image sans quelqu'un derrière ne sert qu'après coup, pour la plainte. La sûreté, c'est ce qui empêche — et ça suppose une décision humaine sur place ou en télésurveillance."};
+     if(r.rondesSansAgent) return {ok:false,lectures:L,
+       pourquoi:"Des rondes prévues sans agent pour les faire.",
+       indice:"Une ronde est un homme qui marche. Ce n'est pas un réglage de la centrale."};
+     if(r.conservationTropLongue) return {ok:false,lectures:L,
+       pourquoi:"Images conservées "+r.conservation+" jours : au-delà d'un mois, il faut une raison précise et déclarée.",
+       indice:"Les enregistrements sont des données personnelles. Un mois couvre le temps de déposer plainte ; garder six mois « au cas où » expose l'employeur autant que le vol qu'il craignait."};
+     if(r.couverture<r.COUV) return {ok:false,lectures:L,
+       pourquoi:"Couverture de "+nb(100*r.couverture,0)+" % pour "+nb(100*r.COUV,0)+" % attendus.",
+       indice:"La technique et l'humain se multiplient, ils ne s'additionnent pas : un équipement complet sans personne pour intervenir plafonne à moins de la moitié de sa valeur affichée."};
+     if(r.cout>r.BUDGET) return {ok:false,lectures:L,
+       pourquoi:nb(r.cout,0)+" € par mois pour "+nb(r.BUDGET,0)+" € budgétés.",
+       indice:"Un agent coûte 3 800 € par mois, la détection périmétrique 4 100 € une fois. La technique remplace rarement un agent — mais elle permet souvent de n'en garder qu'un."};
+     return {ok:true,lectures:L,
+       pourquoi:r.hu.n+" avec "+r.te.n+" : couverture "+nb(100*r.couverture,0)+
+       " %, images gardées "+r.conservation+" jours, "+nb(r.cout,0)+
+       " € par mois. La technique détecte, l'agent décide."};
+   },mi,pi,"surete");
+}
+
+/* ---------------- 3. Le montage (Opticien) ---------------- */
+function calculMontage(pas,p){
+  const TOL=(pas&&pas.tolerance)||1.0, SPH=(pas&&pas.sphere)||-6.5;
+  const ecartMesure=[0,1,2][p.ecart];            /* erreur d'écart pupillaire, en mm */
+  const hauteur=[0,1,2][p.hauteur];              /* erreur de hauteur de montage */
+  /* la loi de Prentice : l'effet prismatique induit, en dioptries prismatiques */
+  const prismH=Math.abs(SPH)*ecartMesure/10;
+  const prismV=Math.abs(SPH)*hauteur/10;
+  const total=Math.sqrt(prismH*prismH+prismV*prismV);
+  /* le progressif ne pardonne pas la hauteur */
+  const progressif=p.verre===1;
+  const gene=total*(progressif? 1.6 : 1);
+  const reprise=gene>TOL;
+  const cout=(p.mesure===1? 0 : 0)+(reprise? 180 : 0);
+  return {TOL,SPH,ecartMesure,hauteur,prismH,prismV,total,gene,reprise,cout,progressif,
+          mesureAuJuge:p.mesure===0,
+          progressifSansHauteur:progressif&&p.mesure===0};
+}
+function rendreMontage(hote,mi,pi,pas){
+  const TOL=(pas&&pas.tolerance)||1.0, SPH=(pas&&pas.sphere)||-6.5;
+  bancATI(hote,"Le montage — un verre bien choisi mal centré est un verre mal choisi",
+   "Une correction de "+nb(SPH,2)+" dioptries. Chaque millimètre d'écart entre le centre optique et la pupille crée un effet prismatique : la loi de Prentice le chiffre, et il ne se rattrape pas. Sur un progressif, la hauteur de montage compte autant que l'écart — un demi-millimètre déplace tout le couloir de progression.",
+   "Un effet prismatique induit sous <b>"+nb(TOL,1)+" Δ</b>, sans reprise du montage.",
+   [{id:"verre",lib:"Verre",choix:["unifocal","progressif"],val:0},
+    {id:"mesure",lib:"Prise de mesures",choix:["au jugé, sur la monture","pupillomètre et hauteur mesurée"],val:0},
+    {id:"ecart",lib:"Écart pupillaire",choix:["exact","1 mm d'erreur","2 mm d'erreur"],val:0},
+    {id:"hauteur",lib:"Hauteur de montage",choix:["exacte","1 mm d'erreur","2 mm d'erreur"],val:0}],
+   [["Prisme horizontal","ma"],["Prisme vertical","mb"],["Effet total","mc"],["Verdict","md"]],
+   (c,w,h,p)=>{
+     const r=calculMontage(pas,p);
+     const cx=w*0.34, cy=h*0.50, R=Math.min(h*0.32,w*0.18);
+     c.strokeStyle=S3C.bleu;c.lineWidth=2;
+     c.beginPath();c.arc(cx,cy,R,0,6.284);c.stroke();
+     c.fillStyle=S3C.bleu;c.globalAlpha=.10;c.fill();c.globalAlpha=1;
+     /* le centre optique et la pupille */
+     c.strokeStyle=CM();c.lineWidth=1;c.setLineDash([3,3]);
+     c.beginPath();c.moveTo(cx-R-6,cy);c.lineTo(cx+R+6,cy);
+     c.moveTo(cx,cy-R-6);c.lineTo(cx,cy+R+6);c.stroke();c.setLineDash([]);
+     const dx=Math.min(R*0.8,r.ecartMesure*8), dy=Math.min(R*0.8,r.hauteur*8);
+     c.fillStyle=S3C.rouge;c.beginPath();c.arc(cx+dx,cy-dy,5,0,6.284);c.fill();
+     if(dx||dy) fleche(c,cx,cy,cx+dx,cy-dy,S3C.rouge,1.8);
+     mono(c,"centre optique",cx,cy+R+22,10,CM(),"center");
+     const rx=w*0.62;
+     mono(c,nb(r.total,2)+" Δ",rx,h*0.40,15,r.gene<=r.TOL?S3C.vert:S3C.rouge,"left");
+     txt(c,r.progressif?"progressif : × 1,6":"unifocal",rx,h*0.56,10.5,CM(),"left");
+     plaque(c,r.reprise?"reprise du montage":"montage accepté",w*0.5,h*0.92,11.5,
+            r.reprise?S3C.rouge:S3C.vert,"center");
+   },
+   (p)=>{
+     const r=calculMontage(pas,p);
+     const ok=!r.reprise&&!r.mesureAuJuge;
+     const L=[["ma",nb(r.prismH,2),"Δ"],["mb",nb(r.prismV,2),"Δ"],
+              ["mc",nb(r.gene,2),"Δ",r.gene<=r.TOL?"ok":"ko"],
+              ["md",r.reprise?"à reprendre":"conforme","",r.reprise?"ko":"ok"]];
+     if(r.mesureAuJuge) return {ok:false,lectures:L,
+       pourquoi:"Écart et hauteur pris au jugé sur la monture : sur une forte correction, un millimètre suffit à gêner.",
+       indice:"Le pupillomètre coûte une minute et supprime la moitié des reprises. À −6,50 dioptries, un millimètre d'erreur fait 0,65 dioptrie prismatique — assez pour fatiguer, pas assez pour que le client sache dire pourquoi."};
+     if(r.reprise) return {ok:false,lectures:L,
+       pourquoi:"Effet prismatique induit de "+nb(r.gene,2)+" Δ pour "+nb(r.TOL,1)+" toléré : le client reviendra.",
+       indice:"Prentice : effet = puissance × décentrement en centimètres. Plus la correction est forte, moins le montage pardonne — c'est exactement l'inverse de l'intuition."};
+     return {ok:true,lectures:L,
+       pourquoi:(r.progressif?"Progressif":"Unifocal")+" à "+nb(r.SPH,2)+" dioptries, mesures prises à l'appareil : "+
+       nb(r.gene,2)+" Δ induits. Le verre fait ce pour quoi il a été choisi."};
+   },mi,pi,"montageoptique");
+}
+
 /* ---- bancs-si.js.txt ---- */
 /* ============================================================
    LES BANCS PRATIQUES DU BTS SIO
@@ -42239,6 +42816,8 @@ const GENRE={w:"cablage", s:"simu", z:"simu", f:"chaine", g:"auto", h:"ladder",
              zb:"etancheite", zo:"murbois", zg:"implantation",
              /* Agri */     jd:"jardin", vd:"vendange",
              /* Transport et VH */ to:"tournee", dg:"diagnostic",
+             zl:"ligneroute", zd:"devisreparation", zx:"report", zy:"plancoupe",
+             za:"financement", zq:"surete", zw:"montageoptique",
              /* Aéro et mode */ vs:"visite", kt:"collection",
              /* Notariat, sécurité, optique */ su:"succession", ds:"dispositif", oq:"equipement"};
 const NOM={cablage:"Câblage",simu:"Simulateur",chaine:"Chaîne fonctionnelle",
@@ -42303,6 +42882,10 @@ const NOM={cablage:"Câblage",simu:"Simulateur",chaine:"Chaîne fonctionnelle",
            implantation:"Implanter le bâtiment",
            jardin:"Composer le jardin", vendange:"Conduire la vendange",
            tournee:"Bâtir la tournée", diagnostic:"Conduire le diagnostic",
+           ligneroute:"La ligne régulière", devisreparation:"Chiffrer la réparation",
+           report:"Le report de tolérance", plancoupe:"Le plan de coupe",
+           financement:"Le plan de financement", surete:"Le poste de sûreté",
+           montageoptique:"Le montage",
            visite:"Programmer la visite", collection:"Lancer la collection",
            succession:"Régler la succession", dispositif:"Monter le dispositif",
            equipement:"Composer l'équipement"};
@@ -42321,6 +42904,10 @@ const RENDUS={/* le banc de la bioqualité */
               etancheite:rendreEtancheite, murbois:rendreMurBois, implantation:rendreImplantation,
               jardin:rendreJardin, vendange:rendreVendange,
               tournee:rendreTournee, diagnostic:rendreDiag,
+              ligneroute:rendreLigne2, devisreparation:rendreDevis,
+              report:rendreReport, plancoupe:rendrePlanCoupe,
+              financement:rendrePlanFinancement, surete:rendreSurete,
+              montageoptique:rendreMontage,
               visite:rendreVisite, collection:rendreCollection,
               succession:rendreSuccession, dispositif:rendreDispositif, equipement:rendreEquipement,
               /* les bancs des bioanalyses */
