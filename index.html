@@ -21770,6 +21770,7 @@ const MODULES_AP=[
  {k:"l",t:"Millimètres, efficience, racines",h:`
   <div class="formule">volume = surface × millimètres / 1 000, divisé par l'efficience</div>
   <div class="encart e-cle"><span class="chapo">Abondant et espacé</span><p>Cela force les racines à descendre chercher l'eau. C'est plus long à installer et infiniment plus robuste au premier été sec.</p></div>`},
+ {k:"zt",t:"Banc — régler l'arrosage",besoin:24,eau:420,budget:9000},
  {k:"a",t:"Atelier — l'arrosage",gen:["ag-arrosage","ap-gazon","ag-sol"],but:4},
  {k:"c",t:"Contrôle",gen:["ag-arrosage","ap-gazon","ag-sol","ap-vegetal"],n:8}
 ]},
@@ -23273,6 +23274,7 @@ const MODULES_CF=[
    <tr><td>40 volumes</td><td>trois tons</td></tr>
   </table></div>
   <div class="encart e-cle"><span class="chapo">Le fond dégagé décide du résultat</span><p>Orangé vers la hauteur 6, jaune vers 8. Sans neutralisation, la couleur posée par-dessus vire — quel que soit le tube choisi et quel que soit son prix.</p></div>`},
+ {k:"zc",t:"Banc — formuler la couleur",cible:8},
  {k:"a",t:"Atelier — la couleur",gen:["cf-volume-oxydant","cf-melange","cf-technique"],but:4},
  {k:"c",t:"Contrôle",gen:["cf-volume-oxydant","cf-melange","cf-technique","be-hygiene"],n:8}
 ]},
@@ -27919,6 +27921,7 @@ const MODULES_MK=[
    <tr><td>peau déshydratée</td><td>de l'eau</td><td>un humectant, puis un occlusif</td></tr>
   </table></div>
   <div class="encart e-piege"><span class="chapo">Nourrir une peau qui demandait à boire</span><p>C'est l'erreur la plus fréquente, et elle se voit : la peau tire encore, et le film gras ajouté finit par gêner. Le diagnostic se refait à chaque visite — la peau change avec les saisons.</p></div>`},
+ {k:"zp",t:"Banc — bâtir le protocole",efficacite:3.2,irritation:3.8,marge:260,prix:58},
  {k:"a",t:"Atelier — le diagnostic",gen:["mk-peau","be-hygiene","be-cout-prestation"],but:4,h:`
   <p>On commence avec des nombres ronds.</p>`},
  {k:"c",t:"Contrôle",gen:["mk-peau","be-hygiene","be-cout-prestation","be-conseil"],n:8}
@@ -30636,6 +30639,7 @@ const MODULES_VI=[
   <div class="formule">volume/ha = débit des buses × 600 / (vitesse × écartement)</div>
   <div class="encart e-cle"><span class="chapo">Contrôler à l'eau claire</span><p>Chaque saison, avant de traiter quoi que ce soit. Un pulvérisateur non réglé applique une dose qu'on ne connaît pas — dans un sens comme dans l'autre.</p></div>
   <div class="encart e-piege"><span class="chapo">Traiter juste avant la pluie</span><p>Le produit est lessivé en grande partie. La fenêtre météo fait partie de la décision, au même titre que le stade de la vigne.</p></div>`},
+ {k:"zv",t:"Banc — protéger la vigne",protection:0.80,ift:1.6,budget:1400,surface:18},
  {k:"a",t:"Atelier — la protection",gen:["ag-volume-bouillie","ag-dose","ag-securite"],but:4},
  {k:"c",t:"Contrôle",gen:["ag-volume-bouillie","ag-dose","ag-securite","vi-vignoble"],n:8}
 ]},
@@ -34023,6 +34027,333 @@ function rendreCheminement(hote,mi,pi,pas){
        " : fermeture admissible "+nb(1000*r.ferm,1)+" mgon, contrôlée sur point connu, en "+
        nb(r.heures,1)+" h. Un levé sans fermeture n'est pas un levé."};
    },mi,pi,"cheminement");
+}
+
+/* ---- bancs-be2.js.txt ---- */
+/* ============================================================
+   LES SECONDS BANCS — BEAUTÉ ET AGRICULTURE
+   MECP : bâtir un protocole — l'efficacité et l'irritation
+          montent ensemble ; le métier est de les séparer.
+   Coiffure : formuler la couleur — le fond dégagé décide, pas
+          le tube.
+   Paysage : l'arrosage — l'efficience compte plus que le débit.
+   Viticulture : le traitement — la fenêtre météo fait partie
+          de la décision, au même titre que la dose.
+   ============================================================ */
+const B2C={rose:"#b8687f", vert:"#4a8c5a", rouge:"#c0603f", or:"#c2963c", bleu:"#4b6ea9", gris:"#8a8f99"};
+
+/* ---------------- 1. Le protocole de soin (MECP) ---------------- */
+const B2_ACTIF=[{n:"actif doux (niacinamide)",eff:1.0,irr:0.3,cout:6},
+                {n:"acide doux (mandélique)",eff:1.8,irr:1.0,cout:9},
+                {n:"acide fort (glycolique)",eff:2.6,irr:2.2,cout:11}];
+const B2_APP=[{n:"aucun appareil",eff:0,irr:0,cout:0},
+              {n:"ultrasons",eff:0.8,irr:0.2,cout:4},
+              {n:"microneedling",eff:2.0,irr:1.9,cout:18}];
+const B2_FREQ=[{n:"toutes les 3 semaines",k:0.7,n2:5},
+               {n:"toutes les 2 semaines",k:1.0,n2:7},
+               {n:"chaque semaine",k:1.5,n2:12}];
+function calculProtocole(pas,p){
+  const EFF=(pas&&pas.efficacite)||3.2, IRRMAX=(pas&&pas.irritation)||3.8, MARGE=(pas&&pas.marge)||260;
+  const ac=B2_ACTIF[p.actif], ap=B2_APP[p.appareil], fr=B2_FREQ[p.frequence];
+  const solaire=p.solaire===1;
+  /* l'efficacité cumulée sur la cure, et l'irritation qui monte avec elle */
+  const eff=(ac.eff+ap.eff)*fr.k;
+  let irr=(ac.irr+ap.irr)*fr.k*(solaire?1:1.15);
+  const prix=(pas&&pas.prix)||58;
+  const cout=(ac.cout+ap.cout+ (solaire?3:0))*fr.n2;
+  const marge=prix*fr.n2-cout-fr.n2*14;          /* 14 € d'heure de cabine par séance */
+  return {EFF,IRRMAX,MARGE,ac,ap,fr,eff,irr,cout,marge,seances:fr.n2,
+          sansSolaire:!solaire && (p.actif>0||p.appareil===2)};
+}
+function rendreProtocole(hote,mi,pi,pas){
+  const EFF=(pas&&pas.efficacite)||3.2, IRRMAX=(pas&&pas.irritation)||3.8, MARGE=(pas&&pas.marge)||260;
+  bancATI(hote,"Bâtir le protocole — efficace sans irriter",
+   "Une cure sur une peau qui ne demande qu'à réagir. L'efficacité et l'irritation montent ENSEMBLE : tout le métier consiste à les séparer. Un exfoliant impose une protection solaire — sans elle, la cure abîme plus qu'elle ne répare. Et une séance de plus par mois multiplie les deux, pas seulement le résultat.",
+   "Efficacité cumulée d'au moins <b>"+nb(EFF,1)+"</b>, irritation sous <b>"+nb(IRRMAX,1)+
+   "</b>, et au moins <b>"+nb(MARGE,0)+" €</b> de marge sur la cure.",
+   [{id:"actif",lib:"Actif principal",choix:B2_ACTIF.map(x=>x.n),val:0},
+    {id:"appareil",lib:"Appareil",choix:B2_APP.map(x=>x.n),val:0},
+    {id:"frequence",lib:"Rythme des séances",choix:B2_FREQ.map(x=>x.n),val:0},
+    {id:"solaire",lib:"Protection solaire prescrite",choix:["non","oui (3 €/séance)"],val:0}],
+   [["Efficacité","qa"],["Irritation","qb"],["Séances","qc"],["Marge","qd"]],
+   (c,w,h,p)=>{
+     const r=calculProtocole(pas,p);
+     const x0=w*0.32, lg=w*0.48;
+     [["efficacité",r.eff,r.EFF,7,true],["irritation",r.irr,r.IRRMAX,7,false],
+      ["marge",r.marge,r.MARGE,r.MARGE*2.2,true]].forEach((q,i)=>{
+       const y=h*0.22+i*h*0.22;
+       const bon=q[4]? q[1]>=q[2] : q[1]<=q[2];
+       c.fillStyle=CB();c.globalAlpha=.28;c.fillRect(x0,y,lg,18);c.globalAlpha=1;
+       c.fillStyle=bon?B2C.vert:B2C.rouge;
+       c.fillRect(x0,y,lg*Math.max(0.01,Math.min(1,q[1]/q[3])),18);
+       const xc=x0+lg*(q[2]/q[3]);
+       c.strokeStyle=CI();c.lineWidth=1.4;c.setLineDash([3,3]);
+       c.beginPath();c.moveTo(xc,y-7);c.lineTo(xc,y+25);c.stroke();c.setLineDash([]);
+       txt(c,q[0],w*0.03,y+9,11,CI(),"left",true);
+       mono(c,i===2? nb(q[1],0)+" €" : nb(q[1],2),x0+lg+5,y+9,10.5,bon?B2C.vert:B2C.rouge,"left");
+     });
+     plaque(c,r.seances+" séances  ·  "+r.fr.n,w*0.5,h*0.92,11,CI(),"center");
+   },
+   (p)=>{
+     const r=calculProtocole(pas,p);
+     const ok=r.eff>=r.EFF&&r.irr<=r.IRRMAX&&r.marge>=r.MARGE&&!r.sansSolaire;
+     const L=[["qa",nb(r.eff,2),"",r.eff>=r.EFF?"ok":"ko"],
+              ["qb",nb(r.irr,2),"",r.irr<=r.IRRMAX?"ok":"ko"],
+              ["qc",nb(r.seances,0),""],
+              ["qd",nb(r.marge,0),"€",r.marge>=r.MARGE?"ok":"ko"]];
+     if(r.sansSolaire) return {ok:false,lectures:L,
+       pourquoi:"Un exfoliant ou un appareil qui perce la barrière, sans protection solaire : la cure abîme plus qu'elle ne répare.",
+       indice:"La peau exfoliée est plus sensible au soleil pendant des semaines. La protection ne se conseille pas en fin de séance, elle fait PARTIE du protocole — et son coût aussi."};
+     if(r.irr>r.IRRMAX) return {ok:false,lectures:L,
+       pourquoi:"Irritation à "+nb(r.irr,2)+" pour "+nb(r.IRRMAX,1)+" tolérés : la peau va réagir.",
+       indice:"Espacer les séances calme les deux courbes à la fois. Un acide fort chaque semaine ne donne pas un meilleur résultat : il donne une peau qu'on devra laisser tranquille un mois."};
+     if(r.eff<r.EFF) return {ok:false,lectures:L,
+       pourquoi:"Efficacité cumulée de "+nb(r.eff,2)+" pour "+nb(r.EFF,1)+" attendus.",
+       indice:"L'appareil et l'actif s'ajoutent : un actif doux soutenu par les ultrasons irrite moins qu'un acide fort seul, pour un résultat comparable."};
+     if(r.marge<r.MARGE) return {ok:false,lectures:L,
+       pourquoi:nb(r.marge,0)+" € de marge sur la cure pour "+nb(r.MARGE,0)+" visés.",
+       indice:"Chaque séance consomme une heure de cabine, qu'elle rapporte ou non. Une cure courte à séances denses laisse souvent plus qu'une cure longue et molle."};
+     return {ok:true,lectures:L,
+       pourquoi:r.ac.n+(p.appareil?" + "+r.ap.n:"")+", "+r.fr.n+" : efficacité "+nb(r.eff,2)+
+       " pour une irritation de "+nb(r.irr,2)+", "+nb(r.marge,0)+
+       " € de marge. Le résultat tient parce que la peau suit."};
+   },mi,pi,"protocole");
+}
+
+/* ---------------- 2. Formuler la couleur (Coiffure) ---------------- */
+const B2_OXY=[{n:"10 volumes",g:0,agress:0.4},{n:"20 volumes",g:1,agress:1.0},
+              {n:"30 volumes",g:2,agress:1.8},{n:"40 volumes",g:3,agress:3.0}];
+const B2_ETAT=[{n:"cheveu vierge",res:1.0,tol:3.2},{n:"déjà coloré",res:0.85,tol:2.2},
+               {n:"poreux, déjà décoloré",res:0.7,tol:1.2}];
+function calculCouleur(pas,p){
+  const CIBLE=(pas&&pas.cible)||8;
+  const depart=p.depart, ox=B2_OXY[p.oxydant], et=B2_ETAT[p.etat];
+  const atteint=Math.min(10,depart+ox.g*et.res);
+  const ecart=Math.abs(atteint-CIBLE);
+  /* le fond dégagé : orangé vers 6, jaune vers 8 — il faut le neutraliser */
+  const fond=atteint>=7.5? "jaune" : atteint>=5.5? "orangé" : "rouge";
+  const bonNeutralisant=(fond==="jaune"&&p.neutralisant===2)||
+                        (fond==="orangé"&&p.neutralisant===1)||
+                        (fond==="rouge"&&p.neutralisant===0);
+  const agression=ox.agress/et.tol+(p.soin===1? -0.25 : 0);
+  return {CIBLE,depart,ox,et,atteint,ecart,fond,bonNeutralisant,agression,
+          sansSoinSurPoreux:p.etat===2&&p.soin===0};
+}
+function rendreCouleur(hote,mi,pi,pas){
+  const CIBLE=(pas&&pas.cible)||8;
+  bancATI(hote,"Formuler la couleur — le fond dégagé décide",
+   "Une cliente veut monter en hauteur de ton. L'oxydant donne l'éclaircissement, mais un cheveu déjà travaillé résiste moins et casse plus. Éclaircir dégage un fond : orangé vers 6, jaune vers 8 — c'est LUI qu'il faut neutraliser, sinon la couleur posée par-dessus vire, quel que soit le prix du tube.",
+   "Atteindre la hauteur <b>"+nb(CIBLE,0)+"</b> à un ton près, avec le bon neutralisant, sans dépasser ce que le cheveu supporte.",
+   [{id:"depart",lib:"Hauteur de départ",min:3,max:8,pas:1,val:5,u:""},
+    {id:"etat",lib:"État du cheveu",choix:B2_ETAT.map(x=>x.n),val:0},
+    {id:"oxydant",lib:"Oxydant",choix:B2_OXY.map(x=>x.n),val:0},
+    {id:"neutralisant",lib:"Neutralisant",choix:["vert (anti-rouge)","bleu (anti-orangé)","violet (anti-jaune)"],val:0},
+    {id:"soin",lib:"Soin protecteur dans le mélange",choix:["non","oui"],val:0}],
+   [["Hauteur atteinte","ka"],["Écart à la cible","kb"],["Fond dégagé","kc"],["Agression","kd"]],
+   (c,w,h,p)=>{
+     const r=calculCouleur(pas,p);
+     const x0=w*0.10, lg=w*0.80, y=h*0.36;
+     for(let i=1;i<=10;i++){
+       const x=x0+lg*(i-1)/10;
+       const n=255*Math.pow((i-1)/9,0.9);
+       c.fillStyle="rgb("+Math.round(40+n*0.8)+","+Math.round(24+n*0.66)+","+Math.round(10+n*0.42)+")";
+       c.fillRect(x,y,lg/10-2,26);
+     }
+     c.strokeStyle=CB();c.lineWidth=1.2;c.strokeRect(x0,y,lg,26);
+     [[r.depart,B2C.gris,"départ",-1],[r.CIBLE,B2C.bleu,"cible",1],[r.atteint,B2C.rose,"atteint",1]]
+      .forEach(([v,col,lib,sens],i)=>{
+       const x=x0+lg*(v-0.5)/10;
+       c.strokeStyle=col;c.lineWidth=2.2;
+       c.beginPath();c.moveTo(x,y+(sens<0?-8:26));c.lineTo(x,y+(sens<0?0:34));c.stroke();
+       mono(c,lib,x,y+(sens<0? -18 : 44+i*16),10.5,col,"center");
+     });
+     plaque(c,"fond "+r.fond+(r.bonNeutralisant?" — neutralisé":" — NON neutralisé"),
+            w*0.5,h*0.10,11.5,r.bonNeutralisant?B2C.vert:B2C.rouge,"center");
+     mono(c,"agression "+nb(r.agression,2),w*0.5,h*0.95,11,
+          r.agression<=1?B2C.vert:B2C.rouge,"center");
+   },
+   (p)=>{
+     const r=calculCouleur(pas,p);
+     const ok=r.ecart<=1.0&&r.bonNeutralisant&&r.agression<=1&&!r.sansSoinSurPoreux;
+     const L=[["ka",nb(r.atteint,1),"",r.ecart<=1.0?"ok":"ko"],
+              ["kb",nb(r.ecart,1),"",r.ecart<=1.0?"ok":"ko"],
+              ["kc",r.fond,"",r.bonNeutralisant?"ok":"ko"],
+              ["kd",nb(r.agression,2),"",r.agression<=1?"ok":"ko"]];
+     if(r.sansSoinSurPoreux) return {ok:false,lectures:L,
+       pourquoi:"Cheveu poreux, déjà décoloré, sans soin protecteur dans le mélange : il va casser.",
+       indice:"Sur une longueur déjà travaillée, le soin ne se discute pas. Il ne répare rien — la fibre est morte — mais il limite la casse pendant que l'oxydant travaille."};
+     if(r.agression>1) return {ok:false,lectures:L,
+       pourquoi:"Agression de "+nb(r.agression,2)+" pour ce que le cheveu supporte : la longueur va se fragiliser.",
+       indice:"Un cheveu déjà coloré tolère beaucoup moins qu'un cheveu vierge. Monter d'un ton de moins, ou passer par deux séances, abîme moins qu'un 40 volumes en une fois."};
+     if(r.ecart>1.0) return {ok:false,lectures:L,
+       pourquoi:"Hauteur atteinte "+nb(r.atteint,1)+" pour une cible de "+nb(r.CIBLE,0)+".",
+       indice:"10 volumes ne montent pas, 20 montent d'un ton, 30 de deux, 40 de trois — et un cheveu abîmé monte moins que ce que la boîte annonce."};
+     if(!r.bonNeutralisant) return {ok:false,lectures:L,
+       pourquoi:"Le fond dégagé est "+r.fond+" et le neutralisant choisi ne le corrige pas.",
+       indice:"Violet contre le jaune, bleu contre l'orangé, vert contre le rouge : on neutralise la couleur OPPOSÉE sur le cercle. Se tromper de neutralisant, c'est ajouter un reflet au lieu de l'enlever."};
+     return {ok:true,lectures:L,
+       pourquoi:"Départ "+nb(r.depart,0)+", "+r.ox.n+" sur "+r.et.n+" : hauteur "+nb(r.atteint,1)+
+       ", fond "+r.fond+" neutralisé, agression "+nb(r.agression,2)+
+       ". La couleur tiendra parce que le cheveu tient."};
+   },mi,pi,"couleur");
+}
+
+/* ---------------- 3. L'arrosage (Paysage) ---------------- */
+const B2_SYS=[{n:"asperseurs",eff:0.62,cout:4.5},
+              {n:"micro-aspersion",eff:0.78,cout:6.5},
+              {n:"goutte-à-goutte",eff:0.92,cout:9}];
+const B2_HEURE=[{n:"en pleine journée",k:0.72},{n:"le soir",k:0.94},{n:"la nuit",k:1.0}];
+function calculArrosage(pas,p){
+  const BESOIN=(pas&&pas.besoin)||24, EAUMAX=(pas&&pas.eau)||420, BUDGET=(pas&&pas.budget)||9000;
+  const SURF=1200;
+  const sy=B2_SYS[p.systeme], he=B2_HEURE[p.heure];
+  const paillage=p.paillage===1;
+  /* le paillage réduit l'évaporation du sol : c'est le levier gratuit */
+  const besoin=BESOIN*(paillage?0.72:1);
+  const efficience=sy.eff*he.k;
+  const eau=besoin*SURF/1000/efficience;         /* m³ par mois */
+  const cout=SURF*sy.cout+(paillage?SURF*3.2:0);
+  /* arroser peu et souvent fait raciner en surface */
+  const enracinement=p.frequence===0? 1.0 : p.frequence===1? 0.8 : 0.45;
+  return {BESOIN,EAUMAX,BUDGET,sy,he,besoin,efficience,eau,cout,enracinement,paillage,
+          journeeEtAsperseurs:p.heure===0};
+}
+function rendreArrosage(hote,mi,pi,pas){
+  const BESOIN=(pas&&pas.besoin)||24, EAUMAX=(pas&&pas.eau)||420, BUDGET=(pas&&pas.budget)||9000;
+  bancATI(hote,"L'arrosage — l'efficience avant le débit",
+   "1 200 m² à tenir en été. Ce qui compte n'est pas ce qui sort du compteur mais ce qui arrive aux racines : un asperseur en pleine journée en perd près de la moitié. Le paillage est le seul levier gratuit — il coupe l'évaporation du sol d'un quart. Et arroser peu et souvent fait raciner en surface : la plante devient dépendante.",
+   "Rester sous <b>"+nb(EAUMAX,0)+" m³</b> par mois, avec un enracinement profond, pour <b>"+
+   nb(BUDGET,0)+" €</b> d'installation.",
+   [{id:"systeme",lib:"Système",choix:B2_SYS.map(x=>x.n),val:0},
+    {id:"heure",lib:"Créneau",choix:B2_HEURE.map(x=>x.n),val:0},
+    {id:"frequence",lib:"Rythme",choix:["abondant, espacé","moyen","peu et souvent"],val:0},
+    {id:"paillage",lib:"Paillage (3,20 €/m²)",choix:["non","oui"],val:0}],
+   [["Efficience","aa"],["Besoin corrigé","ab"],["Eau consommée","ac"],["Installation","ad"]],
+   (c,w,h,p)=>{
+     const r=calculArrosage(pas,p);
+     const x0=w*0.32, lg=w*0.48;
+     [["efficience",r.efficience,0.75,1],["eau",r.eau,r.EAUMAX,r.EAUMAX*1.6],
+      ["enracinement",r.enracinement,0.8,1.1]].forEach((q,i)=>{
+       const y=h*0.20+i*h*0.22;
+       const bon=i===1? q[1]<=q[2] : q[1]>=q[2];
+       c.fillStyle=CB();c.globalAlpha=.28;c.fillRect(x0,y,lg,18);c.globalAlpha=1;
+       c.fillStyle=bon?B2C.vert:B2C.rouge;
+       c.fillRect(x0,y,lg*Math.min(1,q[1]/q[3]),18);
+       const xc=x0+lg*(q[2]/q[3]);
+       c.strokeStyle=CI();c.lineWidth=1.4;c.setLineDash([3,3]);
+       c.beginPath();c.moveTo(xc,y-7);c.lineTo(xc,y+25);c.stroke();c.setLineDash([]);
+       txt(c,q[0],w*0.03,y+9,11,CI(),"left",true);
+       mono(c,i===1? nb(q[1],0)+" m³" : nb(q[1],2),x0+lg+5,y+9,10.5,bon?B2C.vert:B2C.rouge,"left");
+     });
+     plaque(c,r.sy.n+" · "+r.he.n+(r.paillage?" · paillé":""),w*0.5,h*0.06,11,CI(),"center");
+     mono(c,nb(r.cout,0)+" €",w*0.5,h*0.94,12,r.cout<=r.BUDGET?B2C.vert:B2C.rouge,"center");
+   },
+   (p)=>{
+     const r=calculArrosage(pas,p);
+     const ok=r.eau<=r.EAUMAX&&r.enracinement>=0.8&&r.cout<=r.BUDGET&&!r.journeeEtAsperseurs;
+     const L=[["aa",nb(r.efficience,2),"",r.efficience>=0.75?"ok":"ko"],
+              ["ab",nb(r.besoin,1),"mm"],["ac",nb(r.eau,0),"m³",r.eau<=r.EAUMAX?"ok":"ko"],
+              ["ad",nb(r.cout,0),"€",r.cout<=r.BUDGET?"ok":"ko"]];
+     if(r.journeeEtAsperseurs) return {ok:false,lectures:L,
+       pourquoi:"Arrosage en pleine journée : près d'un tiers part en évaporation et en dérive, et les gouttes sur les feuilles brûlent au soleil.",
+       indice:"La nuit ou tôt le matin, l'air est saturé et le vent tombé : la même eau sortie du compteur arrive vraiment aux racines. C'est le réglage le moins cher du chantier."};
+     if(r.enracinement<0.8) return {ok:false,lectures:L,
+       pourquoi:"Arroser peu et souvent fait raciner en surface : au premier été sec, la plante ne sait pas descendre chercher l'eau.",
+       indice:"Abondant et espacé. C'est plus long à installer et infiniment plus robuste — et cela consomme moins, pas plus."};
+     if(r.eau>r.EAUMAX) return {ok:false,lectures:L,
+       pourquoi:nb(r.eau,0)+" m³ par mois pour "+nb(r.EAUMAX,0)+" disponibles.",
+       indice:"Deux leviers : l'efficience du système, et le paillage, qui baisse le BESOIN d'un quart pour 3,20 € le mètre carré. Le second se paie une fois."};
+     if(r.cout>r.BUDGET) return {ok:false,lectures:L,
+       pourquoi:nb(r.cout,0)+" € d'installation pour "+nb(r.BUDGET,0)+" € budgétés.",
+       indice:"Le goutte-à-goutte coûte le double de l'asperseur à la pose et le rend en eau chaque été. Sur un jardin qu'on arrose dix ans, ce n'est pas une dépense, c'est un placement."};
+     return {ok:true,lectures:L,
+       pourquoi:r.sy.n+" "+r.he.n+(r.paillage?", paillé":"")+" : efficience "+nb(r.efficience,2)+
+       ", "+nb(r.eau,0)+" m³ par mois, enracinement profond pour "+nb(r.cout,0)+
+       " €. L'eau qui compte est celle qui arrive aux racines."};
+   },mi,pi,"arrosage");
+}
+
+/* ---------------- 4. Protéger la vigne (Viticulture) ---------------- */
+const B2_PROD=[{n:"contact",remanence:7,lessivage:1.0,cout:22},
+               {n:"pénétrant",remanence:10,lessivage:0.55,cout:34},
+               {n:"systémique",remanence:14,lessivage:0.25,cout:48}];
+const B2_METEO=[{n:"sec pour 10 jours",pluie:0},{n:"averse dans 48 h",pluie:1},
+                {n:"pluie dans 12 h",pluie:2}];
+function calculVigne(pas,p){
+  const PROTECT=(pas&&pas.protection)||0.80, IFTMAX=(pas&&pas.ift)||1.6, BUDGET=(pas&&pas.budget)||1400;
+  const SURF=(pas&&pas.surface)||18;
+  const pr=B2_PROD[p.produit], me=B2_METEO[p.meteo];
+  /* le volume de bouillie : trop peu ne couvre pas, trop ruisselle */
+  const vol=[80,150,250][p.volume];
+  const couverture=vol<100? 0.72 : vol>220? 0.88 : 1.0;
+  /* la pluie lessive ce qui n'a pas pénétré */
+  const perte=me.pluie===0? 0 : me.pluie===1? 0.25*pr.lessivage : 0.70*pr.lessivage;
+  const protection=couverture*(1-perte);
+  const dose=[0.6,1.0,1.4][p.dose];
+  const ift=dose;
+  const cout=pr.cout*dose*SURF;
+  return {PROTECT,IFTMAX,BUDGET,SURF,pr,me,vol,couverture,perte,protection:protection*Math.min(1,dose+0.2),
+          ift,cout,dose,
+          traiteAvantPluie:me.pluie===2&&p.produit===0};
+}
+function rendreVigne(hote,mi,pi,pas){
+  const PROTECT=(pas&&pas.protection)||0.80, IFTMAX=(pas&&pas.ift)||1.6, BUDGET=(pas&&pas.budget)||1400;
+  bancATI(hote,"Protéger la vigne — la fenêtre météo fait partie de la décision",
+   "18 hectares à protéger avant la prochaine pluie. Un produit de contact reste sur la feuille et part au premier lessivage ; un systémique entre dans la plante et coûte le double. Le volume de bouillie décide de la couverture : trop peu ne mouille pas tout, trop ruisselle au sol. Et l'indice de fréquence de traitement se compte à l'année.",
+   "Protection d'au moins <b>"+nb(100*PROTECT,0)+" %</b>, indice de traitement sous <b>"+
+   nb(IFTMAX,1)+"</b>, pour <b>"+nb(BUDGET,0)+" €</b> au plus.",
+   [{id:"produit",lib:"Produit",choix:B2_PROD.map(x=>x.n),val:0},
+    {id:"meteo",lib:"Fenêtre météo",choix:B2_METEO.map(x=>x.n),val:0},
+    {id:"volume",lib:"Volume de bouillie",choix:["80 L/ha","150 L/ha","250 L/ha"],val:0},
+    {id:"dose",lib:"Dose",choix:["réduite (0,6)","pleine (1,0)","renforcée (1,4)"],val:0}],
+   [["Couverture","va"],["Lessivage","vb"],["Protection","vc"],["Coût","vd"]],
+   (c,w,h,p)=>{
+     const r=calculVigne(pas,p);
+     const x0=w*0.32, lg=w*0.48;
+     [["couverture",r.couverture,0.9,1.1],["protection",r.protection,r.PROTECT,1.1],
+      ["indice IFT",r.ift,r.IFTMAX,2.2]].forEach((q,i)=>{
+       const y=h*0.20+i*h*0.22;
+       const bon=i===2? q[1]<=q[2] : q[1]>=q[2];
+       c.fillStyle=CB();c.globalAlpha=.28;c.fillRect(x0,y,lg,18);c.globalAlpha=1;
+       c.fillStyle=bon?B2C.vert:B2C.rouge;
+       c.fillRect(x0,y,lg*Math.min(1,q[1]/q[3]),18);
+       const xc=x0+lg*(q[2]/q[3]);
+       c.strokeStyle=CI();c.lineWidth=1.4;c.setLineDash([3,3]);
+       c.beginPath();c.moveTo(xc,y-7);c.lineTo(xc,y+25);c.stroke();c.setLineDash([]);
+       txt(c,q[0],w*0.03,y+9,11,CI(),"left",true);
+       mono(c,nb(q[1],2),x0+lg+5,y+9,10.5,bon?B2C.vert:B2C.rouge,"left");
+     });
+     plaque(c,r.pr.n+" · "+r.me.n+" · "+r.vol+" L/ha",w*0.5,h*0.06,11,CI(),"center");
+     mono(c,nb(r.cout,0)+" € sur "+nb(r.SURF,0)+" ha",w*0.5,h*0.94,12,
+          r.cout<=r.BUDGET?B2C.vert:B2C.rouge,"center");
+   },
+   (p)=>{
+     const r=calculVigne(pas,p);
+     const ok=r.protection>=r.PROTECT&&r.ift<=r.IFTMAX&&r.cout<=r.BUDGET&&!r.traiteAvantPluie;
+     const L=[["va",nb(r.couverture,2),"",r.couverture>=0.9?"ok":"ko"],
+              ["vb",nb(100*r.perte,0),"%",r.perte<=0.2?"ok":"ko"],
+              ["vc",nb(r.protection,2),"",r.protection>=r.PROTECT?"ok":"ko"],
+              ["vd",nb(r.cout,0),"€",r.cout<=r.BUDGET?"ok":"ko"]];
+     if(r.traiteAvantPluie) return {ok:false,lectures:L,
+       pourquoi:"Un produit de contact appliqué douze heures avant la pluie : il sera lessivé avant d'avoir servi.",
+       indice:"La fenêtre météo se lit AVANT de remplir la cuve. Devant une pluie annoncée, soit on attend, soit on prend un produit qui pénètre — et on paie la différence."};
+     if(r.couverture<0.9) return {ok:false,lectures:L,
+       pourquoi:"Couverture de "+nb(r.couverture,2)+" : le volume de bouillie ne mouille pas toute la végétation.",
+       indice:"Sous 100 litres par hectare, la pulvérisation laisse des zones sèches ; au-delà de 220, elle ruisselle au sol. Le bon volume dépend du stade de la vigne, pas de l'habitude."};
+     if(r.protection<r.PROTECT) return {ok:false,lectures:L,
+       pourquoi:"Protection de "+nb(r.protection,2)+" pour "+nb(r.PROTECT,2)+" attendue.",
+       indice:"Trois facteurs se multiplient : la couverture, la dose et ce que la pluie emporte. Le produit le plus cher ne rattrape pas un volume mal réglé."};
+     if(r.ift>r.IFTMAX) return {ok:false,lectures:L,
+       pourquoi:"Indice de traitement à "+nb(r.ift,2)+" pour "+nb(r.IFTMAX,1)+" admis.",
+       indice:"La dose renforcée se compte dans l'IFT de l'exploitation, année après année. Mieux vaut une dose pleine bien positionnée qu'une dose forte mal placée."};
+     if(r.cout>r.BUDGET) return {ok:false,lectures:L,
+       pourquoi:nb(r.cout,0)+" € pour "+nb(r.BUDGET,0)+" € budgétés sur "+nb(r.SURF,0)+" hectares.",
+       indice:"Le systémique coûte plus du double du contact. Il se justifie quand la pluie menace — pas comme réglage par défaut de la saison."};
+     return {ok:true,lectures:L,
+       pourquoi:r.pr.n+" à "+r.vol+" L/ha, dose "+nb(r.dose,1)+" : protection "+nb(r.protection,2)+
+       " pour un IFT de "+nb(r.ift,2)+" et "+nb(r.cout,0)+
+       " €. Le produit a été choisi d'après le ciel, pas d'après le catalogue."};
+   },mi,pi,"vigne");
 }
 
 /* ---- bancs-beaute.js.txt ---- */
@@ -41651,7 +41982,8 @@ const GENRE={w:"cablage", s:"simu", z:"simu", f:"chaine", g:"auto", h:"ladder",
              sm:"secumachine", kc:"cotation", xs:"sil",
              /* Création */ im:"imprime", tv:"tournage",
              zi:"identite", zr:"retroplanning", zm:"postproduction",
-             /* Beauté */   iu:"institut",
+             /* Beauté */   iu:"institut", zp:"protocole", zc:"couleur",
+             /* Agri 2 */   zt:"arrosage", zv:"vigne",
              /* Bâti */     ev:"enveloppe", so:"solive", ck:"cheminement",
              /* Agri */     jd:"jardin", vd:"vendange",
              /* Transport et VH */ to:"tournee", dg:"diagnostic",
@@ -41710,7 +42042,9 @@ const NOM={cablage:"Câblage",simu:"Simulateur",chaine:"Chaîne fonctionnelle",
            imprime:"Fabriquer l'imprimé", tournage:"Préparer le tournage",
            identite:"Le système d'identité", retroplanning:"Le rétroplanning",
            postproduction:"La post-production",
-           institut:"Piloter l'institut",
+           institut:"Piloter l'institut", protocole:"Bâtir le protocole",
+           couleur:"Formuler la couleur", arrosage:"Régler l'arrosage",
+           vigne:"Protéger la vigne",
            enveloppe:"Composer l'enveloppe", solive:"Dimensionner le plancher",
            cheminement:"Conduire le cheminement",
            jardin:"Composer le jardin", vendange:"Conduire la vendange",
@@ -41727,6 +42061,8 @@ const RENDUS={/* le banc de la bioqualité */
               imprime:rendreImprime, tournage:rendreTournage,
               identite:rendreIdentite, retroplanning:rendreRetro, postproduction:rendrePost,
               institut:rendreInstitut,
+              protocole:rendreProtocole, couleur:rendreCouleur,
+              arrosage:rendreArrosage, vigne:rendreVigne,
               enveloppe:rendreEnveloppe, solive:rendreSolive, cheminement:rendreCheminement,
               jardin:rendreJardin, vendange:rendreVendange,
               tournee:rendreTournee, diagnostic:rendreDiag,
