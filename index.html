@@ -21556,6 +21556,7 @@ const MODULES_AB=[
    <tr><td>identité non vérifiée</td><td>le mauvais patient</td></tr>
   </table></div>
   <div class="encart e-cle"><span class="chapo">L'identité se demande AU PATIENT</span><p>Pas à l'étiquette, pas au dossier. « Vous pouvez me donner votre nom et votre date de naissance ? » est la question qui évite l'erreur la plus grave du métier.</p></div>`},
+ {k:"va",t:"Banc — valider la série",faux:12,rate:30},
  {k:"a",t:"Atelier — le pré-analytique",gen:["abm-preanalytique","abm-delta","lab-prelevement"],but:4,h:`
   <p>On commence avec des nombres ronds.</p>`},
  {k:"c",t:"Contrôle",gen:["abm-preanalytique","abm-delta","lab-prelevement","abm-unites"],n:8}
@@ -22729,6 +22730,7 @@ const MODULES_BI=[
   <div class="formule">cellules/mL = comptées / (volume de la zone × ...) × dilution
     UFC/mL = colonies × dilution / volume ensemencé</div>
   <div class="encart e-cle"><span class="chapo">La fenêtre 15 à 300</span><p>Sous 15 colonies, le hasard domine le résultat. Au-dessus de 300, les colonies fusionnent et on sous-compte. Une boîte hors de cette fenêtre ne se corrige pas : elle ne s'exploite pas.</p></div>`},
+ {k:"cu",t:"Banc — dénombrer",cible:120000},
  {k:"a",t:"Atelier — compter",gen:["bioac-numeration","lab-ufc","lab-cascade"],but:4,h:`
   <p>On commence avec des nombres ronds.</p>`},
  {k:"c",t:"Contrôle",gen:["bioac-numeration","lab-ufc","lab-cascade","lab-dilution"],n:8}
@@ -24025,6 +24027,7 @@ const MODULES_CH=[
   <div class="formule">rendement = masse obtenue / masse théorique
     économie d'atomes = masse molaire du produit / somme des réactifs</div>
   <div class="encart e-cle"><span class="chapo">Ce que l'économie d'atomes révèle</span><p>Une synthèse à 40 % d'économie d'atomes produit une tonne et demie de déchets par tonne de produit, MÊME avec un rendement parfait. Le rendement mesure l'exécution ; l'économie d'atomes juge la voie de synthèse elle-même.</p></div>`},
+ {k:"sy",t:"Banc — conduire la synthèse",rendement:62,purete:96,cout:480},
  {k:"a",t:"Atelier — la synthèse",gen:["lab-rendement","chim-rendement-atomique","chim-mole"],but:4},
  {k:"c",t:"Contrôle",gen:["lab-rendement","chim-rendement-atomique","chim-reactif-limitant","chim-enthalpie"],n:8}
 ]},
@@ -25166,6 +25169,7 @@ const MODULES_EA=[
   </table></div>
   <div class="formule">masse de chlore (g) = dose (mg/L) × volume (m³)</div>
   <div class="encart e-cle"><span class="chapo">Le résiduel, pas la dose</span><p>Ce qui protège l'eau jusqu'au robinet, c'est le chlore qui RESTE après avoir réagi. C'est lui qu'on mesure, et c'est lui qui figure dans la réglementation.</p></div>`},
+ {k:"eo",t:"Banc — potabiliser",turbidite:1,chlore:0.3,cout:0.38},
  {k:"a",t:"Atelier — potabiliser",gen:["eau-chlore","eau-durete","lab-ph"],but:4},
  {k:"c",t:"Contrôle",gen:["eau-chlore","eau-durete","lab-ph","lab-concentration"],n:8}
 ]},
@@ -29431,6 +29435,7 @@ const MODULES_QB=[
    <tr><td class="mono">M</td><td class="mono">seuil d'inacceptabilité — aucune tolérance</td></tr>
   </table></div>
   <div class="encart e-cle"><span class="chapo">Analyser plus réduit le risque et coûte plus</span><p>Le plan est le point d'équilibre choisi entre le risque du fournisseur (voir refuser un bon lot) et celui du client (accepter un mauvais). Il se négocie ; il ne se déduit pas.</p></div>`},
+ {k:"ez",t:"Banc — bâtir le plan",risque:30,fournisseur:20},
  {k:"a",t:"Atelier — l'échantillonnage",gen:["bioq-plan","bioq-conformite","lab-ufc"],but:4,h:`
   <p>On commence avec des nombres ronds.</p>`},
  {k:"c",t:"Contrôle",gen:["bioq-plan","bioq-conformite","lab-ufc","lab-prelevement"],n:8}
@@ -37712,6 +37717,418 @@ function rendreStation(hote,mi,pi,pas){
    },mi,pi,"station");
 }
 
+/* ---- bancs-lab2.js.txt ---- */
+/* ============================================================
+   LES SECONDS BANCS DU GROUPE LABORATOIRE
+   Chimie : conduire une synthèse. Eau : potabiliser. BioAC :
+   dénombrer. ABM : valider une série. Bioqualité : bâtir un
+   plan d'échantillonnage. Cinq décisions qu'aucune formule ne
+   remplace — on choisit, on mesure, on assume.
+   ============================================================ */
+const LB2={bleu:"#3f6fa8", vert:"#3f8c66", rouge:"#c0603f", or:"#c2963c", gris:"#8a8f99"};
+
+/* ---------------- 1. Conduire une synthèse (Chimie) ---------------- */
+function calculSynthese(pas,p){
+  const RDT=(pas&&pas.rendement)||62, PUR=(pas&&pas.purete)||96, COUT=(pas&&pas.cout)||480;
+  const T=[60,80,110][p.temperature], t=[1,3,6][p.duree];
+  /* la cinétique : plus chaud et plus long convertit mieux — et dégrade */
+  const conversion=Math.min(0.97,1-Math.exp(-t*(0.18+0.010*(T-60))));
+  const degradation=Math.max(0,(T-80)*0.004)*t;
+  const brut=Math.max(0,conversion-degradation);
+  /* l'excès de réactif pousse l'équilibre et coûte */
+  const exces=[0,0.2,0.5][p.exces];
+  const pousse=1+exces*0.16;
+  const rendementBrut=Math.min(0.99,brut*pousse)*100;
+  /* la purification : elle monte la pureté et mange du produit */
+  const PUR_BASE=[0.90,0.965,0.995][p.purification];
+  const perte=[0,0.06,0.14][p.purification];
+  const rendement=rendementBrut*(1-perte);
+  const purete=PUR_BASE*100;
+  const cout=120+exces*180+t*22+(T-60)*1.1+[0,60,150][p.purification];
+  return {RDT,PUR,COUT,T,t,exces,conversion,degradation,rendementBrut,rendement,purete,cout,
+          tropChaud:T===110&&t>=6};
+}
+function rendreSynthese(hote,mi,pi,pas){
+  const RDT=(pas&&pas.rendement)||62, PUR=(pas&&pas.purete)||96, COUT=(pas&&pas.cout)||480;
+  bancATI(hote,"Conduire la synthèse — convertir sans dégrader",
+   "Une réaction qui monte avec la température et le temps, et un produit qui se dégrade quand on pousse trop loin. L'excès de réactif déplace l'équilibre et se paie. La purification monte la pureté et mange du rendement : c'est le compromis du métier.",
+   "Un rendement d'au moins <b>"+nb(RDT,0)+" %</b>, une pureté d'au moins <b>"+nb(PUR,0)+
+   " %</b>, pour <b>"+nb(COUT,0)+" €</b> au plus le lot.",
+   [{id:"temperature",lib:"Température",choix:["60 °C","80 °C","110 °C"],val:0},
+    {id:"duree",lib:"Durée de réaction",choix:["1 h","3 h","6 h"],val:0},
+    {id:"exces",lib:"Excès de réactif",choix:["stœchiométrique","+ 20 %","+ 50 %"],val:0},
+    {id:"purification",lib:"Purification",choix:["aucune","lavage","recristallisation"],val:0}],
+   [["Conversion","ya"],["Rendement","yb"],["Pureté","yc"],["Coût du lot","yd"]],
+   (c,w,h,p)=>{
+     const r=calculSynthese(pas,p);
+     const x0=w*0.32, lw=w*0.48;
+     [["conversion",r.conversion*100,100,LB2.bleu],
+      ["rendement",r.rendement,r.RDT,LB2.vert],
+      ["pureté",r.purete,r.PUR,LB2.or]].forEach((q,i)=>{
+       const y=h*0.20+i*h*0.20;
+       c.fillStyle=CB();c.globalAlpha=.26;c.fillRect(x0,y,lw,17);c.globalAlpha=1;
+       const bon=q[1]>=q[2];
+       c.fillStyle=bon?LB2.vert:LB2.rouge;
+       c.fillRect(x0,y,lw*Math.min(1,q[1]/100),17);
+       if(i){const xc=x0+lw*q[2]/100;
+         c.strokeStyle=CI();c.lineWidth=1.4;c.setLineDash([3,3]);
+         c.beginPath();c.moveTo(xc,y-6);c.lineTo(xc,y+23);c.stroke();c.setLineDash([]);}
+       txt(c,q[0],w*0.03,y+8,11,CI(),"left",true);
+       mono(c,nb(q[1],1)+" %",x0+lw+5,y+8,10.5,bon?LB2.vert:LB2.rouge,"left");
+     });
+     plaque(c,nb(r.T,0)+" °C · "+nb(r.t,0)+" h · "+nb(r.cout,0)+" €",w*0.5,h*0.90,11,
+            r.cout<=r.COUT?LB2.vert:LB2.rouge,"center");
+   },
+   (p)=>{
+     const r=calculSynthese(pas,p);
+     const L=[["ya",nb(r.conversion*100,1),"%"],
+              ["yb",nb(r.rendement,1),"%",r.rendement>=r.RDT?"ok":"ko"],
+              ["yc",nb(r.purete,1),"%",r.purete>=r.PUR?"ok":"ko"],
+              ["yd",nb(r.cout,0),"€",r.cout<=r.COUT?"ok":"ko"]];
+     if(r.tropChaud) return {ok:false,lectures:L,
+       pourquoi:"110 °C pendant six heures : le produit se dégrade plus vite qu'il ne se forme.",
+       indice:"La conversion et la dégradation montent toutes les deux avec la température. Au-delà d'un point, chauffer plus longtemps fait BAISSER le rendement — c'est ce que montre la courbe."};
+     if(r.purete<r.PUR) return {ok:false,lectures:L,
+       pourquoi:"Pureté de "+nb(r.purete,1)+" % pour "+nb(r.PUR,0)+" % exigés.",
+       indice:"La pureté ne vient pas de la réaction, elle vient de la PURIFICATION. Un lavage monte à 96,5 %, une recristallisation à 99,5 — et chacune mange du rendement."};
+     if(r.rendement<r.RDT) return {ok:false,lectures:L,
+       pourquoi:"Rendement de "+nb(r.rendement,1)+" % après purification, pour "+nb(r.RDT,0)+" % attendus.",
+       indice:"Trois leviers : le temps, la température, l'excès de réactif. Le quatrième — la purification — travaille CONTRE le rendement : il faut donc de la marge avant elle."};
+     if(r.cout>r.COUT) return {ok:false,lectures:L,
+       pourquoi:nb(r.cout,0)+" € le lot pour "+nb(r.COUT,0)+" € budgétés.",
+       indice:"L'excès de réactif est le poste le plus cher, et son effet plafonne vite. Le temps coûte peu : c'est souvent lui qu'il faut allonger plutôt que de charger en réactif."};
+     return {ok:true,lectures:L,
+       pourquoi:nb(r.T,0)+" °C pendant "+nb(r.t,0)+" h : "+nb(r.rendement,1)+" % de rendement à "+
+       nb(r.purete,1)+" % de pureté pour "+nb(r.cout,0)+
+       " €. Convertir assez pour pouvoir purifier — c'est dans cet ordre que ça se pense."};
+   },mi,pi,"synthese");
+}
+
+/* ---------------- 2. Potabiliser (Eau) ---------------- */
+function calculPotable(pas,p){
+  const TURB=(pas&&pas.turbidite)||1, CLR=(pas&&pas.chlore)||0.3, COUT=(pas&&pas.cout)||0.38;
+  const TURB0=28;                                /* NTU de l'eau brute */
+  const coag=[0,0.55,0.78][p.coagulation];
+  const filtre=[0,0.72,0.93][p.filtration];
+  const turbidite=TURB0*(1-coag)*(1-filtre);
+  /* le chlore : la matière organique en consomme, la turbidité le protège */
+  const dose=[0.4,0.8,1.4][p.chloration];
+  const demande=0.35+turbidite*0.06;
+  const residuel=Math.max(0,dose-demande);
+  /* les sous-produits : chlorer une eau trouble en fabrique */
+  const sousProduits=dose*turbidite*7.5;
+  const cout=0.06+[0,0.05,0.09][p.coagulation]+[0,0.07,0.13][p.filtration]+dose*0.045;
+  return {TURB,CLR,COUT,TURB0,turbidite,dose,demande,residuel,sousProduits,cout,
+          chloreAvantFiltre:p.ordre===1&&p.filtration>0};
+}
+function rendrePotable(hote,mi,pi,pas){
+  const TURB=(pas&&pas.turbidite)||1, CLR=(pas&&pas.chlore)||0.3, COUT=(pas&&pas.cout)||0.38;
+  bancATI(hote,"Potabiliser — l'ordre des étapes n'est pas libre",
+   "Une eau brute à 28 NTU. La coagulation fait floculer les colloïdes, la filtration retient les flocs, la chloration désinfecte. Mais le chlore appliqué sur une eau encore trouble se consomme sans désinfecter et fabrique des sous-produits — l'ordre compte autant que les doses.",
+   "Turbidité finale sous <b>"+nb(TURB,1)+" NTU</b>, chlore résiduel d'au moins <b>"+nb(CLR,1)+
+   " mg/L</b>, sous-produits sous <b>60 µg/L</b>, pour <b>"+nb(COUT,2)+" €/m³</b> au plus.",
+   [{id:"coagulation",lib:"Coagulation-floculation",choix:["aucune","dose simple","dose renforcée"],val:0},
+    {id:"filtration",lib:"Filtration",choix:["aucune","sable","sable + charbon actif"],val:0},
+    {id:"chloration",lib:"Dose de chlore",choix:["0,4 mg/L","0,8 mg/L","1,4 mg/L"],val:0},
+    {id:"ordre",lib:"Ordre des étapes",choix:["chloration en dernier","chloration en tête"],val:0}],
+   [["Turbidité","pa"],["Chlore résiduel","pb"],["Sous-produits","pc"],["Coût","pd"]],
+   (c,w,h,p)=>{
+     const r=calculPotable(pas,p);
+     const x0=w*0.08, lg=w*0.84, y=h*0.30;
+     /* la filière, étape par étape */
+     const etapes=[["brute",r.TURB0],["coagulée",r.TURB0*(1-[0,0.55,0.78][p.coagulation])],
+                   ["filtrée",r.turbidite]];
+     etapes.forEach((e,i)=>{
+       const bx=x0+lg*i/3, bw=lg/3-10;
+       const ht=h*0.26*Math.min(1,e[1]/r.TURB0);
+       c.fillStyle=CB();c.globalAlpha=.24;c.fillRect(bx,y,bw,h*0.26);c.globalAlpha=1;
+       c.fillStyle=e[1]<=r.TURB?LB2.vert:LB2.or;c.globalAlpha=.70;
+       c.fillRect(bx,y+h*0.26-ht,bw,ht);c.globalAlpha=1;
+       txt(c,e[0],bx+bw/2,y+h*0.26+16,10.5,CM(),"center");
+       mono(c,nb(e[1],1),bx+bw/2,y-10,10.5,CI(),"center");
+     });
+     const y2=h*0.76;
+     c.fillStyle=CB();c.globalAlpha=.26;c.fillRect(x0,y2,lg,16);c.globalAlpha=1;
+     c.fillStyle=r.residuel>=r.CLR?LB2.vert:LB2.rouge;
+     c.fillRect(x0,y2,lg*Math.min(1,r.residuel/1.2),16);
+     const xc=x0+lg*r.CLR/1.2;
+     c.strokeStyle=CI();c.lineWidth=1.5;c.setLineDash([4,3]);
+     c.beginPath();c.moveTo(xc,y2-8);c.lineTo(xc,y2+24);c.stroke();c.setLineDash([]);
+     txt(c,"chlore résiduel",x0,y2-10,10.5,CM(),"left");
+     mono(c,nb(r.residuel,2)+" mg/L",x0+lg+4,y2+8,10.5,
+          r.residuel>=r.CLR?LB2.vert:LB2.rouge,"right");
+     plaque(c,nb(r.sousProduits,0)+" µg/L de sous-produits · "+nb(r.cout,3)+" €/m³",
+            w*0.5,h*0.95,10.5,r.sousProduits<=60?CI():LB2.rouge,"center");
+   },
+   (p)=>{
+     const r=calculPotable(pas,p);
+     const L=[["pa",nb(r.turbidite,2),"NTU",r.turbidite<=r.TURB?"ok":"ko"],
+              ["pb",nb(r.residuel,2),"mg/L",r.residuel>=r.CLR?"ok":"ko"],
+              ["pc",nb(r.sousProduits,0),"µg/L",r.sousProduits<=60?"ok":"ko"],
+              ["pd",nb(r.cout,3),"€/m³",r.cout<=r.COUT?"ok":"ko"]];
+     if(r.chloreAvantFiltre) return {ok:false,lectures:L,
+       pourquoi:"Chloration en tête de filière : le chlore se consomme sur la matière en suspension avant d'avoir désinfecté quoi que ce soit.",
+       indice:"On clarifie d'abord, on désinfecte ensuite. Chlorer une eau trouble, c'est payer du réactif pour fabriquer des sous-produits — et devoir rechlorer après."};
+     if(r.turbidite>r.TURB) return {ok:false,lectures:L,
+       pourquoi:"Turbidité finale de "+nb(r.turbidite,2)+" NTU pour "+nb(r.TURB,1)+" admis.",
+       indice:"La coagulation seule ne retient rien : elle rassemble les colloïdes en flocs, c'est la FILTRATION qui les retire. Les deux vont ensemble."};
+     if(r.sousProduits>60) return {ok:false,lectures:L,
+       pourquoi:nb(r.sousProduits,0)+" µg/L de sous-produits chlorés, pour 60 admis.",
+       indice:"Ils naissent du chlore rencontrant de la matière organique. Moins d'eau trouble à l'entrée du chlore, moins de sous-produits — le charbon actif y aide beaucoup."};
+     if(r.residuel<r.CLR) return {ok:false,lectures:L,
+       pourquoi:"Chlore résiduel de "+nb(r.residuel,2)+" mg/L, en dessous des "+nb(r.CLR,1)+" exigés jusqu'au robinet.",
+       indice:"La demande en chlore se paie AVANT le résiduel : il faut doser la demande plus le résiduel voulu. Une eau bien clarifiée demande moins."};
+     if(r.cout>r.COUT) return {ok:false,lectures:L,
+       pourquoi:nb(r.cout,3)+" €/m³ pour "+nb(r.COUT,2)+" € budgétés.",
+       indice:"Le charbon actif est le poste le plus cher. Il ne se justifie que si la turbidité ou les sous-produits l'exigent — pas par précaution."};
+     return {ok:true,lectures:L,
+       pourquoi:"Clarifiée à "+nb(r.turbidite,2)+" NTU puis désinfectée : "+nb(r.residuel,2)+
+       " mg/L de résiduel, "+nb(r.sousProduits,0)+" µg/L de sous-produits, "+nb(r.cout,3)+
+       " €/m³. La filière tient dans le bon ordre."};
+   },mi,pi,"potabilisation");
+}
+
+/* ---------------- 3. Dénombrer (BioAC) ---------------- */
+function calculCulture(pas,p){
+  const CIBLE=(pas&&pas.cible)||1.2e5;           /* UFC/mL réels dans l'échantillon */
+  const dil=[1,10,100,1000,10000][p.dilution];
+  const vol=[0.1,1][p.volume];
+  const attendu=CIBLE/dil*vol;
+  const milieu=[0.62,0.88,0.97][p.milieu];       /* taux de récupération */
+  const duree=[24,48,72][p.incubation];
+  const pousse=duree>=48? 1 : 0.74;
+  const colonies=attendu*milieu*pousse;
+  const cout=1.2+[0,0.8,2.4][p.milieu]+[0,0.4,0.9][p.incubation]+(p.repetitions?2.2:0);
+  const n=p.repetitions? 3 : 1;
+  const incertitude=100/Math.sqrt(Math.max(1,colonies*n));
+  return {CIBLE,dil,vol,attendu,milieu,duree,colonies,cout,n,incertitude,
+          horsPlage:colonies<30||colonies>300};
+}
+function rendreCulture(hote,mi,pi,pas){
+  bancATI(hote,"Dénombrer — la boîte doit tomber entre 30 et 300",
+   "Un échantillon dont on ignore la charge. Trop peu dilué, la boîte est envahie et ne se compte pas ; trop dilué, une seule colonie change tout le résultat. Le milieu sélectif récupère moins que le milieu riche, et 24 heures ne suffisent pas à tout le monde.",
+   "Une boîte comptable — <b>entre 30 et 300 colonies</b> —, une incertitude sous <b>12 %</b>, pour <b>6,50 €</b> au plus par échantillon.",
+   [{id:"dilution",lib:"Dilution",choix:["pure","10⁻¹","10⁻²","10⁻³","10⁻⁴"],val:0},
+    {id:"volume",lib:"Volume ensemencé",choix:["0,1 mL","1 mL"],val:0},
+    {id:"milieu",lib:"Milieu",choix:["sélectif strict","sélectif","non sélectif"],val:0},
+    {id:"incubation",lib:"Incubation",choix:["24 h","48 h","72 h"],val:0},
+    {id:"repetitions",lib:"Boîtes",choix:["une seule","triplicat"],val:0}],
+   [["Colonies attendues","ca"],["Incertitude","cb"],["Récupération","cc"],["Coût","cd"]],
+   (c,w,h,p)=>{
+     const r=calculCulture(pas,p);
+     const cx=w*0.30, cy=h*0.50, R=Math.min(h*0.36,w*0.18);
+     c.strokeStyle=CB();c.lineWidth=2;
+     c.beginPath();c.arc(cx,cy,R,0,6.284);c.stroke();
+     c.fillStyle=CB();c.globalAlpha=.10;c.fill();c.globalAlpha=1;
+     /* les colonies, jusqu'à ce que la boîte sature */
+     const n=Math.max(0,Math.min(320,Math.round(r.colonies)));
+     for(let i=0;i<Math.min(n,300);i++){
+       const a=i*2.399963, rad=R*0.92*Math.sqrt(i/300);
+       c.fillStyle=n>300?LB2.rouge:(n<30?LB2.or:LB2.vert);
+       c.globalAlpha=.75;c.beginPath();c.arc(cx+rad*Math.cos(a),cy+rad*Math.sin(a),2.4,0,6.284);
+       c.fill();c.globalAlpha=1;
+     }
+     const rx=w*0.62;
+     mono(c,nb(r.colonies,0)+" colonies",rx,h*0.34,13.5,
+          r.horsPlage?LB2.rouge:LB2.vert,"left");
+     txt(c,r.colonies>300?"boîte envahie":r.colonies<30?"trop peu pour compter":"comptable",
+         rx,h*0.50,11,r.horsPlage?LB2.rouge:LB2.vert,"left");
+     mono(c,"± "+nb(r.incertitude,1)+" %",rx,h*0.66,11.5,CM(),"left");
+     mono(c,nb(r.cout,2)+" €",rx,h*0.82,11.5,CI(),"left");
+   },
+   (p)=>{
+     const r=calculCulture(pas,p);
+     const L=[["ca",nb(r.colonies,0),"",r.horsPlage?"ko":"ok"],
+              ["cb",nb(r.incertitude,1),"%",r.incertitude<=12?"ok":"ko"],
+              ["cc",nb(r.milieu*100,0),"%"],
+              ["cd",nb(r.cout,2),"€",r.cout<=6.5?"ok":"ko"]];
+     if(r.colonies>300) return {ok:false,lectures:L,
+       pourquoi:"Boîte envahie : "+nb(r.colonies,0)+" colonies, elles se recouvrent et ne se comptent plus.",
+       indice:"Chaque dilution divise par dix. Passer d'une boîte à 1 200 à une boîte à 120, c'est une dilution de plus — pas un comptage plus attentif."};
+     if(r.colonies<30) return {ok:false,lectures:L,
+       pourquoi:"Seulement "+nb(r.colonies,0)+" colonies : en dessous de 30, une colonie de plus ou de moins déplace le résultat de plusieurs pour cent.",
+       indice:"Trop dilué. Reviens d'une dilution, ou ensemence 1 mL au lieu de 0,1 — c'est dix fois plus de matière sur la boîte."};
+     if(r.incubation<0) return {ok:false,lectures:L,pourquoi:"",indice:""};
+     if(r.duree<48) return {ok:false,lectures:L,
+       pourquoi:"24 heures d'incubation : les germes lents n'ont pas eu le temps de pousser, le comptage est sous-estimé.",
+       indice:"Un dénombrement se lit à 48 heures au moins. Lire trop tôt donne un résultat rassurant et faux — c'est l'erreur qui laisse passer un lot."};
+     if(r.incertitude>12) return {ok:false,lectures:L,
+       pourquoi:"Incertitude de "+nb(r.incertitude,1)+" % : trop peu de colonies comptées en tout.",
+       indice:"L'incertitude d'un comptage suit la racine du nombre total de colonies. Le triplicat triple ce nombre : il divise l'incertitude par 1,7."};
+     if(r.cout>6.5) return {ok:false,lectures:L,
+       pourquoi:nb(r.cout,2)+" € par échantillon, pour 6,50 € possibles.",
+       indice:"Le triplicat et le milieu non sélectif sont les deux postes chers. Le triplicat se justifie quand la décision est lourde ; pas sur un contrôle de routine."};
+     return {ok:true,lectures:L,
+       pourquoi:nb(r.colonies,0)+" colonies sur la boîte, ± "+nb(r.incertitude,1)+" %, pour "+
+       nb(r.cout,2)+" €. Entre 30 et 300 : c'est la seule fenêtre où un comptage veut dire quelque chose."};
+   },mi,pi,"culture");
+}
+
+/* ---------------- 4. Valider une série (ABM) ---------------- */
+const AB_REGLES=[{n:"1 écart type",k:1},{n:"2 écarts types",k:2},{n:"3 écarts types",k:3}];
+function calculSerie(pas,p){
+  const FAUX=(pas&&pas.faux)||12;                 /* % de rejets à tort admis */
+  const RATE=(pas&&pas.rate)||30;               /* % d'erreurs vraies laissées passer */
+  const k=AB_REGLES[p.regle].k;
+  const n=[1,2,3][p.controles];
+  /* rejet à tort : la probabilité qu'un contrôle sorte des bornes par hasard */
+  const pUn=[0.317,0.0455,0.0027][k-1];
+  const fauxRejet=(1-Math.pow(1-pUn,n))*100;
+  /* détection d'un vrai décalage de 2 écarts types */
+  const detecteUn=[0.84,0.50,0.16][k-1];
+  const rate=Math.pow(1-detecteUn,n)*100;
+  /* la fréquence : un contrôle par série ou toutes les vingt analyses */
+  const patients=[40,20,10][p.frequence];
+  const aReprendre=rate/100*patients;
+  const cout=n*[1,1,1][0]*3.2*(40/patients)+[0,0,0][0];
+  return {FAUX,RATE,k,n,fauxRejet,rate,patients,aReprendre,cout,
+          unSeulControle:n===1&&k===1};
+}
+function rendreSerie(hote,mi,pi,pas){
+  const FAUX=(pas&&pas.faux)||12, RATE=(pas&&pas.rate)||30;
+  bancATI(hote,"Valider la série — deux erreurs opposées",
+   "Un contrôle de qualité passe avec chaque série. Des bornes serrées attrapent tout, y compris ce qui n'est qu'une fluctuation : on rejette des séries justes, on refait des analyses pour rien. Des bornes larges laissent passer les vrais décalages. Et plus on espace les contrôles, plus il y a de patients à reprendre quand la série est mauvaise.",
+   "Moins de <b>"+nb(FAUX,0)+" %</b> de rejets à tort, moins de <b>"+nb(RATE,0)+
+   " %</b> de décalages manqués, moins de <b>6 patients</b> à reprendre, pour <b>28 €</b> de contrôles par série.",
+   [{id:"regle",lib:"Bornes d'acceptation",choix:AB_REGLES.map(x=>"± "+x.n),val:0},
+    {id:"controles",lib:"Niveaux de contrôle",choix:["un","deux","trois"],val:0},
+    {id:"frequence",lib:"Fréquence",choix:["une fois par série de 40","toutes les 20","toutes les 10"],val:0}],
+   [["Rejets à tort","va"],["Décalages manqués","vb"],["Patients à reprendre","vc"],["Coût","vd"]],
+   (c,w,h,p)=>{
+     const r=calculSerie(pas,p);
+     const cx=w*0.10, lg=w*0.62, cy=h*0.44, amp=h*0.22;
+     /* la carte de contrôle */
+     c.strokeStyle=CB();c.lineWidth=1.4;
+     c.beginPath();c.moveTo(cx,cy);c.lineTo(cx+lg,cy);c.stroke();
+     [1,-1].forEach(s=>{
+       const y=cy+s*amp*r.k/3;
+       c.strokeStyle=LB2.rouge;c.lineWidth=1.6;c.setLineDash([5,3]);
+       c.beginPath();c.moveTo(cx,y);c.lineTo(cx+lg,y);c.stroke();c.setLineDash([]);
+     });
+     /* les points de contrôle */
+     for(let i=0;i<12;i++){
+       const x=cx+lg*(i+0.5)/12;
+       const v=Math.sin(i*1.7)*0.55+Math.cos(i*2.9)*0.35;
+       const y=cy+amp*v;
+       const dehors=Math.abs(v*3)>r.k;
+       c.fillStyle=dehors?LB2.rouge:LB2.vert;
+       c.beginPath();c.arc(x,y,3.6,0,6.284);c.fill();
+     }
+     mono(c,"± "+r.k+" σ",cx+lg+8,cy-amp*r.k/3,10.5,LB2.rouge,"left");
+     const rx=w*0.76;
+     mono(c,nb(r.fauxRejet,1)+" %",rx,h*0.28,12,r.fauxRejet<=r.FAUX?LB2.vert:LB2.rouge,"center");
+     txt(c,"à tort",rx,h*0.38,10,CM(),"center");
+     mono(c,nb(r.rate,1)+" %",rx,h*0.58,12,r.rate<=r.RATE?LB2.vert:LB2.rouge,"center");
+     txt(c,"manqués",rx,h*0.68,10,CM(),"center");
+     plaque(c,nb(r.aReprendre,1)+" patients à reprendre",w*0.5,h*0.92,11,
+            r.aReprendre<=6?CI():LB2.rouge,"center");
+   },
+   (p)=>{
+     const r=calculSerie(pas,p);
+     const L=[["va",nb(r.fauxRejet,1),"%",r.fauxRejet<=r.FAUX?"ok":"ko"],
+              ["vb",nb(r.rate,1),"%",r.rate<=r.RATE?"ok":"ko"],
+              ["vc",nb(r.aReprendre,1),"",r.aReprendre<=6?"ok":"ko"],
+              ["vd",nb(r.cout,2),"€",r.cout<=28?"ok":"ko"]];
+     if(r.unSeulControle) return {ok:false,lectures:L,
+       pourquoi:"Un seul contrôle à ± 1 écart type : une série sur trois part au rejet sans raison.",
+       indice:"À ± 1 σ, un tiers des points sort des bornes par pur hasard. C'est la règle qui use le laboratoire : on refait des séries justes jusqu'à ce que plus personne ne regarde les alarmes."};
+     if(r.fauxRejet>r.FAUX) return {ok:false,lectures:L,
+       pourquoi:nb(r.fauxRejet,1)+" % de séries rejetées à tort, pour "+nb(r.FAUX,0)+" % admis.",
+       indice:"Élargir les bornes réduit les fausses alarmes — et laisse passer davantage de vrais décalages. Multiplier les niveaux de contrôle les multiplie aussi : chaque niveau a sa chance de sortir."};
+     if(r.rate>r.RATE) return {ok:false,lectures:L,
+       pourquoi:nb(r.rate,1)+" % des vrais décalages passent inaperçus, pour "+nb(r.RATE,0)+" % admis.",
+       indice:"Des bornes à ± 3 σ ne détectent qu'un décalage sur six avec un seul niveau. C'est là que le nombre de niveaux rattrape : deux niveaux à ± 2 σ valent mieux qu'un seul à ± 3."};
+     if(r.aReprendre>6) return {ok:false,lectures:L,
+       pourquoi:nb(r.aReprendre,1)+" patients à reprendre quand la série est mauvaise.",
+       indice:"C'est la FRÉQUENCE qui décide de ce chiffre : entre deux contrôles, tout ce qui est passé est suspect. Contrôler plus souvent coûte des réactifs et économise des reprises."};
+     if(r.cout>28) return {ok:false,lectures:L,
+       pourquoi:nb(r.cout,2)+" € de contrôles par série de 40, pour 28 € possibles.",
+       indice:"Trois niveaux toutes les dix analyses, c'est douze contrôles pour quarante patients. La qualité se paie, mais elle se dose."};
+     return {ok:true,lectures:L,
+       pourquoi:"± "+r.k+" σ sur "+r.n+" niveau"+(r.n>1?"x":"")+" : "+nb(r.fauxRejet,1)+
+       " % de fausses alarmes, "+nb(r.rate,1)+" % de décalages manqués, "+nb(r.aReprendre,1)+
+       " patients exposés. Les deux erreurs sont tenues à la fois — c'est tout le métier."};
+   },mi,pi,"serie");
+}
+
+/* ---------------- 5. Bâtir un plan d'échantillonnage (Bioqualité) ---------------- */
+function combinaison(n,k){ let r=1; for(let i=0;i<k;i++) r=r*(n-i)/(i+1); return r; }
+function calculPlan(pas,p){
+  const RISQUE=(pas&&pas.risque)||30;            /* % d'acceptation d'un lot mauvais */
+  const FOURN=(pas&&pas.fournisseur)||20;        /* % de refus d'un bon lot */
+  const n=[3,5,10,20][p.taille], k=[0,1,2][p.tolerance];
+  const cout=n*[6,11,19][p.analyse];
+  const sensibilite=[0.55,0.80,0.95][p.analyse];
+  /* un lot mauvais : 15 % d'unités non conformes ; un bon lot : 2 % */
+  const accepte=(pdef)=>{
+    const pd=pdef*sensibilite; let s=0;
+    for(let i=0;i<=k;i++) s+=combinaison(n,i)*Math.pow(pd,i)*Math.pow(1-pd,n-i);
+    return s;
+  };
+  const risqueClient=accepte(0.15)*100;
+  const risqueFourn=(1-accepte(0.02))*100;
+  return {RISQUE,FOURN,n,k,cout,sensibilite,risqueClient,risqueFourn};
+}
+function rendrePlan(hote,mi,pi,pas){
+  const RISQUE=(pas&&pas.risque)||30, FOURN=(pas&&pas.fournisseur)||20;
+  bancATI(hote,"Bâtir le plan — un contrat entre deux risques",
+   "Un plan d'échantillonnage ne prouve rien : il fixe deux risques. Celui du client, c'est accepter un lot à 15 % d'unités non conformes ; celui du fournisseur, c'est se voir refuser un lot à 2 %. Analyser plus d'unités réduit les deux — et coûte. Une méthode peu sensible rate des non-conformités : elle rend le plan aveugle, quel que soit le nombre d'unités.",
+   "Risque client sous <b>"+nb(RISQUE,0)+" %</b>, risque fournisseur sous <b>"+nb(FOURN,0)+
+   " %</b>, pour <b>400 €</b> d'analyses au plus.",
+   [{id:"taille",lib:"Unités analysées (n)",choix:["3","5","10","20"],val:0},
+    {id:"tolerance",lib:"Unités tolérées (c)",choix:["aucune","une","deux"],val:0},
+    {id:"analyse",lib:"Méthode",choix:["rapide (55 %)","classique (80 %)","référence (95 %)"],val:0}],
+   [["Risque client","qa"],["Risque fournisseur","qb"],["Sensibilité","qc"],["Coût","qd"]],
+   (c,w,h,p)=>{
+     const r=calculPlan(pas,p);
+     /* la courbe d'efficacité du plan */
+     const x0=w*0.12, y0=h*0.80, lg=w*0.74, ht=h*0.58;
+     c.strokeStyle=CB();c.lineWidth=1.4;
+     c.beginPath();c.moveTo(x0,y0);c.lineTo(x0+lg,y0);c.moveTo(x0,y0);c.lineTo(x0,y0-ht);c.stroke();
+     c.strokeStyle=LB2.bleu;c.lineWidth=2.4;c.beginPath();
+     for(let i=0;i<=40;i++){
+       const pd=i/40*0.30, pa=(()=>{const q=pd*r.sensibilite; let s=0;
+         for(let j=0;j<=r.k;j++) s+=combinaison(r.n,j)*Math.pow(q,j)*Math.pow(1-q,r.n-j);
+         return s;})();
+       const x=x0+lg*i/40, y=y0-ht*pa;
+       i?c.lineTo(x,y):c.moveTo(x,y);
+     }
+     c.stroke();
+     [[0.02,LB2.vert,"bon lot"],[0.15,LB2.rouge,"lot mauvais"]].forEach(([pd,col,lib])=>{
+       const x=x0+lg*pd/0.30;
+       c.strokeStyle=col;c.lineWidth=1.2;c.setLineDash([3,3]);
+       c.beginPath();c.moveTo(x,y0);c.lineTo(x,y0-ht);c.stroke();c.setLineDash([]);
+       mono(c,lib,x,y0+16,9.5,col,"center");
+     });
+     mono(c,"n = "+r.n+" · c = "+r.k,x0+lg,h*0.14,12,CI(),"right");
+     plaque(c,nb(r.cout,0)+" € d'analyses",w*0.5,h*0.95,10.5,
+            r.cout<=120?CI():LB2.rouge,"center");
+   },
+   (p)=>{
+     const r=calculPlan(pas,p);
+     const L=[["qa",nb(r.risqueClient,1),"%",r.risqueClient<=r.RISQUE?"ok":"ko"],
+              ["qb",nb(r.risqueFourn,1),"%",r.risqueFourn<=r.FOURN?"ok":"ko"],
+              ["qc",nb(r.sensibilite*100,0),"%"],
+              ["qd",nb(r.cout,0),"€",r.cout<=400?"ok":"ko"]];
+     if(r.sensibilite<0.7) return {ok:false,lectures:L,
+       pourquoi:"Méthode sensible à "+nb(r.sensibilite*100,0)+" % : près d'une unité non conforme sur deux passe inaperçue.",
+       indice:"Une méthode aveugle rend le plan aveugle : analyser vingt unités avec une méthode qui en rate la moitié ne vaut pas mieux qu'en analyser dix avec une bonne."};
+     if(r.risqueClient>r.RISQUE) return {ok:false,lectures:L,
+       pourquoi:nb(r.risqueClient,1)+" % de chances d'accepter un lot à 15 % de non-conformes, pour "+nb(r.RISQUE,0)+" % admis.",
+       indice:"Deux leviers : analyser plus d'unités, ou tolérer moins d'unités non conformes. Le second est gratuit — et durcit aussi le risque du fournisseur."};
+     if(r.risqueFourn>r.FOURN) return {ok:false,lectures:L,
+       pourquoi:nb(r.risqueFourn,1)+" % de chances de refuser un bon lot, pour "+nb(r.FOURN,0)+" % admis.",
+       indice:"Un plan à tolérance zéro refuse beaucoup de bons lots dès que n grandit. Tolérer une unité rétablit l'équilibre sans rendre le plan complaisant."};
+     if(r.cout>400) return {ok:false,lectures:L,
+       pourquoi:nb(r.cout,0)+" € d'analyses par lot, pour 400 € possibles.",
+       indice:"Vingt unités en méthode de référence, c'est 380 €. Le plan se négocie : c'est un contrat, et son prix en fait partie."};
+     return {ok:true,lectures:L,
+       pourquoi:"n = "+r.n+", c = "+r.k+" en méthode à "+nb(r.sensibilite*100,0)+" % : "+
+       nb(r.risqueClient,1)+" % de risque client et "+nb(r.risqueFourn,1)+
+       " % de risque fournisseur pour "+nb(r.cout,0)+" €. Les deux parties peuvent signer."};
+   },mi,pi,"planechantillon");
+}
+
 /* ---- bancs-mco.js.txt ---- */
 /* ============================================================
    LES BANCS PRATIQUES DU BTS MCO
@@ -40711,6 +41128,8 @@ const GENRE={w:"cablage", s:"simu", z:"simu", f:"chaine", g:"auto", h:"ladder",
              /* labo, eau */ ti:"titrage", sx:"station",
              /* bio, ABM */  mb:"plancontrole", de:"depistage",
              /* Bioqualité */ hc:"haccp",
+             /* seconds bancs du labo */ sy:"synthese", eo:"potabilisation",
+             cu:"culture", va:"serie", ez:"planechantillon",
              /* Industrie */ li:"ligne", pc:"procede", bo:"instrumenter",
              /* Création */ im:"imprime", tv:"tournage",
              /* Beauté */   iu:"institut",
@@ -40763,6 +41182,8 @@ const NOM={cablage:"Câblage",simu:"Simulateur",chaine:"Chaîne fonctionnelle",
            titrage:"Conduire le titrage",station:"Dimensionner la station",
            plancontrole:"Plan de contrôle",depistage:"Seuil du dépistage",
            haccp:"Placer les points critiques",
+           synthese:"Conduire la synthèse", potabilisation:"Potabiliser",
+           culture:"Dénombrer", serie:"Valider la série", planechantillon:"Bâtir le plan",
            ligne:"Équilibrer une ligne", procede:"Choisir le procédé",
            instrumenter:"Instrumenter une boucle",
            imprime:"Fabriquer l'imprimé", tournage:"Préparer le tournage",
@@ -40776,6 +41197,8 @@ const NOM={cablage:"Câblage",simu:"Simulateur",chaine:"Chaîne fonctionnelle",
            equipement:"Composer l'équipement"};
 const RENDUS={/* le banc de la bioqualité */
               haccp:rendreHaccp,
+              synthese:rendreSynthese, potabilisation:rendrePotable, culture:rendreCulture,
+              serie:rendreSerie, planechantillon:rendrePlan,
               ligne:rendreLigne, procede:rendreProcede, instrumenter:rendreBoucle,
               imprime:rendreImprime, tournage:rendreTournage,
               institut:rendreInstitut,
