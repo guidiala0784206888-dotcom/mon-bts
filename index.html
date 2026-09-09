@@ -34474,6 +34474,18 @@ const PARCOURS_VI=MODULES_VI;
   globalThis.PARCOURS_VI=PARCOURS_VI;
 })();
 
+/* ---- rattrapage GEN depuis moteur.js ---- */
+Object.assign(GEN,{
+"contrainte-admissible":{t:"Contrainte admissible",u:"MPa",tol:0.02,rappel:"R_pe = R_e / s, avec s le coefficient de sécurité",
+ tirer(){return {re:P([185,235,275,355,420]),s:P([2,2.5,3,4])};},
+ enonce(p){return "Un acier a une limite élastique de <span class='val'>"+p.re+" MPa</span>. Avec un coefficient de sécurité de <span class='val'>"+F(p.s,1)+"</span>, quelle contrainte admissible ?";},
+ rep(p){return p.re/p.s;},
+ pas(p){return [
+  {t:"On ne dimensionne jamais à la limite de la matière : on garde une marge.",op:"R_pe = R_e / s"},
+  {t:"On remplace.",op:p.re+" / "+F(p.s,1)+" = "+F(p.re/p.s,1)+" MPa"},
+  {t:"La pièce est correcte tant que la contrainte réelle σ reste SOUS cette valeur. Le coefficient de sécurité couvre ce qu'on ne sait pas : défauts de matière, surcharges, fatigue."}];}}
+});
+
 /* ---- outils repris du laboratoire ---- */
 function plaque(c,s,x,y,taille,col,align,gras){
   const t=taille||11;
