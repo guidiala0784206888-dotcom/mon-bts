@@ -302,6 +302,104 @@ th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--border);wh
 th{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);background:var(--surface-2)}
 td{color:var(--text);opacity:.92}
 tr:last-child td{border-bottom:0}
+
+/* ============================================================
+   L'ACCUEIL — charte Merkez, en turquoise
+   Fond jamais plat : trois halos très diffus donnent la
+   profondeur, les surfaces sont translucides par-dessus.
+   Les cinquante parcours sont rangés par FAMILLE de métier :
+   à cinquante, une liste plate ne se lit plus.
+   ============================================================ */
+/* La page est bornée à 1060 px : bon pour lire un module, trop étroit
+   pour cinquante cartes. On l'élargit UNIQUEMENT sur l'accueil, par un
+   attribut posé sur .page — les autres vues ne bougent pas.
+   ⚠️ Ni `:has()` ni marge négative ici : .page est une grille, et les
+   deux font s'effondrer sa colonne de contenu (essayé, mesuré). */
+.page[data-vue="accueil"]{max-width:1340px}
+.ac{position:relative;z-index:1;width:100%;max-width:1300px;margin:0 auto;padding:0 20px 72px}
+/* ⚠️ Pas de `position:fixed` + `filter:blur()` ici : sur une page longue,
+   la couche floutée cesse d'être repeinte au défilement et l'écran vire
+   au blanc (constaté, mesuré). Trois dégradés radiaux donnent la même
+   profondeur, sans filtre et sans couche fixe. */
+.ac-halo{display:none}
+.ac::before{content:"";position:absolute;inset:-40px -60px auto;height:1100px;z-index:-1;
+  pointer-events:none;
+  background:radial-gradient(52vw 42vw at 8% -6%,var(--halo-1),transparent 62%),
+             radial-gradient(44vw 38vw at 96% 12%,var(--halo-2),transparent 60%),
+             radial-gradient(60vw 46vw at 46% 78%,var(--halo-3),transparent 66%)}
+
+.ac-hero{text-align:center;padding:56px 16px 30px}
+.ac-hero .sceau{width:60px;height:60px;border-radius:20px;display:inline-flex;
+  align-items:center;justify-content:center;background:var(--primary);color:var(--on-primary);
+  box-shadow:0 14px 30px -12px rgba(6,42,50,.45)}
+.ac-hero .sceau svg{width:30px;height:30px;fill:currentColor}
+.ac-hero h1{margin:18px 0 6px;font-size:clamp(34px,5vw,52px);line-height:1.05;letter-spacing:-.02em}
+.ac-hero .ac-promesse{margin:0 auto;max-width:38em;color:var(--muted);font-size:16.5px;line-height:1.55}
+.ac-chiffres{display:flex;gap:26px;justify-content:center;flex-wrap:wrap;margin:26px 0 4px}
+.ac-chiffres div{text-align:center}
+.ac-chiffres b{display:block;font-size:26px;line-height:1;color:var(--primary);
+  font-family:"IBM Plex Mono",monospace;font-weight:600}
+.ac-chiffres span{display:block;margin-top:5px;font-size:12px;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--muted)}
+
+.ac-quete{position:sticky;top:64px;z-index:5;margin:26px auto 8px;max-width:620px}
+.ac-quete .boite{display:flex;align-items:center;gap:12px;padding:13px 18px;border-radius:16px;
+  background:var(--verre-plein);border:1px solid var(--verre-bord);box-shadow:var(--ombre-carte)}
+.ac-quete svg{width:19px;height:19px;flex:0 0 auto;fill:none;stroke:var(--muted);stroke-width:2}
+.ac-quete input{flex:1;border:0;background:transparent;font:inherit;font-size:16px;color:var(--text);outline:none}
+.ac-quete input::placeholder{color:var(--muted)}
+
+.ac-famille{margin:40px 0 14px;display:flex;align-items:baseline;gap:12px}
+.ac-famille h2{margin:0;font-size:15px;letter-spacing:.10em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.ac-famille em{font-style:normal;font-size:12.5px;color:var(--muted);opacity:.75;
+  font-family:"IBM Plex Mono",monospace}
+.ac-famille .filet{flex:1;height:1px;background:var(--border)}
+
+.ac-grille{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(268px,1fr))}
+.ac-carte{position:relative;display:flex;flex-direction:column;gap:7px;text-align:left;
+  padding:20px 20px 18px;border-radius:20px;cursor:pointer;overflow:hidden;
+  background:var(--verre-plein);border:1px solid var(--verre-bord);
+  box-shadow:var(--ombre-carte);transition:transform .16s ease,box-shadow .16s ease}
+.ac-carte::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--f)}
+.ac-carte:hover{transform:translateY(-3px);box-shadow:var(--ombre-flottante)}
+.ac-carte:focus-visible{outline:2px solid var(--primary);outline-offset:3px}
+.ac-carte b{font-size:17px;line-height:1.25;padding-right:66px}
+.ac-sigle{align-self:flex-start;font-family:"IBM Plex Mono",monospace;font-size:11.5px;
+  letter-spacing:.04em;padding:3px 9px;border-radius:999px;color:var(--f);
+  background:color-mix(in srgb,var(--f) 12%,var(--surface))}
+.ac-sous{color:var(--muted);font-size:13.5px;line-height:1.5;flex:1}
+.ac-pied{display:flex;align-items:center;gap:10px;margin-top:6px;padding-top:11px;
+  border-top:1px solid var(--border);font-size:12.5px;color:var(--muted)}
+.ac-pied .mono{font-family:"IBM Plex Mono",monospace;color:var(--text)}
+.ac-jauge{flex:1;height:5px;border-radius:999px;background:var(--surface-2);overflow:hidden}
+.ac-jauge i{display:block;height:100%;background:var(--primary)}
+.ac-tag{position:absolute;top:16px;right:16px;font-size:10.5px;letter-spacing:.08em;
+  text-transform:uppercase;padding:4px 9px;border-radius:999px;font-weight:600}
+.ac-tag[data-e="nouveau"]{color:var(--primary);background:color-mix(in srgb,var(--primary) 13%,var(--surface))}
+.ac-tag[data-e="complet"]{color:var(--success);background:color-mix(in srgb,var(--success) 13%,var(--surface))}
+.ac-vide{padding:40px 0;text-align:center;color:var(--muted)}
+.ac-note{margin:44px auto 0;max-width:52em;text-align:center;color:var(--muted);
+  font-size:13.5px;line-height:1.6}
+@media(max-width:600px){
+  .ac-hero{padding:34px 8px 22px}
+  .ac-quete{top:58px}
+  .ac{padding:0 14px 56px}
+}
+
+/* ------------------------------------------------------------
+   L'ÉCRAN D'ENTRÉE — même famille que l'accueil
+   C'est la première chose qu'on voit : il portait une carte nue
+   sur un fond plat. Mêmes halos, même respiration.
+   ------------------------------------------------------------ */
+.page[data-vue="connexion"] .scene{position:relative}
+.page[data-vue="connexion"] .scene::before{content:"";position:absolute;
+  inset:-60px -80px auto;height:760px;z-index:-1;pointer-events:none;
+  background:radial-gradient(46vw 34vw at 12% -8%,var(--halo-1),transparent 62%),
+             radial-gradient(40vw 30vw at 92% 10%,var(--halo-3),transparent 60%)}
+.page[data-vue="connexion"] .portail{padding:44px 34px 34px;border-radius:26px}
+.page[data-vue="connexion"] .portail-marque h1{font-size:clamp(30px,4vw,42px);letter-spacing:-.02em}
+.page[data-vue="connexion"] .portail-marque p{max-width:34em;margin-inline:auto;line-height:1.55}
+
 </style>
 <style>
 /* ---- Banc d'essai ---- */
@@ -22663,6 +22761,7 @@ const MODULES_BA=[
  {k:"l",t:"Permanentes et d'exploitation",h:`
   <div class="formule">ELU : 1,35 G + 1,5 Q</div>
   <div class="encart e-cle"><span class="chapo">Pourquoi deux coefficients différents</span><p>Le poids propre est bien connu, on le majore peu (1,35). Les charges d'exploitation dépendent de l'usage réel, souvent différent du prévu : on les majore davantage (1,5). Le coefficient mesure l'incertitude, pas la gravité.</p></div>`},
+ {k:"ze",t:"Banc — composer le béton",resistance:24,decoffrage:7,budget:128},
  {k:"a",t:"Atelier — les charges",gen:["bat-charge","bat-beton","bat-securite"],but:4},
  {k:"c",t:"Contrôle",gen:["bat-charge","bat-beton","bat-dosage","bat-securite"],n:8}
 ]},
@@ -25568,6 +25667,7 @@ const MODULES_FE=[
   <div class="formule">q(L/h) = P / (1,163 × ΔT)     débit d'air = volume × renouvellements</div>
   <div class="encart e-cle"><span class="chapo">Le fort ΔT n'est pas un détail</span><p>Passer de 10 à 20 K d'écart divise le débit par deux : diamètres plus petits, pompe moins puissante, pertes de charge divisées par quatre. C'est le premier levier d'un réseau économe.</p></div>
   <div class="encart e-piege"><span class="chapo">Sous-ventiler pour économiser</span><p>L'humidité produite par les occupants ne sort plus. On économise du chauffage pendant deux hivers, et on refait les peintures au troisième.</p></div>`},
+ {k:"zn",t:"Banc — la ventilation",debit:420,bruit:36,puissance:55},
  {k:"a",t:"Atelier — les réseaux",gen:["fed-debit-eau","fed-debit-air","fed-perte-charge"],but:4},
  {k:"c",t:"Contrôle",gen:["fed-debit-eau","fed-debit-air","fed-perte-charge","fed-emetteur"],n:8}
 ]},
@@ -27798,6 +27898,7 @@ const MODULES_MH=[
    </ol>
    <div class="final">6 € et non 3,60 €, soit 67 % de plus</div></div>
   <div class="encart e-cle"><span class="chapo">La fiche technique n'est pas de la paperasse</span><p>C'est elle qui fige le grammage, donc le coût, donc la marge. Une portion « à l'œil » qui dérive de 20 g sur mille couverts coûte le bénéfice du mois.</p></div>`},
+ {k:"zu",t:"Banc — la brigade",service:1.0,ratio:0.25,ca:6800,couverts:160},
  {k:"a",t:"Atelier — le coût matière",gen:["mh-cout-portion","mh-ratio-matiere","mh-perte"],but:4,h:`
   <p>On commence avec des nombres ronds.</p>`},
  {k:"c",t:"Contrôle",gen:["mh-cout-portion","mh-ratio-matiere","mh-perte","mh-prix-carte"],n:8}
@@ -30364,6 +30465,7 @@ const MODULES_TP=[
    <tr><td>météo prévue</td><td>elle décide de la fenêtre de travail</td></tr>
   </table></div>
   <div class="encart e-cle"><span class="chapo">Le compactage se contrôle, il ne s'estime pas</span><p>Un remblai « qui a l'air bien » ne prouve rien. Les essais de densité en place sont la seule preuve — et c'est elle qu'on présente quand la chaussée se tasse trois ans plus tard.</p></div>`},
+ {k:"zf",t:"Banc — la structure de chaussée",deflexion:45,budget:46},
  {k:"a",t:"Atelier — les déblais",gen:["bat-foisonnement","bat-cubature","bat-vrd"],but:4},
  {k:"c",t:"Contrôle",gen:["bat-foisonnement","bat-cubature","bat-vrd","bat-securite"],n:8}
 ]},
@@ -41395,6 +41497,304 @@ function rendreHaccp(hote,mi,pi,pas){
    },mi,pi,"haccp");
 }
 
+/* ---- bancs-reste2.js.txt ---- */
+/* ============================================================
+   LES SECONDS BANCS DES QUATRE DERNIERS PARCOURS
+   Bâtiment : composer le béton — la résistance vient du rapport
+     eau/ciment, et la cure décide de ce qu'on en garde.
+   Travaux publics : la structure de chaussée — c'est le sol qui
+     porte, les couches ne font que répartir.
+   FED : la ventilation — le débit se paie en perte de charge,
+     et la perte de charge au carré.
+   MHR : la brigade — un service se dimensionne sur le coup de
+     feu, pas sur la moyenne de la soirée.
+   ============================================================ */
+const R2C={bleu:"#4b6ea9", vert:"#3f8c66", rouge:"#c0603f", or:"#c2963c", gris:"#8a8f99"};
+
+/* ---------------- 1. Composer le béton (Bâtiment) ---------------- */
+const R2_CIMENT=[{n:"CEM II 32,5",rc:32.5,vif:0.42,cout:96},
+                 {n:"CEM II 42,5",rc:42.5,vif:0.52,cout:112},
+                 {n:"CEM I 52,5",rc:52.5,vif:0.60,cout:134}];
+function calculBeton(pas,p){
+  const FCK=(pas&&pas.resistance)||24, DECOF=(pas&&pas.decoffrage)||7, BUDGET=(pas&&pas.budget)||128;
+  const ci=R2_CIMENT[p.ciment];
+  const dosage=[300,350,400][p.dosage];
+  const ec=[0.45,0.55,0.65][p.eau];
+  /* Bolomey : fc = G × classe du ciment × (C/E − 0,5). G monte un peu avec le dosage. */
+  const G=0.42+0.00025*(dosage-300);
+  const fc28=G*ci.rc*(1/ec-0.5);
+  /* la cure : sans elle, le béton perd le quart de ce qu'il aurait pu donner */
+  const cure=[0.75,1.0,1.05][p.cure];
+  const fc=fc28*cure;
+  /* le décoffrage : plus le ciment est vif, plus tôt on décoffre */
+  const jours=Math.max(1,Math.round(7*(0.45/ci.vif)*(ec/0.5)));
+  const cout=dosage/1000*ci.cout*3.1+(p.cure===2? 6 : p.cure===1? 2 : 0)+(p.eau===0? 8 : 0);
+  return {FCK,DECOF,BUDGET,ci,dosage,ec,fc28,cure,fc,jours,cout,
+          sansCure:p.cure===0, eauForteEtResistance:p.eau===2};
+}
+function rendreBeton(hote,mi,pi,pas){
+  const FCK=(pas&&pas.resistance)||24, DECOF=(pas&&pas.decoffrage)||7, BUDGET=(pas&&pas.budget)||128;
+  bancATI(hote,"Composer le béton — l'eau fait la résistance, à l'envers",
+   "Un voile à couler. Ce qui donne la résistance n'est pas la quantité de ciment mais le rapport EAU sur ciment : plus on ajoute d'eau pour que ça se mette en place tout seul, moins le béton tient. Un béton ferme demande un adjuvant ou de la vibration. Et sans cure, il perd le quart de ce qu'il aurait pu donner — la fissuration ne se voit qu'après.",
+   "Au moins <b>"+nb(FCK,0)+" MPa</b> à 28 jours, décoffrage en <b>"+nb(DECOF,0)+
+   " jours</b> au plus, pour <b>"+nb(BUDGET,0)+" €/m³</b>.",
+   [{id:"ciment",lib:"Ciment",choix:R2_CIMENT.map(x=>x.n),val:0},
+    {id:"dosage",lib:"Dosage",choix:["300 kg/m³","350 kg/m³","400 kg/m³"],val:0},
+    {id:"eau",lib:"Rapport eau/ciment",choix:["0,45 — ferme, adjuvanté","0,55 — plastique","0,65 — très fluide"],val:1},
+    {id:"cure",lib:"Cure",choix:["aucune","bâchage 3 jours","produit de cure 7 jours"],val:0}],
+   [["Résistance visée","ba"],["Après cure","bb"],["Décoffrage","bc"],["Coût au m³","bd"]],
+   (c,w,h,p)=>{
+     const r=calculBeton(pas,p);
+     const x0=w*0.30, lg=w*0.50;
+     const ech=Math.max(r.fc28,r.FCK)*1.3;
+     [["résistance théorique",r.fc28,R2C.gris],["après cure",r.fc,r.fc>=r.FCK?R2C.vert:R2C.rouge]]
+      .forEach(([nom,v,col],i)=>{
+       const y=h*0.24+i*h*0.20;
+       c.fillStyle=CB();c.globalAlpha=.28;c.fillRect(x0,y,lg,18);c.globalAlpha=1;
+       c.fillStyle=col;c.fillRect(x0,y,lg*Math.min(1,v/ech),18);
+       txt(c,nom,w*0.03,y+9,10.5,CI(),"left");
+       mono(c,nb(v,1)+" MPa",x0+lg+5,y+9,10.5,CI(),"left");
+     });
+     const xc=x0+lg*(r.FCK/ech);
+     c.strokeStyle=CI();c.lineWidth=1.6;c.setLineDash([4,3]);
+     c.beginPath();c.moveTo(xc,h*0.18);c.lineTo(xc,h*0.66);c.stroke();c.setLineDash([]);
+     plaque(c,nb(r.FCK,0)+" MPa",xc,h*0.14,10.5,CI(),"center");
+     plaque(c,"E/C = "+nb(r.ec,2)+"  ·  décoffrage à "+nb(r.jours,0)+" j",w*0.5,h*0.78,11,
+            r.jours<=r.DECOF?R2C.vert:R2C.rouge,"center");
+     mono(c,nb(r.cout,0)+" €/m³",w*0.5,h*0.93,12,r.cout<=r.BUDGET?R2C.vert:R2C.rouge,"center");
+   },
+   (p)=>{
+     const r=calculBeton(pas,p);
+     const ok=r.fc>=r.FCK&&r.jours<=r.DECOF&&r.cout<=r.BUDGET&&!r.sansCure;
+     const L=[["ba",nb(r.fc28,1),"MPa"],["bb",nb(r.fc,1),"MPa",r.fc>=r.FCK?"ok":"ko"],
+              ["bc",nb(r.jours,0),"j",r.jours<=r.DECOF?"ok":"ko"],
+              ["bd",nb(r.cout,0),"€",r.cout<=r.BUDGET?"ok":"ko"]];
+     if(r.sansCure) return {ok:false,lectures:L,
+       pourquoi:"Aucune cure : le béton perd le quart de sa résistance, et fissure en surface.",
+       indice:"Un béton qui sèche trop vite ne durcit pas, il se déshydrate. Un bâchage de trois jours coûte deux euros du mètre cube et sauve sept mégapascals."};
+     if(r.fc<r.FCK) return {ok:false,lectures:L,
+       pourquoi:"Résistance de "+nb(r.fc,1)+" MPa pour "+nb(r.FCK,0)+" attendus.",
+       indice:"Regarde le rapport eau/ciment avant le dosage : passer de 0,65 à 0,55 gagne plus que cinquante kilos de ciment en plus, et coûte moins cher."};
+     if(r.jours>r.DECOF) return {ok:false,lectures:L,
+       pourquoi:"Décoffrage à "+nb(r.jours,0)+" jours pour "+nb(r.DECOF,0)+" prévus au planning.",
+       indice:"Un ciment de classe supérieure monte plus vite en résistance : il coûte plus au mètre cube et rend des jours de coffrage — qui coûtent plus cher que lui."};
+     if(r.cout>r.BUDGET) return {ok:false,lectures:L,
+       pourquoi:nb(r.cout,0)+" €/m³ pour "+nb(r.BUDGET,0)+" € budgétés.",
+       indice:"Le ciment est le poste cher. Baisser l'eau plutôt que monter le dosage donne la même résistance pour moins d'argent — au prix d'un béton plus ferme à mettre en place."};
+     return {ok:true,lectures:L,
+       pourquoi:r.ci.n+" à "+nb(r.dosage,0)+" kg/m³, E/C = "+nb(r.ec,2)+" avec cure : "+
+       nb(r.fc,1)+" MPa, décoffrage à "+nb(r.jours,0)+" jours pour "+nb(r.cout,0)+
+       " €/m³. C'est l'eau qu'on n'a pas mise qui fait la résistance."};
+   },mi,pi,"beton");
+}
+
+/* ---------------- 2. La structure de chaussée (Travaux publics) ---------------- */
+const R2_SOL=[{n:"sol support faible (PF1)",port:20},{n:"sol moyen (PF2)",port:50},
+              {n:"sol porteur (PF3)",port:120}];
+const R2_FOND=[{n:"aucune couche de forme",e:0,coef:0,cout:0},
+               {n:"forme 30 cm en grave",e:30,coef:1.0,cout:14},
+               {n:"forme 50 cm en grave traitée",e:50,coef:1.5,cout:26}];
+function calculChaussee(pas,p){
+  const TRAFIC=(pas&&pas.trafic)||"T3", DEFL=(pas&&pas.deflexion)||45, BUDGET=(pas&&pas.budget)||46;
+  const so=R2_SOL[p.sol], fo=R2_FOND[p.forme];
+  const base=[15,25,35][p.base];
+  const enrobe=[6,9,14][p.enrobe];
+  /* la portance en tête : le sol, puis ce que les couches répartissent */
+  const portance=so.port+fo.e*fo.coef*1.6+base*2.2+enrobe*3.4;
+  /* la déflexion sous essieu : elle chute quand la portance monte */
+  const deflexion=2400/Math.max(30,portance);
+  const cout=fo.e/10*fo.cout/3+base*0.9+enrobe*2.6;
+  return {TRAFIC,DEFL,BUDGET,so,fo,base,enrobe,portance,deflexion,cout,
+          enrobeSurSolFaible:p.sol===0&&p.forme===0};
+}
+function rendreChaussee(hote,mi,pi,pas){
+  const DEFL=(pas&&pas.deflexion)||45, BUDGET=(pas&&pas.budget)||46;
+  bancATI(hote,"La structure de chaussée — c'est le sol qui porte",
+   "Une voirie à dimensionner. Les couches ne portent pas : elles RÉPARTISSENT la charge sur un sol qui, lui, porte plus ou moins. Sur un sol faible, poser de l'enrobé directement revient à faire une croûte sur de la boue — elle se fissurera au premier hiver. La couche de forme coûte peu au mètre cube et change tout le reste.",
+   "Une déflexion sous <b>"+nb(DEFL,0)+" centièmes de mm</b>, pour <b>"+nb(BUDGET,0)+" €/m²</b> au plus.",
+   [{id:"sol",lib:"Sol support",choix:R2_SOL.map(x=>x.n),val:1},
+    {id:"forme",lib:"Couche de forme",choix:R2_FOND.map(x=>x.n),val:0},
+    {id:"base",lib:"Couche de base",choix:["15 cm de grave","25 cm de grave","35 cm de grave"],val:0},
+    {id:"enrobe",lib:"Couche de roulement",choix:["6 cm d'enrobé","9 cm d'enrobé","14 cm d'enrobé"],val:0}],
+   [["Portance en tête","ca"],["Déflexion","cb"],["Épaisseur totale","cc"],["Coût au m²","cd"]],
+   (c,w,h,p)=>{
+     const r=calculChaussee(pas,p);
+     const x0=w*0.10, W=w*0.56, y0=h*0.16;
+     const couches=[["enrobé",r.enrobe,R2C.gris],["base",r.base,R2C.or],
+                    ["forme",r.fo.e,R2C.bleu],["sol",40,R2C.vert]];
+     const tot=couches.reduce((s,q)=>s+q[1],0)||1;
+     let y=y0;
+     couches.forEach(([nom,e,col])=>{
+       if(e<=0) return;
+       const H2=(h*0.62)*e/tot;
+       c.fillStyle=col;c.globalAlpha=.45;c.fillRect(x0,y,W,H2);c.globalAlpha=1;
+       c.strokeStyle=col;c.lineWidth=1.2;c.strokeRect(x0,y,W,H2);
+       if(H2>14) mono(c,nom+" "+nb(e,0)+" cm",x0+W/2,y+H2/2,10,CI(),"center");
+       y+=H2;
+     });
+     const rx=w*0.70;
+     mono(c,nb(r.deflexion,1),rx,h*0.36,15,r.deflexion<=r.DEFL?R2C.vert:R2C.rouge,"left");
+     txt(c,"1/100 mm",rx,h*0.48,10.5,CM(),"left");
+     mono(c,nb(r.cout,0)+" €/m²",rx,h*0.66,12,r.cout<=r.BUDGET?R2C.vert:R2C.rouge,"left");
+   },
+   (p)=>{
+     const r=calculChaussee(pas,p);
+     const ok=r.deflexion<=r.DEFL&&r.cout<=r.BUDGET&&!r.enrobeSurSolFaible;
+     const L=[["ca",nb(r.portance,0),"MPa"],
+              ["cb",nb(r.deflexion,1),"1/100",r.deflexion<=r.DEFL?"ok":"ko"],
+              ["cc",nb(r.fo.e+r.base+r.enrobe,0),"cm"],
+              ["cd",nb(r.cout,0),"€",r.cout<=r.BUDGET?"ok":"ko"]];
+     if(r.enrobeSurSolFaible) return {ok:false,lectures:L,
+       pourquoi:"De l'enrobé posé directement sur un sol faible, sans couche de forme : une croûte sur de la boue.",
+       indice:"La couche de forme n'est pas une épaisseur de plus : c'est elle qui rend le sol utilisable, qui permet aux engins de circuler et qui protège le fond de forme de l'eau."};
+     if(r.deflexion>r.DEFL) return {ok:false,lectures:L,
+       pourquoi:"Déflexion de "+nb(r.deflexion,1)+" pour "+nb(r.DEFL,0)+" admis : la chaussée fatiguera vite.",
+       indice:"Trois centimètres de grave coûtent le tiers de trois centimètres d'enrobé et répartissent presque autant. On épaissit par le bas, pas par le haut."};
+     if(r.cout>r.BUDGET) return {ok:false,lectures:L,
+       pourquoi:nb(r.cout,0)+" €/m² pour "+nb(r.BUDGET,0)+" € budgétés.",
+       indice:"L'enrobé coûte trois fois la grave au centimètre. Il fait le roulement et l'étanchéité, pas la structure — c'est le rôle des couches en dessous."};
+     return {ok:true,lectures:L,
+       pourquoi:r.so.n+", "+r.fo.n+", "+nb(r.base,0)+" cm de base et "+nb(r.enrobe,0)+
+       " cm d'enrobé : déflexion "+nb(r.deflexion,1)+" pour "+nb(r.cout,0)+
+       " €/m². La structure répartit, le sol porte."};
+   },mi,pi,"chaussee");
+}
+
+/* ---------------- 3. La ventilation (FED) ---------------- */
+const R2_GAINE=[{n:"gaine ⌀ 125",s:0.0123},{n:"gaine ⌀ 160",s:0.0201},{n:"gaine ⌀ 200",s:0.0314}];
+function calculVentilation(pas,p){
+  const DEBIT=(pas&&pas.debit)||420, BRUITMAX=(pas&&pas.bruit)||36, PMAX=(pas&&pas.puissance)||55;
+  const ga=R2_GAINE[p.gaine];
+  const longueur=[12,24,40][p.reseau];
+  const vitesse=DEBIT/3600/ga.s;
+  /* la perte de charge monte au CARRÉ de la vitesse */
+  const perte=0.9*vitesse*vitesse*longueur*0.6+(p.filtre===1? 90 : 30);
+  const puissance=DEBIT/3600*perte/(p.moteur===1? 0.62 : 0.38);
+  const bruit=18+22*Math.log10(Math.max(1.5,vitesse));
+  return {DEBIT,BRUITMAX,PMAX,ga,longueur,vitesse,perte,puissance,bruit,
+          vitesseTropHaute:vitesse>6.0};
+}
+function rendreVentilation(hote,mi,pi,pas){
+  const DEBIT=(pas&&pas.debit)||420, BRUITMAX=(pas&&pas.bruit)||36, PMAX=(pas&&pas.puissance)||55;
+  bancATI(hote,"La ventilation — la perte de charge monte au carré",
+   nb(DEBIT,0)+" m³/h à souffler. Réduire le diamètre fait monter la vitesse, et la perte de charge suit le CARRÉ de cette vitesse : une gaine deux tailles en dessous peut tripler la puissance du ventilateur. Au-delà de 6 m/s, on entend l'air dans la gaine — et le logement coupe la ventilation.",
+   "Un bruit sous <b>"+nb(BRUITMAX,0)+" dB(A)</b> et une puissance sous <b>"+nb(PMAX,0)+" W</b>.",
+   [{id:"gaine",lib:"Diamètre de gaine",choix:R2_GAINE.map(x=>x.n),val:0},
+    {id:"reseau",lib:"Longueur de réseau",choix:["12 m","24 m","40 m"],val:0},
+    {id:"filtre",lib:"Filtration",choix:["filtre grossier","filtre fin (+ 60 Pa)"],val:0},
+    {id:"moteur",lib:"Ventilateur",choix:["moteur classique","moteur à courant continu"],val:0}],
+   [["Vitesse d'air","va"],["Perte de charge","vb"],["Bruit","vc"],["Puissance","vd"]],
+   (c,w,h,p)=>{
+     const r=calculVentilation(pas,p);
+     const x0=w*0.30, lg=w*0.50;
+     [["vitesse",r.vitesse,6.0,9,"m/s"],["bruit",r.bruit,r.BRUITMAX,50,"dB(A)"],
+      ["puissance",r.puissance,r.PMAX,r.PMAX*2.4,"W"]].forEach((q,i)=>{
+       const y=h*0.22+i*h*0.22;
+       const bon=q[1]<=q[2];
+       c.fillStyle=CB();c.globalAlpha=.28;c.fillRect(x0,y,lg,18);c.globalAlpha=1;
+       c.fillStyle=bon?R2C.vert:R2C.rouge;c.fillRect(x0,y,lg*Math.min(1,q[1]/q[3]),18);
+       const xc=x0+lg*(q[2]/q[3]);
+       c.strokeStyle=CI();c.lineWidth=1.4;c.setLineDash([3,3]);
+       c.beginPath();c.moveTo(xc,y-7);c.lineTo(xc,y+25);c.stroke();c.setLineDash([]);
+       txt(c,q[0],w*0.03,y+9,11,CI(),"left",true);
+       mono(c,nb(q[1],1)+" "+q[4],x0+lg+5,y+9,10.5,bon?R2C.vert:R2C.rouge,"left");
+     });
+     plaque(c,r.ga.n+"  ·  "+nb(r.longueur,0)+" m  ·  "+nb(r.perte,0)+" Pa",
+            w*0.5,h*0.92,11,CI(),"center");
+   },
+   (p)=>{
+     const r=calculVentilation(pas,p);
+     const ok=r.bruit<=r.BRUITMAX&&r.puissance<=r.PMAX&&!r.vitesseTropHaute;
+     const L=[["va",nb(r.vitesse,1),"m/s",r.vitesse<=6.0?"ok":"ko"],
+              ["vb",nb(r.perte,0),"Pa"],["vc",nb(r.bruit,1),"dB(A)",r.bruit<=r.BRUITMAX?"ok":"ko"],
+              ["vd",nb(r.puissance,0),"W",r.puissance<=r.PMAX?"ok":"ko"]];
+     if(r.vitesseTropHaute) return {ok:false,lectures:L,
+       pourquoi:"Air à "+nb(r.vitesse,1)+" m/s dans la gaine : on l'entend siffler dans le logement.",
+       indice:"Au-delà de 6 m/s, l'occupant coupe la ventilation — et une ventilation coupée ne ventile plus du tout. Le diamètre se choisit sur la vitesse, avant tout le reste."};
+     if(r.bruit>r.BRUITMAX) return {ok:false,lectures:L,
+       pourquoi:"Niveau sonore de "+nb(r.bruit,1)+" dB(A) pour "+nb(r.BRUITMAX,0)+" admis.",
+       indice:"Le bruit vient de la vitesse, pas du ventilateur : une gaine plus large tourne moins vite et se tait. C'est la même correction que pour la puissance."};
+     if(r.puissance>r.PMAX) return {ok:false,lectures:L,
+       pourquoi:nb(r.puissance,0)+" W au ventilateur pour "+nb(r.PMAX,0)+" W admis.",
+       indice:"La perte de charge monte au carré de la vitesse : deux tailles de gaine en dessous peuvent tripler la puissance. Un moteur à courant continu récupère un tiers, pas plus."};
+     return {ok:true,lectures:L,
+       pourquoi:r.ga.n+" sur "+nb(r.longueur,0)+" m : "+nb(r.vitesse,1)+" m/s, "+nb(r.perte,0)+
+       " Pa, "+nb(r.bruit,1)+" dB(A) pour "+nb(r.puissance,0)+
+       " W. Une ventilation silencieuse est une ventilation qu'on laisse allumée."};
+   },mi,pi,"ventilation");
+}
+
+/* ---------------- 4. La brigade (MHR) ---------------- */
+function calculBrigade(pas,p){
+  const SERVICE=(pas&&pas.service)||1.0, RATIO=(pas&&pas.ratio)||0.25, CA=(pas&&pas.ca)||6800;
+  const couverts=(pas&&pas.couverts)||160;
+  /* le coup de feu : la moitié des couverts sur un quart du service */
+  const pointe=couverts*0.5;
+  const cuisine=[2,3,4,5][p.cuisine], salle=[2,3,4,5][p.salle];
+  /* ce que chacun peut absorber pendant la pointe */
+  const capCuisine=cuisine*22*(p.mise===1? 1.25 : 1);
+  const capSalle=salle*26*(p.mise===1? 1.1 : 1);
+  const servis=Math.min(pointe,capCuisine,capSalle);
+  const taux=servis/pointe;
+  const masse=(cuisine*118+salle*104)+(p.mise===1? 90 : 0);
+  const ratio=masse/CA;
+  return {SERVICE,RATIO,CA,couverts,pointe,cuisine,salle,capCuisine,capSalle,servis,taux,masse,ratio,
+          desequilibre:Math.abs(capCuisine-capSalle)>18};
+}
+function rendreBrigade(hote,mi,pi,pas){
+  const SERVICE=(pas&&pas.service)||1.0, RATIO=(pas&&pas.ratio)||0.25;
+  const couverts=(pas&&pas.couverts)||160;
+  bancATI(hote,"La brigade — dimensionner sur le coup de feu",
+   nb(couverts,0)+" couverts sur un service, dont la moitié en une heure. Un service se dimensionne sur la POINTE, pas sur la moyenne : la moyenne ne fait jamais attendre personne, la pointe si. Cuisine et salle doivent tenir la même cadence — le maillon le plus lent fixe le service, et l'autre regarde. La mise en place de l'après-midi fait gagner un quart de capacité en cuisine.",
+   "Servir au moins <b>"+nb(100*SERVICE,0)+" %</b> de la pointe, avec une masse salariale sous <b>"+
+   nb(100*RATIO,0)+" %</b> du chiffre d'affaires.",
+   [{id:"cuisine",lib:"Cuisine",choix:["2 personnes","3 personnes","4 personnes","5 personnes"],val:0},
+    {id:"salle",lib:"Salle",choix:["2 personnes","3 personnes","4 personnes","5 personnes"],val:0},
+    {id:"mise",lib:"Mise en place l'après-midi",choix:["non","oui (90 € de main-d'œuvre)"],val:0}],
+   [["Pointe","ga"],["Capacité cuisine","gb"],["Capacité salle","gc"],["Masse salariale","gd"]],
+   (c,w,h,p)=>{
+     const r=calculBrigade(pas,p);
+     const x0=w*0.32, lg=w*0.48, ech=Math.max(r.pointe,r.capCuisine,r.capSalle)*1.15;
+     [["pointe à servir",r.pointe,R2C.gris],["cuisine",r.capCuisine,R2C.or],
+      ["salle",r.capSalle,R2C.bleu]].forEach(([nom,v,col],i)=>{
+       const y=h*0.20+i*h*0.19;
+       c.fillStyle=CB();c.globalAlpha=.28;c.fillRect(x0,y,lg,17);c.globalAlpha=1;
+       c.fillStyle=col;c.fillRect(x0,y,lg*Math.min(1,v/ech),17);
+       txt(c,nom,w*0.03,y+8,10.5,CI(),"left");
+       mono(c,nb(v,0),x0+lg+5,y+8,10,CI(),"left");
+     });
+     const xp=x0+lg*(r.pointe/ech);
+     c.strokeStyle=CI();c.lineWidth=1.6;c.setLineDash([4,3]);
+     c.beginPath();c.moveTo(xp,h*0.16);c.lineTo(xp,h*0.78);c.stroke();c.setLineDash([]);
+     plaque(c,nb(100*r.taux,0)+" % de la pointe servie",w*0.5,h*0.86,12,
+            r.taux>=r.SERVICE?R2C.vert:R2C.rouge,"center");
+     mono(c,"masse salariale "+nb(100*r.ratio,1)+" %",w*0.5,h*0.96,11,
+          r.ratio<=r.RATIO?R2C.vert:R2C.rouge,"center");
+   },
+   (p)=>{
+     const r=calculBrigade(pas,p);
+     const ok=r.taux>=r.SERVICE&&r.ratio<=r.RATIO&&!r.desequilibre;
+     const L=[["ga",nb(r.pointe,0),"couverts"],["gb",nb(r.capCuisine,0),""],
+              ["gc",nb(r.capSalle,0),""],
+              ["gd",nb(100*r.ratio,1),"%",r.ratio<=r.RATIO?"ok":"ko"]];
+     if(r.desequilibre) return {ok:false,lectures:L,
+       pourquoi:"Cuisine et salle ne tiennent pas la même cadence : "+nb(r.capCuisine,0)+
+       " contre "+nb(r.capSalle,0)+". Le plus lent fixe le service, l'autre est payé à attendre.",
+       indice:"Une brigade s'équilibre. Une personne de plus du côté rapide ne sert à rien : elle coûte un salaire et ne fait pas sortir un couvert de plus."};
+     if(r.taux<r.SERVICE) return {ok:false,lectures:L,
+       pourquoi:"Seulement "+nb(100*r.taux,0)+" % de la pointe servie : des clients attendent, certains partent.",
+       indice:"C'est le maillon le plus faible qui commande. Regarde laquelle des deux barres est la plus courte — c'est là, et nulle part ailleurs, qu'il faut renforcer."};
+     if(r.ratio>r.RATIO) return {ok:false,lectures:L,
+       pourquoi:"Masse salariale à "+nb(100*r.ratio,1)+" % du chiffre d'affaires pour "+
+       nb(100*r.RATIO,0)+" % tenables.",
+       indice:"La mise en place de l'après-midi coûte 90 € et fait gagner un quart de capacité en cuisine : c'est presque toujours moins cher qu'une personne de plus au coup de feu."};
+     return {ok:true,lectures:L,
+       pourquoi:r.cuisine+" en cuisine, "+r.salle+" en salle"+(p.mise===1?", mise en place faite":"")+
+       " : "+nb(100*r.taux,0)+" % de la pointe servie pour "+nb(100*r.ratio,1)+
+       " % de masse salariale. Les deux côtés tiennent la même cadence."};
+   },mi,pi,"brigade");
+}
+
 /* ---- bancs-sam.js.txt ---- */
 /* ============================================================
    LES BANCS PRATIQUES DU BTS SAM
@@ -42818,6 +43218,7 @@ const GENRE={w:"cablage", s:"simu", z:"simu", f:"chaine", g:"auto", h:"ladder",
              /* Transport et VH */ to:"tournee", dg:"diagnostic",
              zl:"ligneroute", zd:"devisreparation", zx:"report", zy:"plancoupe",
              za:"financement", zq:"surete", zw:"montageoptique",
+             ze:"beton", zf:"chaussee", zn:"ventilation", zu:"brigade",
              /* Aéro et mode */ vs:"visite", kt:"collection",
              /* Notariat, sécurité, optique */ su:"succession", ds:"dispositif", oq:"equipement"};
 const NOM={cablage:"Câblage",simu:"Simulateur",chaine:"Chaîne fonctionnelle",
@@ -42885,7 +43286,9 @@ const NOM={cablage:"Câblage",simu:"Simulateur",chaine:"Chaîne fonctionnelle",
            ligneroute:"La ligne régulière", devisreparation:"Chiffrer la réparation",
            report:"Le report de tolérance", plancoupe:"Le plan de coupe",
            financement:"Le plan de financement", surete:"Le poste de sûreté",
-           montageoptique:"Le montage",
+           montageoptique:"Le montage", beton:"Composer le béton",
+           chaussee:"La structure de chaussée", ventilation:"La ventilation",
+           brigade:"La brigade",
            visite:"Programmer la visite", collection:"Lancer la collection",
            succession:"Régler la succession", dispositif:"Monter le dispositif",
            equipement:"Composer l'équipement"};
@@ -42908,6 +43311,8 @@ const RENDUS={/* le banc de la bioqualité */
               report:rendreReport, plancoupe:rendrePlanCoupe,
               financement:rendrePlanFinancement, surete:rendreSurete,
               montageoptique:rendreMontage,
+              beton:rendreBeton, chaussee:rendreChaussee,
+              ventilation:rendreVentilation, brigade:rendreBrigade,
               visite:rendreVisite, collection:rendreCollection,
               succession:rendreSuccession, dispositif:rendreDispositif, equipement:rendreEquipement,
               /* les bancs des bioanalyses */
@@ -44807,6 +45212,7 @@ function reculer(){
 function cadreVue(){
   etat.vue=arguments[0];redessins=[];anims=[];
   document.querySelector(".page").dataset.rail="off";
+  document.querySelector(".page").dataset.vue=arguments[0]||"";
   const sc=$("#scene");sc.innerHTML="";return sc;
 }
 function connexion(mode){
@@ -44890,22 +45296,63 @@ function nouveauMotDePasse(){
   majRail();majGlobal();window.scrollTo({top:0});
   setTimeout(()=>w.querySelector("#ch-neuf").focus(),60);
 }
+/* ============================================================
+   L'ACCUEIL DU SITE — remplace la version d'origine
+   À cinquante parcours, une liste plate ne se lit plus : on les
+   range par FAMILLE de métier, dans l'ordre du catalogue, et
+   chaque famille porte sa couleur. Une carte dit son nom, son
+   sigle, ce qu'on y travaille, et où en est l'élève.
+   ⚠️ Un identifiant absent de la table ci-dessous n'est PAS
+   perdu : il tombe dans « Autres parcours ».
+   ============================================================ */
+const AC_FAMILLES=[
+ {n:"Industrie et technique",c:"#0b7a8c",ids:["electrotechnique","ati","maintenance","cprp","crsa","cpi","cira","maintenanceveh","aeronautique"]},
+ {n:"Numérique et énergie",c:"#4b6ea9",ids:["sio","ciel","fed"]},
+ {n:"Bâtiment et territoire",c:"#8a6b3c",ids:["batiment","travauxpublics","enveloppe","scbh","geometre","geologie","paysage"]},
+ {n:"Laboratoire et vivant",c:"#3f8c66",ids:["chimie","eau","bioac","abm","bioqualite","viticulture"]},
+ {n:"Commerce et relation client",c:"#b8577a",ids:["mco","ndrc","ci","tourisme","gtla"]},
+ {n:"Création et communication",c:"#7c5fd0",ids:["communication","designgraphique","erpc","audiovisuel","mode"]},
+ {n:"Gestion, droit et finance",c:"#2f6f7a",ids:["gpme","cg","sam","banque","assurance","pi","notariat"]},
+ {n:"Soin, service et sécurité",c:"#c0603f",ids:["mhr","dietetique","esf","sp3s","mecp","coiffure","opticien","mos"]}];
+
+function acFamilleDe(id){
+  for(const f of AC_FAMILLES) if(f.ids.indexOf(id)>=0) return f;
+  return {n:"Autres parcours",c:"#6b7280",ids:[]};
+}
+
 function accueil(){
   const sc=cadreVue("accueil");
-  const w=document.createElement("section");w.className="verre feuille monte portail";
-  w.innerHTML='<div class="portail-marque"><span class="sceau"><svg viewBox="0 0 24 24"><path d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg></span>'+
-    "<h1>Mon BTS</h1><p>Cherche ton BTS et commence.</p></div>"+
-    '<div class="recherche"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>'+
-    '<input type="search" id="ch-bts" placeholder="Cherche un BTS — électrotechnique, ATI…" autocomplete="off"></div>'+
-    '<div class="cartes" id="cartes"></div>'+
-    '<p class="portail-note" id="note-cat"></p>';
+  const halo=document.createElement("div");halo.className="ac-halo";
+  halo.innerHTML="<i></i><i></i><i></i>";sc.appendChild(halo);
+
+  const w=document.createElement("div");w.className="ac monte";
+  /* les chiffres du catalogue, comptés et non écrits */
+  let nbEx=0; try{ nbEx=Object.keys(GEN).length; }catch(e){}
+  /* VERIFS ne se remplit qu'au montage d'un banc : on compte les RENDUS. */
+  let nbBancs=0; try{ nbBancs=Object.keys(RENDUS).length; }catch(e){}
+  w.innerHTML=
+   '<header class="ac-hero">'+
+     '<span class="sceau"><svg viewBox="0 0 24 24"><path d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg></span>'+
+     "<h1>Mon BTS</h1>"+
+     '<p class="ac-promesse">Des leçons courtes, des figures qu\'on manipule, des exercices tirés au sort '+
+     'et corrigés pas à pas. On ne passe au suivant que lorsque c\'est acquis.</p>'+
+     '<div class="ac-chiffres">'+
+       "<div><b>"+CATALOGUE.length+"</b><span>parcours</span></div>"+
+       "<div><b>"+nbEx+"</b><span>exercices</span></div>"+
+       (nbBancs? "<div><b>"+nbBancs+"</b><span>bancs d'essai</span></div>" : "")+
+     "</div>"+
+   "</header>"+
+   '<div class="ac-quete"><div class="boite">'+
+     '<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>'+
+     '<input type="search" id="ch-bts" autocomplete="off" '+
+     'placeholder="Cherche ton BTS — coiffure, électrotechnique, notaire…"></div></div>'+
+   '<div id="cartes"></div>'+
+   '<p class="ac-note" id="note-cat"></p>';
   sc.appendChild(w);
+
+  const plat=t=>String(t||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"");
   const dessine=()=>{
-    const q=(w.querySelector("#ch-bts").value||"").toLowerCase()
-      .normalize("NFD").replace(/[̀-ͯ]/g,"");
-    /* On classe : un mot entier qui correspond passe devant un simple
-       fragment. Sans cela « ati » remontait « automatisme ». */
-    const plat=t=>t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+    const q=plat(w.querySelector("#ch-bts").value);
     const score=c=>{
       if(!q)return 1;
       const nom=plat(c.nom+" "+c.court), tout=plat(c.nom+" "+c.court+" "+c.sous+" "+c.mots);
@@ -44914,26 +45361,55 @@ function accueil(){
       if(nom.indexOf(q)>=0)return 2;
       if(mots.some(m=>m.startsWith(q)))return 2;
       return tout.indexOf(q)>=0?1:0;};
-    const liste=CATALOGUE.map(c=>[c,score(c)]).filter(x=>x[1]>0)
-      .sort((a,b)=>b[1]-a[1]).map(x=>x[0]);
+    const gardes=CATALOGUE.filter(c=>score(c)>0);
     const g=w.querySelector("#cartes");g.innerHTML="";
-    liste.forEach(c=>{
+
+    const carte=(c,f)=>{
       const n=c.modules().length;
-      let av=0;try{const b=JSON.parse(localStorage.getItem(c.id==="electrotechnique"?CLE_BASE:CLE_BASE+":"+c.id)||"{}");
+      let av=0,tot=0;
+      try{const b=JSON.parse(localStorage.getItem(c.id==="electrotechnique"?CLE_BASE:CLE_BASE+":"+c.id)||"{}");
         av=Object.keys(b.faits||{}).length;}catch(e){}
-      const b=document.createElement("button");b.className="carte";b.type="button";
-      b.innerHTML='<span class="carte-tag" data-e="'+c.etat+'">'+(c.etat==="nouveau"?"Nouveau":"Complet")+"</span>"+
-        "<b>"+c.nom+"</b><span class='carte-court'>"+c.court+"</span>"+
-        "<span class='carte-sous'>"+c.sous+"</span>"+
-        '<span class="carte-pied">'+n+" modules"+(av?" · "+av+" pas déjà validés":"")+"</span>";
+      try{tot=c.modules().reduce((a,m)=>a+m.steps.length,0);}catch(e){}
+      const part=tot? Math.min(100,Math.round(100*av/tot)) : 0;
+      const b=document.createElement("button");
+      b.className="ac-carte";b.type="button";b.style.setProperty("--f",f.c);
+      b.innerHTML='<span class="ac-tag" data-e="'+c.etat+'">'+(c.etat==="nouveau"?"Nouveau":"Complet")+"</span>"+
+        "<b>"+c.nom+"</b>"+
+        '<span class="ac-sigle">'+c.court+"</span>"+
+        '<span class="ac-sous">'+c.sous+"</span>"+
+        '<span class="ac-pied"><span class="mono">'+n+"</span> modules"+
+          (part? '<span class="ac-jauge"><i style="width:'+part+'%"></i></span><span class="mono">'+part+" %</span>" : "")+
+        "</span>";
       b.addEventListener("click",()=>{choisirBTS(c.id,true);
         if(etat.annee===undefined||etat.annee===null||!Object.keys(etat.faits).length)choixAnnee();
         else{document.querySelector(".page").dataset.rail=innerWidth>1040?"on":"off";
           if(etat.vuGuide)voir(etat.pos.m||0,etat.pos.p||0);else guide();}});
-      g.appendChild(b);});
-    if(!liste.length)g.innerHTML='<p class="simu-vide">Aucun BTS ne correspond. Pour l\'instant le catalogue en compte '+CATALOGUE.length+".</p>";
+      return b;
+    };
+
+    /* on parcourt les familles dans l'ordre, puis ce qui n'y est pas */
+    const restants=gardes.slice();
+    const rendreGroupe=(nom,coul,liste)=>{
+      if(!liste.length) return;
+      const t=document.createElement("div");t.className="ac-famille";
+      t.innerHTML="<h2>"+nom+"</h2><em>"+liste.length+"</em><span class='filet'></span>";
+      g.appendChild(t);
+      const gr=document.createElement("div");gr.className="ac-grille";
+      liste.forEach(c=>gr.appendChild(carte(c,{n:nom,c:coul})));
+      g.appendChild(gr);
+    };
+    AC_FAMILLES.forEach(f=>{
+      const liste=f.ids.map(id=>restants.find(c=>c.id===id)).filter(Boolean);
+      liste.forEach(c=>restants.splice(restants.indexOf(c),1));
+      rendreGroupe(f.n,f.c,liste);
+    });
+    rendreGroupe("Autres parcours","#6b7280",restants);
+
+    if(!gardes.length)
+      g.innerHTML='<p class="ac-vide">Aucun BTS ne correspond. Le catalogue en compte '+CATALOGUE.length+".</p>";
     w.querySelector("#note-cat").textContent=
-      "Le catalogue s'agrandira : chaque BTS ajouté reprend le même principe — leçons courtes, figures manipulables, exercices tirés au sort et examens de palier.";
+      "Chaque parcours suit le même principe : leçons courtes, figures manipulables, "+
+      "bancs d'essai où l'on règle pour de vrai, exercices tirés au sort et examens de palier.";
   };
   w.querySelector("#ch-bts").addEventListener("input",dessine);
   dessine();
