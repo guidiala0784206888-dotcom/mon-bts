@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="fr">
+<html lang="fr" data-theme="clair">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -451,7 +451,7 @@ kbd{border:1px solid var(--border);border-bottom-width:2px;border-radius:5px;pad
       <button class="ic" id="ouvrir-rail" title="Afficher ou masquer le parcours" aria-label="Afficher ou masquer le parcours" aria-pressed="true">
         <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg>
       </button>
-      <button class="ic" id="bascule-theme" title="Clair / sombre" aria-label="Changer de thème">
+      <button class="ic" id="bascule-theme" hidden aria-hidden="true" tabindex="-1">
         <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
       </button>
     </div>
@@ -22602,6 +22602,7 @@ const MODULES_AV=[
    <tr><td class="mono">proxys</td><td class="mono">une passe d'encodage</td><td class="mono">un montage sur machine modeste</td></tr>
   </table></div>
   <div class="encart e-cle"><span class="chapo">Le master n'est pas la diffusion</span><p>On conserve un master de qualité maximale, et l'on encode ensuite pour chaque destination. Refaire un encodage depuis une diffusion compressée empile les pertes.</p></div>`},
+ {k:"zm",t:"Banc — la post-production",jours:11,stockage:14,budget:3900},
  {k:"a",t:"Atelier — la livraison",gen:["av-encodage","av-poids-rushes","av-debit"],but:4},
  {k:"c",t:"Contrôle",gen:["av-encodage","av-poids-rushes","av-debit","av-audio"],n:8}
 ]},
@@ -23194,6 +23195,7 @@ const MODULES_CD=[
   </table></div>
   <div class="encart e-cle"><span class="chapo">Retirer un maillon vaut mieux que resserrer</span><p>Cinq cotes en chaîne additionnent cinq intervalles. Supprimer une pièce fait gagner tout son intervalle d'un coup — presque toujours moins cher que de resserrer les quatre autres.</p></div>
   <div class="encart e-piege"><span class="chapo">Le plan muet</span><p>Une cote sans tolérance indiquée renvoie aux tolérances générales, qui sont larges. Le fabricant a raison, et la pièce ne monte pas.</p></div>`},
+ {k:"kc",t:"Banc — répartir les tolérances",jeu:0.18,serie:8000,budget:44},
  {k:"a",t:"Atelier — les tolérances",gen:["cpi-ajustement","indus-chaine-cotes","cpi-conception"],but:4},
  {k:"c",t:"Contrôle",gen:["cpi-ajustement","indus-chaine-cotes","cpi-conception","indus-contrainte"],n:8}
 ]},
@@ -24873,6 +24875,7 @@ const MODULES_CS=[
    <tr><td class="mono">après arrêt d'urgence</td><td class="mono">redémarrage volontaire, jamais automatique</td></tr>
   </table></div>
   <div class="encart e-piege"><span class="chapo">L'énergie qui reste</span><p>Un accumulateur hydraulique reste sous pression, un ressort reste armé, un condensateur reste chargé — machine éteinte. Consigner, c'est séparer, condamner, puis VÉRIFIER l'absence d'énergie.</p></div>`},
+ {k:"sm",t:"Banc — sécuriser la machine",niveau:4,cadence:42,budget:24000},
  {k:"a",t:"Atelier — la sécurité",gen:["crsa-securite","indus-automatisme","indus-capteur"],but:4},
  {k:"c",t:"Contrôle",gen:["crsa-securite","indus-automatisme","indus-capteur","crsa-projet"],n:8}
 ]},
@@ -24979,6 +24982,7 @@ const MODULES_DG=[
  {k:"l",t:"Ce qui fait tenir une identité",h:`
   <div class="encart e-cle"><span class="chapo">Le vingtième support</span><p>Une identité ne se juge pas sur la planche de présentation mais sur le vingtième support : le tampon, la broderie, la favicon, le gobelet. C'est là qu'un système montre s'il en est un.</p></div>
   <div class="encart e-piege"><span class="chapo">La tendance du moment</span><p>Elle rassure le client parce qu'il l'a déjà vue ailleurs. Elle datera l'identité exactement à la vitesse où elle passera.</p></div>`},
+ {k:"zi",t:"Banc — le système d'identité",lisibilite:0.85,contraste:4.5,budget:9000},
  {k:"a",t:"Atelier — l'identité",gen:["dg-identite","dg-declinaison","crea-devis"],but:4},
  {k:"c",t:"Contrôle",gen:["dg-identite","dg-declinaison","crea-devis","crea-droits"],n:8}
 ]},
@@ -25340,6 +25344,7 @@ const MODULES_ER=[
  {k:"l",t:"Remonter depuis la diffusion",h:`
   <div class="formule">bouclage = diffusion − (livraison + impression + BAT + corrections + marge)</div>
   <div class="encart e-cle"><span class="chapo">La marge protège le délai qu'on ne maîtrise pas</span><p>On ne met pas la marge sur l'impression, dont le carnet est connu, mais sur la validation, dont la date dépend d'un tiers.</p></div>`},
+ {k:"zr",t:"Banc — le rétroplanning",fenetre:22,budget:4200},
  {k:"a",t:"Atelier — le planning",gen:["er-retroplanning","er-chaine","er-projet"],but:4},
  {k:"c",t:"Contrôle",gen:["er-retroplanning","er-chaine","er-projet","crea-devis"],n:8}
 ]},
@@ -27088,6 +27093,7 @@ const MODULES_IR=[
  {k:"l",t:"Réguler et protéger sont deux métiers",h:`
   <div class="encart e-cle"><span class="chapo">Deux chaînes séparées</span><p>La régulation cherche la consigne ; la sécurité cherche l'état sûr. Elles n'utilisent ni les mêmes capteurs, ni le même automate, précisément pour qu'une défaillance ne les emporte pas ensemble.</p></div>
   <div class="encart e-piege"><span class="chapo">Le capteur unique</span><p>Faire réguler et déclencher la sécurité par le même transmetteur, c'est accepter qu'une dérive de ce transmetteur mente aux deux fonctions en même temps — et que personne ne le voie.</p></div>`},
+ {k:"xs",t:"Banc — la boucle de sécurité",pfd:0.01,spurious:0.25,budget:26500},
  {k:"a",t:"Atelier — la sécurité",gen:["cira-instrument","crsa-securite","indus-automatisme"],but:4},
  {k:"c",t:"Contrôle",gen:["cira-instrument","crsa-securite","indus-automatisme","cira-boucle"],n:8}
 ]},
@@ -35961,6 +35967,258 @@ function rendreTournage(hote,mi,pi,pas){
    },mi,pi,"tournage");
 }
 
+/* ---- bancs-crea2.js.txt ---- */
+/* ============================================================
+   LES SECONDS BANCS DU GROUPE CRÉATION
+   Design graphique : un système d'identité se juge sur le
+   vingtième support, pas sur la planche de présentation.
+   ERPC : le rétroplanning — le seul délai qu'on ne comprime pas
+   est celui de la validation du client.
+   Audiovisuel : la post-production — le codec qu'on choisit au
+   tournage décide du temps de montage.
+   ============================================================ */
+const C2C={bleu:"#4b6ea9", vert:"#3f8c66", rouge:"#c0603f", or:"#c2963c", gris:"#8a8f99"};
+
+/* ---------------- 1. Le système d'identité (Design graphique) ---------------- */
+const C2_LOGO=[{n:"dessin détaillé",petit:0.35,cout:2600},
+               {n:"forme simple",petit:0.92,cout:1800},
+               {n:"monogramme",petit:1.00,cout:1400}];
+const C2_COUL=[{n:"une couleur",decl:1.00,risque:0},
+               {n:"deux couleurs",decl:1.25,risque:0},
+               {n:"trois couleurs + dégradé",decl:1.85,risque:1}];
+const C2_TYPO=[{n:"une famille",hier:0.7},{n:"deux familles",hier:1.0},{n:"trois familles",hier:0.55}];
+const C2_TEXTE=[{n:"gris clair #9aa0a6",l:0.32},{n:"gris moyen #5f6368",l:0.13},{n:"presque noir #1f2124",l:0.012}];
+function calculIdentite(pas,p){
+  const LIS=(pas&&pas.lisibilite)||0.85, CONT=(pas&&pas.contraste)||4.5, BUDGET=(pas&&pas.budget)||9000;
+  const lo=C2_LOGO[p.logo], co=C2_COUL[p.couleurs], ty=C2_TYPO[p.typo], te=C2_TEXTE[p.texte];
+  /* le contraste du texte courant sur fond blanc */
+  const contraste=(1.0+0.05)/(te.l+0.05);
+  /* la lisibilité à 10 mm : le dessin détaillé se bouche, le monogramme tient */
+  const lisible=lo.petit*(co.risque? 0.88 : 1);
+  const supports=p.supports;
+  const cout=lo.cout+supports*180*co.decl;
+  return {LIS,CONT,BUDGET,lo,co,ty,te,contraste,lisible,supports,cout,hier:ty.hier,
+          degradeEnQuadri:co.risque===1, troisFamilles:p.typo===2};
+}
+function rendreIdentite(hote,mi,pi,pas){
+  const LIS=(pas&&pas.lisibilite)||0.85, CONT=(pas&&pas.contraste)||4.5, BUDGET=(pas&&pas.budget)||9000;
+  bancATI(hote,"Le système d'identité — sur le vingtième support",
+   "Un logo se teste en noir, tout petit : un dessin détaillé se bouche à dix millimètres. Chaque couleur ajoutée se paie sur CHAQUE déclinaison, et un dégradé ne se reproduit pas d'un procédé à l'autre. Deux familles de caractères portent la hiérarchie ; trois la dissolvent. Et le texte courant doit rester lisible, ce qui se mesure.",
+   "Lisibilité à 10 mm d'au moins <b>"+nb(LIS,2)+"</b>, contraste du texte d'au moins <b>"+
+   nb(CONT,1)+"</b>, hiérarchie typographique tenue, pour <b>"+nb(BUDGET,0)+" €</b> au plus.",
+   [{id:"logo",lib:"Logo",choix:C2_LOGO.map(x=>x.n),val:0},
+    {id:"couleurs",lib:"Palette",choix:C2_COUL.map(x=>x.n),val:0},
+    {id:"typo",lib:"Typographie",choix:C2_TYPO.map(x=>x.n),val:0},
+    {id:"texte",lib:"Couleur du texte courant",choix:C2_TEXTE.map(x=>x.n),val:0},
+    {id:"supports",lib:"Supports à décliner",min:6,max:30,pas:2,val:12,u:"supports"}],
+   [["Lisibilité","ia"],["Contraste","ib"],["Hiérarchie","ic"],["Budget","id"]],
+   (c,w,h,p)=>{
+     const r=calculIdentite(pas,p);
+     const x0=w*0.32, lg=w*0.48;
+     [["lisibilité à 10 mm",r.lisible,r.LIS,1.1],
+      ["contraste du texte",r.contraste,r.CONT,14],
+      ["hiérarchie",r.hier,0.9,1.2]].forEach((q,i)=>{
+       const y=h*0.18+i*h*0.20;
+       const bon=q[1]>=q[2];
+       c.fillStyle=CB();c.globalAlpha=.28;c.fillRect(x0,y,lg,16);c.globalAlpha=1;
+       c.fillStyle=bon?C2C.vert:C2C.rouge;
+       c.fillRect(x0,y,lg*Math.min(1,q[1]/q[3]),16);
+       const xc=x0+lg*(q[2]/q[3]);
+       c.strokeStyle=CI();c.lineWidth=1.4;c.setLineDash([3,3]);
+       c.beginPath();c.moveTo(xc,y-6);c.lineTo(xc,y+22);c.stroke();c.setLineDash([]);
+       txt(c,q[0],w*0.03,y+8,10.5,CI(),"left");
+       mono(c,nb(q[1],2),x0+lg+5,y+8,10.5,bon?C2C.vert:C2C.rouge,"left");
+     });
+     const y2=h*0.82, ech=Math.max(r.cout,r.BUDGET)*1.2;
+     c.fillStyle=CB();c.globalAlpha=.28;c.fillRect(x0,y2,lg,18);c.globalAlpha=1;
+     c.fillStyle=r.cout<=r.BUDGET?C2C.vert:C2C.rouge;
+     c.fillRect(x0,y2,lg*Math.min(1,r.cout/ech),18);
+     txt(c,"identité + "+r.supports+" supports",w*0.03,y2+9,10.5,CI(),"left");
+     mono(c,nb(r.cout,0)+" €",x0+lg+5,y2+9,10.5,r.cout<=r.BUDGET?C2C.vert:C2C.rouge,"left");
+   },
+   (p)=>{
+     const r=calculIdentite(pas,p);
+     const ok=r.lisible>=r.LIS&&r.contraste>=r.CONT&&r.hier>=0.9&&r.cout<=r.BUDGET;
+     const L=[["ia",nb(r.lisible,2),"",r.lisible>=r.LIS?"ok":"ko"],
+              ["ib",nb(r.contraste,1),"",r.contraste>=r.CONT?"ok":"ko"],
+              ["ic",nb(r.hier,2),"",r.hier>=0.9?"ok":"ko"],
+              ["id",nb(r.cout,0),"€",r.cout<=r.BUDGET?"ok":"ko"]];
+     if(r.troisFamilles) return {ok:false,lectures:L,
+       pourquoi:"Trois familles de caractères : la hiérarchie que la typographie devait porter se dissout.",
+       indice:"Deux familles suffisent presque toujours. Les niveaux se font au corps, à la graisse et à l'espace — pas en changeant de caractère à chaque titre."};
+     if(r.degradeEnQuadri) return {ok:false,lectures:L,
+       pourquoi:"Un dégradé dans l'identité : il ne se reproduit ni en quadri, ni en broderie, ni en tampon, ni en une seule couleur.",
+       indice:"Une identité doit survivre au support le plus pauvre. Ce qui ne se dessine pas en noir sur un fax ne tiendra pas dix ans."};
+     if(r.lisible<r.LIS) return {ok:false,lectures:L,
+       pourquoi:"Le logo se bouche à dix millimètres : lisibilité "+nb(r.lisible,2)+" pour "+nb(r.LIS,2)+" exigé.",
+       indice:"Le test le plus dur se fait le premier jour : en noir, tout petit. Un logo qui ne passe pas là ne passera ni le tampon, ni la broderie, ni la favicon."};
+     if(r.contraste<r.CONT) return {ok:false,lectures:L,
+       pourquoi:"Contraste du texte courant de "+nb(r.contraste,1)+" pour "+nb(r.CONT,1)+" exigé.",
+       indice:"Le gris clair fait joli sur l'écran du studio et disparaît sur celui du lecteur. Sous 4,5, un texte courant devient pénible pour beaucoup de gens — c'est mesurable, ce n'est pas un avis."};
+     if(r.cout>r.BUDGET) return {ok:false,lectures:L,
+       pourquoi:nb(r.cout,0)+" € pour "+nb(r.BUDGET,0)+" € budgétés.",
+       indice:"Chaque couleur ajoutée renchérit CHAQUE déclinaison : à vingt supports, une palette à trois couleurs coûte presque le double d'une palette à une. C'est là que se juge un système, pas sur le logo."};
+     return {ok:true,lectures:L,
+       pourquoi:r.lo.n+", "+r.co.n+", "+r.ty.n+" : lisible à 10 mm, contraste "+nb(r.contraste,1)+
+       ", "+r.supports+" supports pour "+nb(r.cout,0)+
+       " €. Le système tient sur le vingtième support — c'est le seul test qui compte."};
+   },mi,pi,"identite");
+}
+
+/* ---------------- 2. Le rétroplanning (ERPC) ---------------- */
+const C2_IMPR=[{n:"numérique",j:3,cout:2400},{n:"offset",j:8,cout:1500}];
+const C2_FACON=[{n:"piqué à cheval",j:1,cout:270},{n:"dos carré collé",j:3,cout:960}];
+const C2_LIVR=[{n:"livraison standard",j:4,cout:180},{n:"livraison express",j:1,cout:820}];
+const C2_VALID=[{n:"un aller-retour",j:3,risque:1},{n:"deux allers-retours",j:6,risque:0},
+                {n:"trois allers-retours",j:10,risque:0}];
+function calculRetro(pas,p){
+  const FENETRE=(pas&&pas.fenetre)||22, BUDGET=(pas&&pas.budget)||4200;
+  const im=C2_IMPR[p.impression], fa=C2_FACON[p.faconnage], li=C2_LIVR[p.livraison], va=C2_VALID[p.validation];
+  const marge=[0,2,5][p.marge];
+  const jours=im.j+fa.j+li.j+va.j+marge+2;      /* 2 jours de BAT incompressibles */
+  const cout=im.cout+fa.cout+li.cout+(p.marge===2?0:0);
+  return {FENETRE,BUDGET,im,fa,li,va,marge,jours,cout,
+          margeNulle:p.marge===0, unSeulAllerRetour:p.validation===0};
+}
+function rendreRetro(hote,mi,pi,pas){
+  const FENETRE=(pas&&pas.fenetre)||22, BUDGET=(pas&&pas.budget)||4200;
+  bancATI(hote,"Le rétroplanning — remonter depuis la diffusion",
+   "La date de diffusion ne bouge pas. On remonte : livraison, impression, façonnage, bon à tirer, corrections. Le seul délai qu'on ne comprime pas est celui de la validation du client — c'est donc lui qu'on protège d'une marge, jamais l'impression, dont le carnet est connu. Un seul aller-retour paraît rapide et se paie en reprise après le BAT.",
+   "Boucler en <b>"+nb(FENETRE,0)+" jours</b> au plus, avec une marge de sécurité réelle, pour <b>"+
+   nb(BUDGET,0)+" €</b>.",
+   [{id:"impression",lib:"Impression",choix:C2_IMPR.map(x=>x.n),val:0},
+    {id:"faconnage",lib:"Façonnage",choix:C2_FACON.map(x=>x.n),val:0},
+    {id:"livraison",lib:"Livraison",choix:C2_LIVR.map(x=>x.n),val:0},
+    {id:"validation",lib:"Validation client",choix:C2_VALID.map(x=>x.n),val:0},
+    {id:"marge",lib:"Marge de sécurité",choix:["aucune","2 jours","5 jours"],val:0}],
+   [["Délai total","ra"],["Marge","rb"],["Coût","rc"],["Verdict","rd"]],
+   (c,w,h,p)=>{
+     const r=calculRetro(pas,p);
+     const x0=w*0.06, lg=w*0.88, y=h*0.34;
+     const etapes=[["corrections",r.va.j,C2C.or],["BAT",2,C2C.gris],
+                   ["impression",r.im.j,C2C.bleu],["façonnage",r.fa.j,C2C.vert],
+                   ["livraison",r.li.j,C2C.gris],["marge",r.marge,C2C.rouge]];
+     const tot=Math.max(r.jours,r.FENETRE);
+     let x=x0;
+     etapes.forEach(([nom,j,col])=>{
+       if(j<=0) return;
+       const L=lg*j/tot;
+       c.fillStyle=col;c.globalAlpha=.62;c.fillRect(x,y,L-2,26);c.globalAlpha=1;
+       if(L>52) txt(c,nom,x+L/2,y+13,9.5,CI(),"center");
+       x+=L;
+     });
+     const xf=x0+lg*r.FENETRE/tot;
+     c.strokeStyle=CI();c.lineWidth=1.8;c.setLineDash([4,3]);
+     c.beginPath();c.moveTo(xf,y-12);c.lineTo(xf,y+40);c.stroke();c.setLineDash([]);
+     plaque(c,"diffusion",xf,y-20,10.5,CI(),"center");
+     mono(c,nb(r.jours,0)+" jours",w*0.5,h*0.72,14,r.jours<=r.FENETRE?C2C.vert:C2C.rouge,"center");
+     plaque(c,nb(r.cout,0)+" € de fabrication",w*0.5,h*0.90,11,
+            r.cout<=r.BUDGET?C2C.vert:C2C.rouge,"center");
+   },
+   (p)=>{
+     const r=calculRetro(pas,p);
+     const ok=r.jours<=r.FENETRE&&r.cout<=r.BUDGET&&!r.margeNulle&&!r.unSeulAllerRetour;
+     const L=[["ra",nb(r.jours,0),"j",r.jours<=r.FENETRE?"ok":"ko"],
+              ["rb",nb(r.marge,0),"j",r.marge>0?"ok":"ko"],
+              ["rc",nb(r.cout,0),"€",r.cout<=r.BUDGET?"ok":"ko"],
+              ["rd",ok?"tenable":"à revoir","",ok?"ok":"ko"]];
+     if(r.margeNulle) return {ok:false,lectures:L,
+       pourquoi:"Aucune marge : le moindre retard de validation décale la diffusion.",
+       indice:"La marge se met là où l'on ne maîtrise rien — la validation du client — et pas sur l'impression, dont on connaît le carnet. Un planning sans marge n'est pas un planning, c'est un vœu."};
+     if(r.unSeulAllerRetour) return {ok:false,lectures:L,
+       pourquoi:"Un seul aller-retour de validation : ce qui n'est pas vu avant le BAT se paiera en retirage.",
+       indice:"Deux allers-retours sont le minimum honnête : un pour le fond, un pour la forme. Les gagner sur le planning revient à les perdre après le tirage."};
+     if(r.jours>r.FENETRE) return {ok:false,lectures:L,
+       pourquoi:nb(r.jours,0)+" jours pour une fenêtre de "+nb(r.FENETRE,0)+".",
+       indice:"L'offset prend cinq jours de plus que le numérique, le dos carré collé deux de plus que le piqué. Regarde la barre la plus longue avant de rogner sur la validation — c'est la seule qu'il ne faut pas toucher."};
+     if(r.cout>r.BUDGET) return {ok:false,lectures:L,
+       pourquoi:nb(r.cout,0)+" € pour "+nb(r.BUDGET,0)+" € budgétés.",
+       indice:"L'express coûte quatre fois la livraison normale pour trois jours gagnés. C'est un rattrapage, pas un plan : si on l'inscrit au départ, il ne reste plus rien pour le jour où ça dérape."};
+     return {ok:true,lectures:L,
+       pourquoi:r.im.n+", "+r.fa.n+", "+r.va.n+" et "+nb(r.marge,0)+
+       " jours de marge : bouclé en "+nb(r.jours,0)+" jours pour "+nb(r.cout,0)+
+       " €. La marge est là où le délai ne dépend pas de nous."};
+   },mi,pi,"retroplanning");
+}
+
+/* ---------------- 3. La post-production (Audiovisuel) ---------------- */
+const C2_CODEC=[{n:"tournage inter-images (léger)",go:1.0,montage:1.6},
+                {n:"tournage intra-image (lourd)",go:3.2,montage:1.0}];
+const C2_MACHINE=[{n:"portable de montage",k:1.45,cout:0},
+                  {n:"station de montage",k:1.0,cout:1800}];
+const C2_SAUVE=[{n:"une copie",copies:1,cout:0},
+                {n:"deux copies",copies:2,cout:0},
+                {n:"deux copies + une hors site",copies:3,cout:420}];
+function calculPost(pas,p){
+  const JMAX=(pas&&pas.jours)||11, TOMAX=(pas&&pas.stockage)||14, BUDGET=(pas&&pas.budget)||3900;
+  const co=C2_CODEC[p.codec], ma=C2_MACHINE[p.machine], sa=C2_SAUVE[p.sauvegarde];
+  const heures=p.rushes;
+  const go=heures*co.go*95;                      /* Go de rushes */
+  const to=go*sa.copies/1024;
+  /* les proxys : une passe d'encodage, puis un montage fluide même sur portable */
+  const passeProxy=p.proxy===1? heures*0.06 : 0;
+  const jours=heures*0.42*co.montage*(p.proxy===1? 1.0 : ma.k)+passeProxy;
+  const cout=ma.cout+sa.cout+to*58+(p.proxy===1? heures*12 : 0);
+  return {JMAX,TOMAX,BUDGET,co,ma,sa,heures,go,to,jours,cout,
+          uneSeuleCopie:p.sauvegarde===0};
+}
+function rendrePost(hote,mi,pi,pas){
+  const JMAX=(pas&&pas.jours)||11, TOMAX=(pas&&pas.stockage)||14, BUDGET=(pas&&pas.budget)||3900;
+  bancATI(hote,"La post-production — ce que le tournage a décidé",
+   "Le codec choisi à la prise de vue commande le montage : l'intra-image pèse trois fois plus et se monte sans recalcul ; l'inter-image tient dans un disque et fait ramer la machine. Les proxys coûtent une passe d'encodage et rendent le montage fluide même sur un portable. Et les rushes se sauvegardent en double, toujours.",
+   "Monter en <b>"+nb(JMAX,0)+" jours</b> au plus, sous <b>"+nb(TOMAX,0)+
+   " To</b> de stockage, pour <b>"+nb(BUDGET,0)+" €</b>.",
+   [{id:"rushes",lib:"Rushes à monter",min:8,max:40,pas:4,val:20,u:"heures"},
+    {id:"codec",lib:"Codec de tournage",choix:C2_CODEC.map(x=>x.n),val:0},
+    {id:"proxy",lib:"Proxys de montage",choix:["non","oui"],val:0},
+    {id:"machine",lib:"Machine",choix:C2_MACHINE.map(x=>x.n),val:0},
+    {id:"sauvegarde",lib:"Sauvegarde",choix:C2_SAUVE.map(x=>x.n),val:0}],
+   [["Volume","pa"],["Stockage total","pb"],["Durée de montage","pc"],["Coût","pd"]],
+   (c,w,h,p)=>{
+     const r=calculPost(pas,p);
+     const x0=w*0.34, lg=w*0.46;
+     [["stockage",r.to,r.TOMAX,"To"],["montage",r.jours,r.JMAX,"j"],
+      ["coût",r.cout,r.BUDGET,"€"]].forEach((q,i)=>{
+       const y=h*0.22+i*h*0.22;
+       const ech=Math.max(q[1],q[2])*1.25;
+       c.fillStyle=CB();c.globalAlpha=.28;c.fillRect(x0,y,lg,18);c.globalAlpha=1;
+       c.fillStyle=q[1]<=q[2]?C2C.vert:C2C.rouge;
+       c.fillRect(x0,y,lg*Math.min(1,q[1]/ech),18);
+       const xc=x0+lg*(q[2]/ech);
+       c.strokeStyle=CI();c.lineWidth=1.4;c.setLineDash([3,3]);
+       c.beginPath();c.moveTo(xc,y-7);c.lineTo(xc,y+25);c.stroke();c.setLineDash([]);
+       txt(c,q[0],w*0.03,y+9,11,CI(),"left",true);
+       mono(c,nb(q[1],q[3]==="€"?0:1)+" "+q[3],x0+lg+5,y+9,10.5,
+            q[1]<=q[2]?C2C.vert:C2C.rouge,"left");
+     });
+     plaque(c,nb(r.heures,0)+" h de rushes  ·  "+nb(r.go,0)+" Go × "+r.sa.copies,
+            w*0.5,h*0.92,11,CI(),"center");
+   },
+   (p)=>{
+     const r=calculPost(pas,p);
+     const ok=r.to<=r.TOMAX&&r.jours<=r.JMAX&&r.cout<=r.BUDGET&&!r.uneSeuleCopie;
+     const L=[["pa",nb(r.go,0),"Go"],["pb",nb(r.to,1),"To",r.to<=r.TOMAX?"ok":"ko"],
+              ["pc",nb(r.jours,1),"j",r.jours<=r.JMAX?"ok":"ko"],
+              ["pd",nb(r.cout,0),"€",r.cout<=r.BUDGET?"ok":"ko"]];
+     if(r.uneSeuleCopie) return {ok:false,lectures:L,
+       pourquoi:"Une seule copie des rushes : le jour où ce disque tombe, le tournage est perdu.",
+       indice:"Deux copies sur deux supports distincts, et la troisième hors site quand le tournage ne se refait pas. Le stockage est un poste de budget, pas une variable d'ajustement."};
+     if(r.to>r.TOMAX) return {ok:false,lectures:L,
+       pourquoi:nb(r.to,1)+" To à stocker pour "+nb(r.TOMAX,0)+" disponibles.",
+       indice:"L'intra-image pèse trois fois l'inter-image, et chaque copie multiplie le total. C'est le choix du TOURNAGE qui décide ici — au montage, il est déjà trop tard."};
+     if(r.jours>r.JMAX) return {ok:false,lectures:L,
+       pourquoi:nb(r.jours,1)+" jours de montage pour "+nb(r.JMAX,0)+" prévus.",
+       indice:"Un codec inter-image se recalcule à chaque lecture : sur un portable, le montage traîne. Les proxys coûtent une passe d'encodage et rendent la machine indifférente au codec d'origine."};
+     if(r.cout>r.BUDGET) return {ok:false,lectures:L,
+       pourquoi:nb(r.cout,0)+" € pour "+nb(r.BUDGET,0)+" € budgétés.",
+       indice:"Le stockage se paie au téraoctet et par copie : alléger les rushes à la prise de vue coûte moins cher que tout le reste réuni."};
+     return {ok:true,lectures:L,
+       pourquoi:nb(r.heures,0)+" h en "+r.co.n+(p.proxy===1?" avec proxys":"")+" : "+
+       nb(r.to,1)+" To sauvegardés en "+r.sa.copies+" copies, monté en "+nb(r.jours,1)+" jours pour "+
+       nb(r.cout,0)+" €. Ce qui a été décidé au tournage se paie ou se gagne ici."};
+   },mi,pi,"postproduction");
+}
+
 /* ---- bancs-di.js.txt ---- */
 /* ============================================================
    LES BANCS PRATIQUES DU BTS DIÉTÉTIQUE
@@ -37549,6 +37807,265 @@ function rendreBoucle(hote,mi,pi,pas){
        pourquoi:"Étendue "+IN_ECH[p.echelle].n+" (± "+nb(r.err,2)+" % au point), vanne Kv "+r.kv+
        " ouverte à "+nb(r.ouvN*100,0)+" %, cascade sur le débit, repli ouvert. Les quatre décisions tiennent ensemble : aucune ne se règle seule. Reste à amortir la mesure de débit de quelques secondes — la boucle interne est rapide, elle porterait le bruit droit à la vanne."};
    },mi,pi,"instrumenter");
+}
+
+/* ---- bancs-ind2.js.txt ---- */
+/* ============================================================
+   LES SECONDS BANCS DU GROUPE INDUSTRIEL
+   CRSA  : sécuriser la machine — la sécurité se paie en argent
+           ET en cadence ; le bon niveau dépend de la fréquence
+           d'accès, pas du catalogue du fournisseur.
+   CPI   : répartir les tolérances — serrer coûte cher, et la
+           chaîne additionne ce que chaque cote laisse passer.
+   CIRA  : la boucle de sécurité — un capteur unique et un test
+           annuel ne font pas un SIL 2, quel que soit le prix.
+   ============================================================ */
+const I2C={bleu:"#3f6fa8", vert:"#3f8c66", rouge:"#c0603f", or:"#c2963c", gris:"#8a8f99"};
+
+/* ---------------- 1. Sécuriser la machine (CRSA) ---------------- */
+const I2_PROT=[{n:"protecteur fixe boulonné",niv:2,cout:2500,perte:0.30},
+               {n:"protecteur mobile interverrouillé",niv:3,cout:6800,perte:0.10},
+               {n:"barrière immatérielle",niv:2,cout:14500,perte:0.02}];
+const I2_ACCES=[{n:"1 accès par heure",k:0.35},{n:"8 accès par heure",k:1},{n:"30 accès par heure",k:2.4}];
+function calculSecuMachine(pas,p){
+  const PLREQ=(pas&&pas.niveau)||4, CADMIN=(pas&&pas.cadence)||42, BUDGET=(pas&&pas.budget)||24000;
+  const CADBASE=58;
+  const pr=I2_PROT[p.protecteur], ac=I2_ACCES[p.acces];
+  /* le niveau atteint : l'architecture compte autant que l'organe */
+  let niveau=pr.niv+(p.redondance===1?1:0)+(p.arret===1?0.5:0)+(p.consignation===1?0.5:0);
+  const cout=pr.cout+(p.redondance===1?5200:0)+(p.arret===1?1800:0)+(p.consignation===1?900:0);
+  /* la cadence : chaque accès paie la perte du protecteur */
+  const cadence=CADBASE*(1-pr.perte*ac.k*0.42);
+  return {PLREQ,CADMIN,BUDGET,pr,ac,niveau,cout,cadence,
+          barriereSansRedondance:p.protecteur===2&&p.redondance===0,
+          sansConsignation:p.consignation===0};
+}
+function rendreSecuMachine(hote,mi,pi,pas){
+  const PLREQ=(pas&&pas.niveau)||4, CADMIN=(pas&&pas.cadence)||42, BUDGET=(pas&&pas.budget)||24000;
+  bancATI(hote,"Sécuriser la machine — sans arrêter la production",
+   "Une zone dangereuse où l'opérateur doit entrer pour charger. Le protecteur fixe est le moins cher et le plus sûr — tant qu'on ne l'ouvre pas : à trente accès par heure, il est démonté au bout d'une semaine. La barrière immatérielle ne coûte rien en cadence et ne suffit pas seule. Le niveau exigé se lit sur la gravité et la fréquence d'exposition, pas sur le catalogue.",
+   "Atteindre le niveau <b>"+nb(PLREQ,1)+"</b>, garder au moins <b>"+nb(CADMIN,0)+
+   " pièces/h</b>, pour <b>"+nb(BUDGET,0)+" €</b> au plus.",
+   [{id:"protecteur",lib:"Protection",choix:I2_PROT.map(x=>x.n),val:0},
+    {id:"acces",lib:"Fréquence d'accès",choix:I2_ACCES.map(x=>x.n),val:1},
+    {id:"redondance",lib:"Architecture",choix:["une voie","deux voies + autotest (5 200 €)"],val:0},
+    {id:"arret",lib:"Arrêt d'urgence",choix:["arrêt simple","AU + coupure de puissance (1 800 €)"],val:0},
+    {id:"consignation",lib:"Consignation",choix:["procédure écrite","dispositif de condamnation (900 €)"],val:0}],
+   [["Niveau atteint","xa"],["Cadence","xb"],["Coût","xc"],["Verdict","xd"]],
+   (c,w,h,p)=>{
+     const r=calculSecuMachine(pas,p);
+     const x0=w*0.32, lg=w*0.48;
+     [["niveau",r.niveau,r.PLREQ,5],["cadence",r.cadence,r.CADMIN,70],
+      ["coût",r.cout,r.BUDGET,r.BUDGET*1.4]].forEach((q,i)=>{
+       const y=h*0.20+i*h*0.22;
+       const bon=i===2? q[1]<=q[2] : q[1]>=q[2];
+       c.fillStyle=CB();c.globalAlpha=.28;c.fillRect(x0,y,lg,18);c.globalAlpha=1;
+       c.fillStyle=bon?I2C.vert:I2C.rouge;
+       c.fillRect(x0,y,lg*Math.min(1,q[1]/q[3]),18);
+       const xc=x0+lg*(q[2]/q[3]);
+       c.strokeStyle=CI();c.lineWidth=1.4;c.setLineDash([3,3]);
+       c.beginPath();c.moveTo(xc,y-7);c.lineTo(xc,y+25);c.stroke();c.setLineDash([]);
+       txt(c,q[0],w*0.03,y+9,11,CI(),"left",true);
+       mono(c,i===2? nb(q[1],0)+" €" : nb(q[1],1),x0+lg+5,y+9,10.5,bon?I2C.vert:I2C.rouge,"left");
+     });
+     plaque(c,r.pr.n+"  ·  "+r.ac.n,w*0.5,h*0.92,11,CI(),"center");
+   },
+   (p)=>{
+     const r=calculSecuMachine(pas,p);
+     const L=[["xa",nb(r.niveau,1),"",r.niveau>=r.PLREQ?"ok":"ko"],
+              ["xb",nb(r.cadence,1),"p/h",r.cadence>=r.CADMIN?"ok":"ko"],
+              ["xc",nb(r.cout,0),"€",r.cout<=r.BUDGET?"ok":"ko"],
+              ["xd",(r.niveau>=r.PLREQ&&r.cadence>=r.CADMIN&&r.cout<=r.BUDGET)?"conforme":"à revoir","",
+               (r.niveau>=r.PLREQ&&r.cadence>=r.CADMIN&&r.cout<=r.BUDGET)?"ok":"ko"]];
+     if(r.sansConsignation) return {ok:false,lectures:L,
+       pourquoi:"Consignation par procédure écrite seule : rien n'empêche un collègue de remettre en marche pendant l'intervention.",
+       indice:"Un dispositif de condamnation — un cadenas, une clé unique — vaut toutes les procédures : il rend le redémarrage matériellement impossible tant que l'intervenant n'a pas repris sa clé."};
+     if(r.barriereSansRedondance) return {ok:false,lectures:L,
+       pourquoi:"Barrière immatérielle sur une seule voie, sans autotest : une cellule aveuglée ne se signale pas, et la zone reste ouverte.",
+       indice:"Un protecteur matériel se voit quand il casse ; un capteur optique, non. C'est pour cela qu'il demande deux voies et un autotest — sans quoi il ne vaut pas mieux qu'un protecteur fixe, pour six fois le prix."};
+     if(r.niveau<r.PLREQ) return {ok:false,lectures:L,
+       pourquoi:"Niveau atteint "+nb(r.niveau,1)+" pour "+nb(r.PLREQ,1)+" exigé.",
+       indice:"Le niveau ne vient pas du seul organe : l'architecture (deux voies, autotest) et la coupure de puissance en apportent autant qu'un protecteur plus cher."};
+     if(r.cadence<r.CADMIN) return {ok:false,lectures:L,
+       pourquoi:"La production tombe à "+nb(r.cadence,1)+" pièces/h pour "+nb(r.CADMIN,0)+" demandées.",
+       indice:"Un protecteur qu'on ouvre trente fois par heure coûte une fortune en cadence — et finit démonté. Plus l'accès est fréquent, plus il faut une protection qui ne se démonte pas : mobile interverrouillée, ou immatérielle."};
+     if(r.cout>r.BUDGET) return {ok:false,lectures:L,
+       pourquoi:nb(r.cout,0)+" € pour "+nb(r.BUDGET,0)+" € budgétés.",
+       indice:"La barrière immatérielle est le poste le plus lourd. À faible fréquence d'accès, un protecteur mobile interverrouillé atteint le même niveau pour moitié moins."};
+     return {ok:true,lectures:L,
+       pourquoi:r.pr.n+" en "+(p.redondance===1?"deux voies":"une voie")+" : niveau "+nb(r.niveau,1)+
+       ", "+nb(r.cadence,1)+" pièces/h pour "+nb(r.cout,0)+
+       " €. La sécurité tient parce qu'elle n'oblige personne à la contourner."};
+   },mi,pi,"secumachine");
+}
+
+/* ---------------- 2. Répartir les tolérances (CPI) ---------------- */
+const I2_CLASSE=[{n:"large ± 0,12",it:0.24,cout:2},
+                 {n:"moyenne ± 0,05",it:0.10,cout:5},
+                 {n:"serrée ± 0,02",it:0.04,cout:9},
+                 {n:"rectifiée ± 0,008",it:0.016,cout:16}];
+function calculCotation(pas,p){
+  const JMAX=(pas&&pas.jeu)||0.18, SERIE=(pas&&pas.serie)||8000, BUDGET=(pas&&pas.budget)||44;
+  const cotes=[p.c1,p.c2,p.c3].map(i=>I2_CLASSE[i]);
+  let it=cotes.reduce((s,x)=>s+x.it,0);
+  let cout=cotes.reduce((s,x)=>s+x.cout,0);
+  /* l'appairage : on trie les pièces et on assemble par groupes.
+     Il divise l'intervalle par deux et coûte du tri, à chaque pièce. */
+  if(p.appairage===1){ it*=0.5; cout+=8; }
+  /* le jeu mini doit rester positif : c'est le montage */
+  const jeuMini=0.30-it/2;
+  return {JMAX,SERIE,BUDGET,cotes,it,cout,jeuMini,
+          appairageEnSerie:p.appairage===1&&SERIE>5000};
+}
+function rendreCotation(hote,mi,pi,pas){
+  const JMAX=(pas&&pas.jeu)||0.18, BUDGET=(pas&&pas.budget)||44;
+  bancATI(hote,"Répartir les tolérances — trois cotes, un seul jeu",
+   "Trois cotes en chaîne commandent le même jeu fonctionnel. Les intervalles s'ADDITIONNENT : c'est leur somme qui doit tenir, pas chacune prise à part. Serrer coûte cher et ne rapporte que sur la cote où l'on serre. L'appairage divise la dispersion par deux et impose de trier chaque pièce — impensable en grande série.",
+   "Somme des intervalles sous <b>"+nb(JMAX,2)+" mm</b>, jeu minimal encore positif, pour <b>"+
+   nb(BUDGET,0)+" €</b> d'usinage au plus.",
+   [{id:"c1",lib:"Cote 1 — corps",choix:I2_CLASSE.map(x=>x.n),val:0},
+    {id:"c2",lib:"Cote 2 — entretoise",choix:I2_CLASSE.map(x=>x.n),val:0},
+    {id:"c3",lib:"Cote 3 — arbre",choix:I2_CLASSE.map(x=>x.n),val:0},
+    {id:"appairage",lib:"Appairage au montage (+ 8 €)",choix:["non","oui"],val:0}],
+   [["Somme des IT","ya"],["Jeu minimal","yb"],["Coût usinage","yc"],["Verdict","yd"]],
+   (c,w,h,p)=>{
+     const r=calculCotation(pas,p);
+     const x0=w*0.10, lg=w*0.80, y=h*0.28;
+     /* la chaîne, cote après cote */
+     let x=x0;
+     const cols=[I2C.gris,I2C.or,I2C.bleu];
+     r.cotes.forEach((q,i)=>{
+       const L=lg*q.it/Math.max(0.02,r.cotes.reduce((s,z)=>s+z.it,0));
+       c.fillStyle=cols[i];c.globalAlpha=.60;c.fillRect(x,y,L-2,24);c.globalAlpha=1;
+       if(L>44) mono(c,nb(q.it,3),x+L/2,y+12,10,CI(),"center");
+       x+=L;
+     });
+     c.strokeStyle=CB();c.lineWidth=1.3;c.strokeRect(x0,y,lg,24);
+     /* la somme contre la limite */
+     const y2=h*0.62, ech=Math.max(r.it,r.JMAX)*1.25;
+     c.fillStyle=CB();c.globalAlpha=.28;c.fillRect(x0,y2,lg,20);c.globalAlpha=1;
+     c.fillStyle=r.it<=r.JMAX?I2C.vert:I2C.rouge;
+     c.fillRect(x0,y2,lg*Math.min(1,r.it/ech),20);
+     const xc=x0+lg*(r.JMAX/ech);
+     c.strokeStyle=CI();c.lineWidth=1.6;c.setLineDash([4,3]);
+     c.beginPath();c.moveTo(xc,y2-8);c.lineTo(xc,y2+28);c.stroke();c.setLineDash([]);
+     txt(c,"somme des intervalles",x0,y2-12,10.5,CM(),"left");
+     mono(c,nb(r.it,3)+" mm",x0+lg,y2-12,11,r.it<=r.JMAX?I2C.vert:I2C.rouge,"right");
+     plaque(c,nb(r.cout,0)+" € par pièce",w*0.5,h*0.92,11.5,
+            r.cout<=r.BUDGET?I2C.vert:I2C.rouge,"center");
+   },
+   (p)=>{
+     const r=calculCotation(pas,p);
+     const L=[["ya",nb(r.it,3),"mm",r.it<=r.JMAX?"ok":"ko"],
+              ["yb",nb(r.jeuMini,3),"mm",r.jeuMini>0?"ok":"ko"],
+              ["yc",nb(r.cout,0),"€",r.cout<=r.BUDGET?"ok":"ko"],
+              ["yd",(r.it<=r.JMAX&&r.cout<=r.BUDGET&&r.jeuMini>0)?"tenable":"à revoir","",
+               (r.it<=r.JMAX&&r.cout<=r.BUDGET&&r.jeuMini>0)?"ok":"ko"]];
+     if(r.appairageEnSerie) return {ok:false,lectures:L,
+       pourquoi:"Appairage sur une série de "+nb(r.SERIE,0)+" pièces : il faut mesurer et classer chaque pièce, puis ne plus jamais les mélanger.",
+       indice:"L'appairage se réserve aux petites séries et aux rechanges impossibles. En série, il transforme une pièce interchangeable en pièce unique — et le service après-vente le paie pendant dix ans."};
+     if(r.jeuMini<=0) return {ok:false,lectures:L,
+       pourquoi:"Le jeu minimal tombe à "+nb(r.jeuMini,3)+" mm : au pire cumul, la pièce ne se monte pas.",
+       indice:"Un jeu fonctionnel se juge sur les DEUX extrêmes. La somme des intervalles mange le jeu nominal : au-delà de 0,60 mm cumulés, il n'y a plus de montage possible."};
+     if(r.it>r.JMAX) return {ok:false,lectures:L,
+       pourquoi:"Somme des intervalles "+nb(r.it,3)+" mm pour "+nb(r.JMAX,2)+" admis.",
+       indice:"Inutile de tout serrer : resserrer UNE cote large rapporte plus que resserrer une cote déjà fine. Regarde la barre la plus longue avant de toucher au reste."};
+     if(r.cout>r.BUDGET) return {ok:false,lectures:L,
+       pourquoi:nb(r.cout,0)+" € d'usinage par pièce pour "+nb(r.BUDGET,0)+" € possibles.",
+       indice:"La rectification coûte treize fois l'usinage large. Elle ne se justifie que sur la cote qui commande vraiment le jeu — presque jamais sur les trois."};
+     return {ok:true,lectures:L,
+       pourquoi:"Somme des intervalles "+nb(r.it,3)+" mm, jeu mini "+nb(r.jeuMini,3)+" mm, "+
+       nb(r.cout,0)+" € la pièce. On a serré là où ça compte, et laissé filer le reste — c'est tout le métier de la cotation."};
+   },mi,pi,"cotation");
+}
+
+/* ---------------- 3. La boucle de sécurité (CIRA) ---------------- */
+const I2_CAPT=[{n:"1 transmetteur",pfd:0.020,spur:0.10,cout:2400},
+               {n:"2 transmetteurs 1oo2",pfd:0.004,spur:0.20,cout:4900},
+               {n:"3 transmetteurs 2oo3",pfd:0.005,spur:0.06,cout:8200}];
+const I2_VANNE=[{n:"vanne de procédé",pfd:0.050,cout:0},
+                {n:"vanne dédiée",pfd:0.022,cout:6500},
+                {n:"vanne dédiée + test partiel",pfd:0.009,cout:9800}];
+const I2_TEST=[{n:"essai annuel",k:1,cout:1200},
+               {n:"essai semestriel",k:0.55,cout:2400},
+               {n:"essai trimestriel",k:0.32,cout:4300}];
+function calculSil(pas,p){
+  const PFDMAX=(pas&&pas.pfd)||0.01, SPURMAX=(pas&&pas.spurious)||0.25, BUDGET=(pas&&pas.budget)||26500;
+  const ca=I2_CAPT[p.capteur], va=I2_VANNE[p.vanne], te=I2_TEST[p.test];
+  const auto=p.automate===1? {pfd:0.001,cout:7400} : {pfd:0.030,cout:0};
+  const pfd=(ca.pfd+va.pfd+auto.pfd)*te.k;
+  const spur=ca.spur+(p.automate===1?0.03:0.09);
+  const cout=ca.cout+va.cout+te.cout+auto.cout;
+  return {PFDMAX,SPURMAX,BUDGET,ca,va,te,auto,pfd,spur,cout,
+          automateProcede:p.automate===0, vanneProcede:p.vanne===0};
+}
+function rendreSil(hote,mi,pi,pas){
+  const PFDMAX=(pas&&pas.pfd)||0.01, SPURMAX=(pas&&pas.spurious)||0.25, BUDGET=(pas&&pas.budget)||26500;
+  bancATI(hote,"La boucle de sécurité — indépendante de la régulation",
+   "Une boucle qui met le procédé en sécurité quand la régulation a échoué. Sa probabilité de défaillance à la demande se calcule : capteur, automate et organe final s'ADDITIONNENT, et l'essai périodique divise le tout. Deux capteurs en 1oo2 divisent la défaillance et doublent les déclenchements intempestifs — un arrêt intempestif coûte cher et finit par faire ponter la sécurité.",
+   "Défaillance à la demande sous <b>"+nb(PFDMAX,3)+"</b>, déclenchements intempestifs sous <b>"+
+   nb(SPURMAX,2)+"</b> par an, pour <b>"+nb(BUDGET,0)+" €</b> au plus.",
+   [{id:"capteur",lib:"Capteurs",choix:I2_CAPT.map(x=>x.n),val:0},
+    {id:"vanne",lib:"Organe final",choix:I2_VANNE.map(x=>x.n),val:0},
+    {id:"test",lib:"Essai périodique",choix:I2_TEST.map(x=>x.n),val:0},
+    {id:"automate",lib:"Traitement",choix:["automate de procédé","automate de sécurité (7 400 €)"],val:0}],
+   [["PFD moyen","za"],["Intempestifs","zb"],["Coût","zc"],["Verdict","zd"]],
+   (c,w,h,p)=>{
+     const r=calculSil(pas,p);
+     const x0=w*0.06, lg=w*0.88, y=h*0.30;
+     /* la chaîne de sécurité : capteur → traitement → organe final */
+     const parts=[["capteur",r.ca.pfd,I2C.bleu],["traitement",r.auto.pfd,I2C.gris],
+                  ["organe final",r.va.pfd,I2C.or]];
+     const som=parts.reduce((s,q)=>s+q[1],0)||1;
+     let x=x0;
+     parts.forEach(([nom,v,col])=>{
+       const L=lg*v/som;
+       c.fillStyle=col;c.globalAlpha=.65;c.fillRect(x,y,L-2,22);c.globalAlpha=1;
+       if(L>78) txt(c,nom,x+L/2,y+11,10,CI(),"center");
+       x+=L;
+     });
+     c.strokeStyle=CB();c.lineWidth=1.3;c.strokeRect(x0,y,lg,22);
+     mono(c,"× "+nb(r.te.k,2)+" ("+r.te.n+")",x0+lg,y+38,10.5,CM(),"right");
+     /* le PFD contre la limite, en échelle logarithmique */
+     const y2=h*0.68;
+     const L2=(v)=>Math.max(0,Math.min(1,(Math.log10(v)+3)/2.2));
+     c.fillStyle=CB();c.globalAlpha=.28;c.fillRect(x0,y2,lg,20);c.globalAlpha=1;
+     c.fillStyle=r.pfd<=r.PFDMAX?I2C.vert:I2C.rouge;
+     c.fillRect(x0,y2,lg*L2(r.pfd),20);
+     const xc=x0+lg*L2(r.PFDMAX);
+     c.strokeStyle=CI();c.lineWidth=1.6;c.setLineDash([4,3]);
+     c.beginPath();c.moveTo(xc,y2-8);c.lineTo(xc,y2+28);c.stroke();c.setLineDash([]);
+     mono(c,"PFD "+r.pfd.toExponential(1),x0,y2-12,11,r.pfd<=r.PFDMAX?I2C.vert:I2C.rouge,"left");
+     plaque(c,nb(r.spur,2)+" arrêt intempestif/an  ·  "+nb(r.cout,0)+" €",w*0.5,h*0.93,11,
+            (r.spur<=r.SPURMAX&&r.cout<=r.BUDGET)?I2C.vert:I2C.rouge,"center");
+   },
+   (p)=>{
+     const r=calculSil(pas,p);
+     const ok=r.pfd<=r.PFDMAX&&r.spur<=r.SPURMAX&&r.cout<=r.BUDGET&&!r.automateProcede&&!r.vanneProcede;
+     const L=[["za",r.pfd.toExponential(1),"",r.pfd<=r.PFDMAX?"ok":"ko"],
+              ["zb",nb(r.spur,2),"/an",r.spur<=r.SPURMAX?"ok":"ko"],
+              ["zc",nb(r.cout,0),"€",r.cout<=r.BUDGET?"ok":"ko"],
+              ["zd",ok?"indépendante":"à revoir","",ok?"ok":"ko"]];
+     if(r.automateProcede) return {ok:false,lectures:L,
+       pourquoi:"La sécurité passe par l'automate de procédé : la même défaillance peut emporter la régulation ET la mise en sécurité.",
+       indice:"Une boucle de sécurité est indépendante par construction — capteurs, traitement et organe final séparés. Sinon ce n'est pas une seconde barrière, c'est la même barrière peinte en rouge."};
+     if(r.vanneProcede) return {ok:false,lectures:L,
+       pourquoi:"L'organe final est la vanne de régulation : elle est déjà sollicitée en permanence, et sa défaillance est justement le scénario redouté.",
+       indice:"L'organe qui met en sécurité ne doit pas être celui qui règle. Une vanne dédiée dort en position ouverte — d'où le test partiel, qui la fait bouger sans arrêter le procédé."};
+     if(r.pfd>r.PFDMAX) return {ok:false,lectures:L,
+       pourquoi:"Défaillance à la demande de "+r.pfd.toExponential(1)+" pour "+r.PFDMAX.toExponential(1)+" exigé.",
+       indice:"Les trois éléments s'additionnent : c'est le plus mauvais qui commande. Regarde la barre la plus longue — et rappelle-toi que l'essai périodique divise l'ensemble, sans rien remplacer."};
+     if(r.spur>r.SPURMAX) return {ok:false,lectures:L,
+       pourquoi:nb(r.spur,2)+" déclenchements intempestifs par an : la production s'arrête sans raison.",
+       indice:"Le 1oo2 divise la défaillance dangereuse et DOUBLE les arrêts pour rien. Le 2oo3 fait les deux à la fois — c'est ce qu'il coûte. Une sécurité qui arrête trop souvent finit pontée."};
+     if(r.cout>r.BUDGET) return {ok:false,lectures:L,
+       pourquoi:nb(r.cout,0)+" € pour "+nb(r.BUDGET,0)+" € budgétés.",
+       indice:"L'essai trimestriel coûte moins cher qu'un capteur de plus et divise la PFD par trois. C'est souvent le levier le moins cher — tant qu'on a quelqu'un pour le faire vraiment."};
+     return {ok:true,lectures:L,
+       pourquoi:r.ca.n+", "+r.va.n+", "+r.te.n+" sur automate de sécurité : PFD "+
+       r.pfd.toExponential(1)+", "+nb(r.spur,2)+" arrêt intempestif par an, "+nb(r.cout,0)+
+       " €. Indépendante de la régulation — c'est ce qui en fait une sécurité."};
+   },mi,pi,"sil");
 }
 
 /* ---- bancs-lab.js.txt ---- */
@@ -41131,7 +41648,9 @@ const GENRE={w:"cablage", s:"simu", z:"simu", f:"chaine", g:"auto", h:"ladder",
              /* seconds bancs du labo */ sy:"synthese", eo:"potabilisation",
              cu:"culture", va:"serie", ez:"planechantillon",
              /* Industrie */ li:"ligne", pc:"procede", bo:"instrumenter",
+             sm:"secumachine", kc:"cotation", xs:"sil",
              /* Création */ im:"imprime", tv:"tournage",
+             zi:"identite", zr:"retroplanning", zm:"postproduction",
              /* Beauté */   iu:"institut",
              /* Bâti */     ev:"enveloppe", so:"solive", ck:"cheminement",
              /* Agri */     jd:"jardin", vd:"vendange",
@@ -41186,7 +41705,11 @@ const NOM={cablage:"Câblage",simu:"Simulateur",chaine:"Chaîne fonctionnelle",
            culture:"Dénombrer", serie:"Valider la série", planechantillon:"Bâtir le plan",
            ligne:"Équilibrer une ligne", procede:"Choisir le procédé",
            instrumenter:"Instrumenter une boucle",
+           secumachine:"Sécuriser la machine", cotation:"Répartir les tolérances",
+           sil:"La boucle de sécurité",
            imprime:"Fabriquer l'imprimé", tournage:"Préparer le tournage",
+           identite:"Le système d'identité", retroplanning:"Le rétroplanning",
+           postproduction:"La post-production",
            institut:"Piloter l'institut",
            enveloppe:"Composer l'enveloppe", solive:"Dimensionner le plancher",
            cheminement:"Conduire le cheminement",
@@ -41200,7 +41723,9 @@ const RENDUS={/* le banc de la bioqualité */
               synthese:rendreSynthese, potabilisation:rendrePotable, culture:rendreCulture,
               serie:rendreSerie, planechantillon:rendrePlan,
               ligne:rendreLigne, procede:rendreProcede, instrumenter:rendreBoucle,
+              secumachine:rendreSecuMachine, cotation:rendreCotation, sil:rendreSil,
               imprime:rendreImprime, tournage:rendreTournage,
+              identite:rendreIdentite, retroplanning:rendreRetro, postproduction:rendrePost,
               institut:rendreInstitut,
               enveloppe:rendreEnveloppe, solive:rendreSolive, cheminement:rendreCheminement,
               jardin:rendreJardin, vendange:rendreVendange,
@@ -43541,8 +44066,9 @@ function theme(){
   try{localStorage.setItem(CLE+"-theme",r.dataset.theme);}catch(e){}
   requestAnimationFrame(()=>redessins.forEach(f=>f()));
 }
-try{const t=localStorage.getItem(CLE+"-theme");if(t)document.documentElement.dataset.theme=t;}catch(e){}
-$("#bascule-theme").addEventListener("click",theme);
+/* le site reste clair : la préférence enregistrée n'est plus relue */
+document.documentElement.dataset.theme="clair";
+/* pas de bascule de thème sur le site */
 /* Le volet du parcours : un interrupteur, et son état est retenu. */
 function poserRail(v){
   document.querySelector(".page").dataset.rail=v?"on":"off";
