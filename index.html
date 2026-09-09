@@ -15826,9 +15826,94 @@ Object.assign(GEN,{
  pas(p){return [{t:"Réponse.",op:p.c.b},
   {t:"Le rare et grave ne se traite pas par plus d'agents : il se traite par la conception — issues, cloisonnement, procédures, exercices. C'est là que le manager de sécurité gagne son salaire."}];}},
 
+
+"mz-malveillance":{t:"Coût d'un risque de malveillance",u:"€",tol:0.02,
+ rappel:"coût espéré = probabilité annuelle × conséquence",
+ tirer(){return {proba:R(2,60,2),perte:R(2000,400000,1000),reduction:R(20,85,5),cout:R(1000,60000,500)};},
+ enonce(p){return "Un risque de "+v(F(p.proba,0)+" %")+" par an, une perte de "+v(eur(p.perte,0))+
+  " s'il survient. Quel coût espéré annuel ?";},
+ rep(p){return p.proba/100*p.perte;},
+ pas(p){const e=p.proba/100*p.perte, gain=e*p.reduction/100;return [
+  {t:"Coût espéré.",op:F(p.proba,0)+" % × "+eur(p.perte,0)+" = "+eur(e,0)},
+  {t:"Une mesure qui réduit ce risque de "+F(p.reduction,0)+" % rapporte donc "+eur(gain,0)+" par an.",
+   op:eur(e,0)+" × "+F(p.reduction,0)+" % = "+eur(gain,0)},
+  {t:"Elle coûte "+eur(p.cout,0)+" : "+(gain>=p.cout? "elle se justifie" : "elle ne se justifie pas à ce niveau de risque")+
+   ". Une mesure de sûreté se compare toujours à ce qu'elle évite, jamais à ce qu'elle rassure."}];}},
+
+"mz-flux":{t:"Flux d'entrée à un contrôle",u:"personnes/h",tol:0.02,
+ rappel:"débit = postes × 3600 / temps de contrôle",
+ tirer(){return {postes:R(1,8,1),temps:R(4,40,1),attendus:R(200,4000,50),duree:R(0.5,4,0.5)};},
+ enonce(p){return v(F(p.postes,0)+" postes")+" de contrôle, "+v(F(p.temps,0)+" secondes")+
+  " par personne. Quel débit horaire ?";},
+ rep(p){return p.postes*3600/p.temps;},
+ pas(p){const d=p.postes*3600/p.temps, besoin=p.attendus/p.duree;return [
+  {t:"Débit d'un poste.",op:"3 600 ÷ "+F(p.temps,0)+" = "+F(3600/p.temps,0)+" personnes/h"},
+  {t:"Débit total.",op:F(p.postes,0)+" × "+F(3600/p.temps,0)+" = "+F(d,0)+" personnes/h"},
+  {t:"Il faut absorber "+F(p.attendus,0)+" personnes en "+F(p.duree,1)+" h, soit "+F(besoin,0)+
+   " par heure. Une file qui déborde sur la voie publique devient elle-même le risque : c'est le débit, pas la fouille, qui fait la sécurité d'un accès."}];}},
+
+"mz-video":{t:"Stockage d'un système vidéo",u:"To",tol:0.02,
+ rappel:"volume = caméras × débit × durée, converti en téraoctets",
+ tirer(){return {cam:R(4,80,2),mbps:P([2,4,6,8]),jours:P([7,30,90]),heures:P([12,24])};},
+ enonce(p){return v(F(p.cam,0)+" caméras")+" à "+v(p.mbps+" Mbit/s")+", "+v(p.heures+" h")+
+  " par jour, conservées "+v(p.jours+" jours")+". Quel volume de stockage ?";},
+ rep(p){return p.cam*p.mbps*p.heures*3600*p.jours/8/1024/1024;},
+ pas(p){const to=p.cam*p.mbps*p.heures*3600*p.jours/8/1024/1024;return [
+  {t:"Volume par caméra et par jour.",op:p.mbps+" × "+p.heures+" × 3 600 ÷ 8 ÷ 1 024² = "+
+   F(p.mbps*p.heures*3600/8/1024/1024,2)+" To"},
+  {t:"Pour "+F(p.cam,0)+" caméras sur "+p.jours+" jours.",op:F(to,1)+" To"},
+  {t:"Conserver trois mois « au cas où » multiplie le stockage par treize par rapport à une semaine — et expose l'employeur, puisque la durée doit être justifiée."}];}},
+
+"mz-incendie":{t:"Sécurité incendie et registre",qcm:true,
+ rappel:"la sécurité incendie s'organise avant l'incendie",
+ tirer(){return {c:P([
+  {q:"Le registre de sécurité d'un établissement…",
+   b:"consigne les vérifications, les travaux et les exercices — il se tient à jour",
+   f:["se remplit à la demande de la commission de sécurité","recense uniquement les extincteurs et leur date"]},
+  {q:"Un exercice d'évacuation…",
+   b:"se fait au moins deux fois par an, et se chronomètre",
+   f:["se fait une fois à l'ouverture de l'établissement","n'est obligatoire que dans les établissements scolaires"]},
+  {q:"Une issue de secours condamnée pour éviter les vols…",
+   b:"est une faute grave : le risque incendie prime sur le risque de vol",
+   f:["est admise si une autre issue reste disponible","se tolère hors des heures d'ouverture au public"]},
+  {q:"Le rôle du chargé de sécurité pendant l'évacuation…",
+   b:"est de vérifier que tout le monde est sorti et de rendre compte",
+   f:["est de combattre le feu avec les moyens du bord","est d'attendre les secours à l'entrée principale"]},
+  {q:"Le désenfumage sert à…",
+   b:"garder les chemins d'évacuation praticables — la fumée tue avant le feu",
+   f:["évacuer la chaleur pour protéger le bâtiment","permettre aux secours de voir le foyer"]}])};},
+ enonce(p){return p.c.q;}, opts(p){return [p.c.b,...p.c.f];},
+ pas(p){return [{t:"Réponse.",op:p.c.b},
+  {t:"La fumée tue avant les flammes : elle aveugle, elle asphyxie, et elle se déplace plus vite qu'on ne marche. Tout le dispositif d'évacuation est construit contre elle, pas contre le feu."}];}},
+
+"mz-sureté":{t:"Analyser une malveillance",qcm:true,
+ rappel:"on protège une cible contre une menace, avec une vulnérabilité au milieu",
+ tirer(){return {c:P([
+  {q:"Une analyse de sûreté commence par…",
+   b:"identifier ce qu'on protège et contre qui",
+   f:["dresser la liste des équipements disponibles","évaluer le budget que la direction accepte"]},
+  {q:"Une mesure de sûreté se justifie…",
+   b:"quand elle coûte moins que le risque qu'elle réduit",
+   f:["quand elle rassure la direction et le personnel","dès lors qu'un incident s'est déjà produit"]},
+  {q:"Un contrôle d'accès contourné par une porte tenue ouverte…",
+   b:"montre que la mesure a été conçue sans ceux qui l'utilisent",
+   f:["relève d'une faute individuelle à sanctionner","se corrige en renforçant la fermeture de la porte"]},
+  {q:"La levée de doute…",
+   b:"est ce qui transforme une alarme en intervention",
+   f:["est une formalité avant d'appeler les forces de l'ordre","se fait uniquement par vidéo, à distance"]},
+  {q:"Une file d'attente qui déborde sur la voie publique…",
+   b:"devient elle-même le risque à traiter",
+   f:["est un problème de confort, pas de sécurité","se règle en accélérant la fouille des personnes"]}])};},
+ enonce(p){return p.c.q;}, opts(p){return [p.c.b,...p.c.f];},
+ pas(p){return [{t:"Réponse.",op:p.c.b},
+  {t:"Une mesure que les gens contournent tous les jours n'est pas une mesure : c'est une gêne. Elle se conçoit avec ceux qui la vivront, sinon elle finit calée par un extincteur."}];}},
+
 });
 
 Object.assign(FACILE,{
+"mz-malveillance":()=>({proba:10,perte:P([50000,100000]),reduction:50,cout:5000}),
+"mz-flux":()=>({postes:P([2,4]),temps:10,attendus:1000,duree:2}),
+"mz-video":()=>({cam:P([10,20]),mbps:4,jours:30,heures:24}),
 "mz-evacuation":()=>({effectif:P([600,1200]),up:6,debit:100}),
 "mz-effectif":()=>({postes:P([4,6]),heures:12,poste:12,relais:1}),
 "mz-ronde":()=>({service:8,ronde:P([30,60]),poste:30}),
@@ -16813,9 +16898,93 @@ Object.assign(GEN,{
  pas(p){return [{t:"Réponse.",op:p.c.b},
   {t:"Figer les valeurs au jour de la donation est ce qui distingue la donation-partage d'une série de donations simples : dix ans plus tard, l'appartement qui a doublé et l'argent qui a fondu ne se comparent plus."}];}},
 
+
+"no-usufruit":{t:"Valeur d'un usufruit",u:"€",tol:0.02,
+ rappel:"le barème fiscal donne la part de l'usufruit selon l'âge de l'usufruitier",
+ tirer(){return {valeur:R(80000,900000,5000),age:P([52,62,72,82,92])};},
+ enonce(p){const t={52:0.5,62:0.4,72:0.3,82:0.2,92:0.1}[p.age];
+  return "Un bien de "+v(eur(p.valeur,0))+", usufruitier de "+v(p.age+" ans")+
+  " (barème : "+v(F(t*100,0)+" %")+"). Quelle valeur de la nue-propriété ?";},
+ rep(p){const t={52:0.5,62:0.4,72:0.3,82:0.2,92:0.1}[p.age];return p.valeur*(1-t);},
+ pas(p){const t={52:0.5,62:0.4,72:0.3,82:0.2,92:0.1}[p.age];return [
+  {t:"Valeur de l'usufruit.",op:eur(p.valeur,0)+" × "+F(t*100,0)+" % = "+eur(p.valeur*t,0)},
+  {t:"Nue-propriété.",op:eur(p.valeur,0)+" − "+eur(p.valeur*t,0)+" = "+eur(p.valeur*(1-t),0)},
+  {t:"Le barème dépend de l'ÂGE, par tranches de dix ans : un anniversaire franchi la veille de l'acte change la valeur de dix points. C'est une règle fiscale, pas une estimation — elle ne se négocie pas."}];}},
+
+"no-donation":{t:"Abattement et droits de donation",u:"€",tol:0.02,
+ rappel:"l'abattement se renouvelle tous les quinze ans, par donateur et par bénéficiaire",
+ tirer(){return {montant:R(20000,400000,5000),abattement:P([100000,31865,7967]),taux:R(5,30,5)};},
+ enonce(p){return "Une donation de "+v(eur(p.montant,0))+" avec un abattement de "+
+  v(eur(p.abattement,0))+", taux moyen "+v(F(p.taux,0)+" %")+". Quels droits à payer ?";},
+ rep(p){return Math.max(0,p.montant-p.abattement)*p.taux/100;},
+ pas(p){const base=Math.max(0,p.montant-p.abattement);return [
+  {t:"Base taxable.",op:eur(p.montant,0)+" − "+eur(p.abattement,0)+" = "+eur(base,0)},
+  {t:"Droits.",op:eur(base,0)+" × "+F(p.taux,0)+" % = "+eur(base*p.taux/100,0)},
+  {t:"L'abattement se reconstitue tous les quinze ans. Donner tôt et par tranches coûte donc bien moins cher que transmettre en une fois — c'est le calcul que le notaire pose devant des parents qui pensaient avoir le temps."}];}},
+
+"no-indivision":{t:"Sortie d'indivision",u:"€",tol:0.02,
+ rappel:"celui qui garde le bien verse une soulte égale à la part des autres",
+ tirer(){return {valeur:R(90000,600000,5000),parts:P([2,3,4]),dette:R(0,180000,5000)};},
+ enonce(p){const d=Math.min(p.dette,p.valeur*0.8);
+  return "Un bien indivis de "+v(eur(p.valeur,0))+" entre "+v(p.parts+" héritiers")+", grevé de "+
+  v(eur(d,0))+" de dette. Quelle soulte doit verser celui qui le conserve ?";},
+ rep(p){const d=Math.min(p.dette,p.valeur*0.8);return (p.valeur-d)*(p.parts-1)/p.parts;},
+ pas(p){const d=Math.min(p.dette,p.valeur*0.8), net=p.valeur-d;return [
+  {t:"Valeur nette partageable.",op:eur(p.valeur,0)+" − "+eur(d,0)+" = "+eur(net,0)},
+  {t:"Part de chacun.",op:eur(net,0)+" ÷ "+p.parts+" = "+eur(net/p.parts,0)},
+  {t:"Soulte.",op:eur(net,0)+" × "+(p.parts-1)+" ÷ "+p.parts+" = "+eur(net*(p.parts-1)/p.parts,0)},
+  {t:"« Nul n'est contraint de rester dans l'indivision » : un seul indivisaire peut en demander la sortie, et le juge ordonnera la vente si personne ne peut payer la soulte. C'est ce qui pousse à régler tôt."}];}},
+
+"no-bail":{t:"Baux et contrats courants",qcm:true,
+ rappel:"un contrat se lit d'abord par sa date de fin",
+ tirer(){return {c:P([
+  {q:"Un bail d'habitation vide se conclut en principe pour…",
+   b:"trois ans, reconductibles tacitement",
+   f:["un an, renouvelable par accord écrit","neuf ans, comme le bail commercial"]},
+  {q:"Le congé donné par le bailleur pour vendre…",
+   b:"vaut offre de vente au locataire, qui est prioritaire",
+   f:["libère le logement sans autre formalité","impose seulement un préavis plus long"]},
+  {q:"Une clause abusive dans un contrat signé…",
+   b:"est réputée non écrite : le reste du contrat demeure",
+   f:["annule le contrat dans son ensemble","s'applique puisque les parties l'ont acceptée"]},
+  {q:"Le dépôt de garantie d'un bail vide…",
+   b:"ne peut excéder un mois de loyer hors charges",
+   f:["est libre, il se négocie entre les parties","correspond à deux mois de loyer charges comprises"]},
+  {q:"Un état des lieux d'entrée absent…",
+   b:"fait présumer que le locataire a reçu le logement en bon état",
+   f:["n'a aucune conséquence sur la restitution du dépôt","interdit au bailleur de retenir quoi que ce soit"]}])};},
+ enonce(p){return p.c.q;}, opts(p){return [p.c.b,...p.c.f];},
+ pas(p){return [{t:"Réponse.",op:p.c.b},
+  {t:"Sans état des lieux d'entrée, la présomption joue contre le bailleur : il devra prouver que les dégradations lui sont imputables. Un document de dix minutes décide de plusieurs milliers d'euros trois ans plus tard."}];}},
+
+"no-formalite":{t:"Formalités et responsabilité",qcm:true,
+ rappel:"le notaire engage sa responsabilité sur ce qu'il n'a pas vérifié",
+ tirer(){return {c:P([
+  {q:"La publication au service de la publicité foncière…",
+   b:"rend la vente opposable aux tiers",
+   f:["valide la vente entre les parties","déclenche le paiement du prix au vendeur"]},
+  {q:"Le devoir de conseil du notaire…",
+   b:"l'oblige à éclairer les parties, même contre leur intention affichée",
+   f:["se limite à expliquer les clauses de l'acte","s'arrête dès que les parties sont assistées"]},
+  {q:"Un acte signé sans vérifier l'origine de propriété…",
+   b:"engage la responsabilité du notaire, même de bonne foi",
+   f:["reste valable, la vérification incombant à l'acheteur","est nul de plein droit"]},
+  {q:"La date d'un acte authentique…",
+   b:"fait foi jusqu'à inscription de faux",
+   f:["peut être contestée par tout moyen de preuve","n'a de valeur qu'entre les parties signataires"]},
+  {q:"Le séquestre du prix chez le notaire…",
+   b:"protège les deux parties jusqu'aux formalités",
+   f:["est une commodité offerte au vendeur","retarde inutilement le versement des fonds"]}])};},
+ enonce(p){return p.c.q;}, opts(p){return [p.c.b,...p.c.f];},
+ pas(p){return [{t:"Réponse.",op:p.c.b},
+  {t:"L'acte authentique vaut entre les parties dès la signature ; c'est la PUBLICATION qui le rend opposable au reste du monde. Entre les deux, un créancier inscrit peut encore prendre rang — d'où les délais qu'on ne saute pas."}];}},
+
 });
 
 Object.assign(FACILE,{
+"no-usufruit":()=>({valeur:200000,age:P([62,72])}),
+"no-donation":()=>({montant:200000,abattement:100000,taux:20}),
+"no-indivision":()=>({valeur:300000,parts:P([2,3]),dette:0}),
 "no-mutation":()=>({prix:200000,mobilier:P([0,5000]),taux:5.81}),
 "no-reserve":()=>({masse:P([300000,600000]),enfants:P([1,2])}),
 "no-partage":()=>({actif:400000,passif:P([0,100000]),frais:10000,heritiers:2}),
@@ -16939,9 +17108,82 @@ Object.assign(GEN,{
  pas(p){return [{t:"Réponse.",op:p.c.b},
   {t:"Orienter n'est pas diagnostiquer. L'opticien qui remarque une anomalie n'a pas à en nommer la cause : il a à faire en sorte que la personne voie un médecin, et à le noter."}];}},
 
+
+"ol-hauteur":{t:"Hauteur de montage d'un progressif",u:"mm",tol:0.02,
+ rappel:"la hauteur se mesure de la pupille au bord inférieur du cercle, monture portée",
+ tirer(){return {cercle:R(28,48,1),bas:R(10,26,1),mini:P([14,16,18])};},
+ enonce(p){const h=Math.min(p.bas,p.cercle-6);
+  return "Une monture de "+v(F(p.cercle,0)+" mm")+" de hauteur de cercle, pupille à "+
+  v(F(h,0)+" mm")+" du bord inférieur. Quelle marge reste-t-il sous la pupille par rapport au minimum de "+
+  v(F(p.mini,0)+" mm")+" ?";},
+ rep(p){const h=Math.min(p.bas,p.cercle-6);return h-p.mini;},
+ pas(p){const h=Math.min(p.bas,p.cercle-6);return [
+  {t:"Hauteur disponible.",op:F(h,0)+" mm"},
+  {t:"Marge.",op:F(h,0)+" − "+F(p.mini,0)+" = "+F(h-p.mini,0)+" mm"},
+  {t:"Une marge négative veut dire que le couloir de progression est coupé : le porteur n'aura pas sa vision de près dans cette monture. On change de monture, ou de type de verre — on ne monte pas quand même."}];}},
+
+"ol-champ":{t:"Champ de vision et indice",u:"mm",tol:0.02,
+ rappel:"épaisseur au bord ≈ diamètre² × puissance / (8 000 × (n − 1))",
+ tirer(){return {diam:R(50,75,1),sph:R(-10,-1,0.25),indice:P([1.5,1.6,1.67,1.74])};},
+ enonce(p){return "Un verre de "+v(F(p.diam,0)+" mm")+" de diamètre utile, "+v(F(p.sph,2)+" δ")+
+  ", indice "+v(F(p.indice,2))+". Quelle épaisseur approximative au bord ?";},
+ rep(p){return Math.pow(p.diam,2)*Math.abs(p.sph)/(8000*(p.indice-1));},
+ pas(p){const e=Math.pow(p.diam,2)*Math.abs(p.sph)/(8000*(p.indice-1));return [
+  {t:"Épaisseur au bord.",op:F(p.diam,0)+"² × "+F(Math.abs(p.sph),2)+" ÷ (8 000 × "+F(p.indice-1,2)+") = "+F(e,2)+" mm"},
+  {t:"Passer d'un indice 1,5 à 1,67 retire environ un quart de l'épaisseur. Réduire le diamètre utile — donc choisir une monture plus petite — en retire davantage encore, puisque le diamètre intervient au CARRÉ."}];}},
+
+"ol-lentille":{t:"Puissance d'une lentille de contact",u:"δ",tol:0.02,
+ rappel:"on ramène la correction de lunettes au plan de l'œil : distance verre-œil de 12 mm",
+ tirer(){return {sph:R(-14,-4,0.25),d:P([0.012,0.014])};},
+ enonce(p){return "Une correction de "+v(F(p.sph,2)+" δ")+" en lunettes, distance verre-œil de "+
+  v(F(p.d*1000,0)+" mm")+". Quelle puissance en lentille ?";},
+ rep(p){return p.sph/(1-p.d*p.sph);},
+ pas(p){const pl=p.sph/(1-p.d*p.sph);return [
+  {t:"Puissance au plan de l'œil.",op:F(p.sph,2)+" ÷ (1 − "+F(p.d,3)+" × "+F(p.sph,2)+") = "+F(pl,2)+" δ"},
+  {t:"Écart.",op:F(pl-p.sph,2)+" δ"},
+  {t:"En dessous de 4 dioptries l'écart est négligeable ; au-delà, le porteur qui garde la même puissance en lentille est sous-corrigé — et croit que les lentilles « ne lui vont pas »."}];}},
+
+"ol-tiers-payant":{t:"Décompte d'un équipement",u:"€",tol:0.02,
+ rappel:"la sécurité sociale rembourse peu, la mutuelle plafonne, le reste est pour le client",
+ tirer(){return {prix:R(120,900,10),secu:P([0.05,22.5]),plafond:R(100,600,25),classe:P([1,2])};},
+ enonce(p){return "Un équipement à "+v(eur(p.prix,0))+", "+v(eur(p.secu,2))+
+  " de sécurité sociale et une mutuelle plafonnée à "+v(eur(p.plafond,0))+
+  ". Quel reste à charge ?";},
+ rep(p){return Math.max(0,p.prix-p.secu-p.plafond);},
+ pas(p){const r=Math.max(0,p.prix-p.secu-p.plafond);return [
+  {t:"Après la sécurité sociale.",op:eur(p.prix,0)+" − "+eur(p.secu,2)+" = "+eur(p.prix-p.secu,2)},
+  {t:"Après la mutuelle.",op:eur(p.prix-p.secu,2)+" − "+eur(p.plafond,0)+" = "+eur(r,2)},
+  {t:"Un équipement de classe A est intégralement pris en charge : le client a le DROIT qu'on le lui propose, et le devis doit le faire figurer. Ne pas le présenter est une faute, pas une stratégie commerciale."}];}},
+
+"ol-atelier":{t:"L'atelier de montage",qcm:true,
+ rappel:"un verre bien choisi mal monté est un verre mal choisi",
+ tirer(){return {c:P([
+  {q:"Le diamètre du verre commandé se choisit…",
+   b:"d'après le décentrement à faire, pas d'après la monture seule",
+   f:["au plus grand disponible, pour avoir de la marge","d'après la seule hauteur de cercle de la monture"]},
+  {q:"Un verre progressif dans une monture trop basse…",
+   b:"perd son couloir de progression : la vision de près disparaît",
+   f:["se monte en remontant le centre optique","fonctionne, avec un temps d'adaptation plus long"]},
+  {q:"L'épaisseur au bord d'un verre de myope…",
+   b:"croît avec le CARRÉ du diamètre utile",
+   f:["croît proportionnellement au diamètre","ne dépend que de l'indice du matériau"]},
+  {q:"Le meulage d'un verre traité antireflet…",
+   b:"peut faire éclater le traitement si le serrage est mal réglé",
+   f:["ne présente aucune difficulté particulière","impose de retirer le traitement avant montage"]},
+  {q:"Contrôler l'équipement avant livraison consiste à…",
+   b:"vérifier puissances, axes, écarts et hauteurs sur le frontofocomètre",
+   f:["s'assurer que le verre tient bien dans la monture","vérifier l'aspect et la propreté des verres"]}])};},
+ enonce(p){return p.c.q;}, opts(p){return [p.c.b,...p.c.f];},
+ pas(p){return [{t:"Réponse.",op:p.c.b},
+  {t:"Le contrôle au frontofocomètre est la dernière barrière avant le porteur. Une erreur d'axe de cylindre ne se voit pas à l'œil et gêne pourtant tous les jours — c'est exactement ce que le contrôle attrape."}];}},
+
 });
 
 Object.assign(FACILE,{
+"ol-hauteur":()=>({cercle:40,bas:P([18,20]),mini:16}),
+"ol-champ":()=>({diam:60,sph:P([-4,-8]),indice:1.5}),
+"ol-lentille":()=>({sph:P([-8,-10]),d:0.012}),
+"ol-tiers-payant":()=>({prix:P([300,500]),secu:0.05,plafond:200,classe:2}),
 "ol-vergence":()=>({d:P([2,-4])}),
 "ol-equivalent":()=>({sph:P([-2,3]),cyl:-1}),
 "ol-transposition":()=>({sph:P([-2,2]),cyl:-1,axe:P([90,180-90])}),
@@ -21023,6 +21265,26 @@ mz06:{p:"La nuit et le dimanche coûtent 20 à 50 % de plus à effectif égal.",
  f:["coût = heures × taux majoré × (agents + chefs × 1,3)"],
  g:"Répondre « la même chose le week-end » sans annoncer la majoration.",
  r:"Le briefing fait partie du dispositif : un agent sans consigne fait ce qu'il peut."},
+mz07:{p:"Une mesure se compare à ce qu'elle évite, pas à ce qu'elle rassure.",
+ i:"Un risque chiffré à l'année, et une mesure posée en face.",
+ f:["coût espéré = probabilité × conséquence"],
+ g:"Concevoir une mesure sans ceux qui la vivront : elle sera contournée en trois semaines.",
+ r:"Un risque de 10 % sur 80 000 € coûte 8 000 € par an — tous les ans."},
+mz08:{p:"Une file qui déborde sur la voie publique devient le risque.",
+ i:"Une foule dense et immobile devant une entrée trop lente.",
+ f:["débit = postes × 3 600 / temps de contrôle"],
+ g:"Renforcer la fouille sans compter le débit : l'attroupement remplace le danger évité.",
+ r:"C'est le débit d'un accès, pas sa minutie, qui fait sa sécurité."},
+mz09:{p:"Conserver trois mois multiplie le stockage par treize.",
+ i:"Des disques qui tournent pour des images que personne ne regardera.",
+ f:["volume = caméras × débit × heures × jours"],
+ g:"Garder les images « au cas où » : la durée doit être justifiée et déclarée.",
+ r:"Une caméra sans personne derrière ne sert qu'à la plainte, jamais à empêcher."},
+mz10:{p:"La fumée tue avant les flammes.",
+ i:"Un couloir enfumé où l'on ne voit plus la sortie.",
+ f:[],
+ g:"Condamner une issue de secours contre le vol : faute grave, le feu prime.",
+ r:"Deux exercices d'évacuation par an, chronométrés — et un registre tenu."},
 });
 
 
@@ -21226,6 +21488,26 @@ no06:{p:"La donation-partage fige les valeurs au jour de la donation.",
  f:[],
  g:"Mélanger un bien propre reçu par donation avec des fonds communs, sans remploi.",
  r:"Des donations simples se rapportent à la valeur du jour du décès ; la donation-partage, non."},
+no07:{p:"Un anniversaire décennal change la valeur de l'usufruit de dix points.",
+ i:"Un barème en escalier, et une date d'acte qui tombe d'un côté ou de l'autre.",
+ f:["nue-propriété = valeur − usufruit (barème selon l'âge)"],
+ g:"Estimer l'usufruit au cas par cas : c'est une règle fiscale, elle ne se négocie pas.",
+ r:"51-60 ans : 50 % · 61-70 : 40 % · 71-80 : 30 % · 81-90 : 20 %."},
+no08:{p:"L'abattement se reconstitue tous les quinze ans.",
+ i:"Deux transmissions espacées, et la moitié des droits en moins.",
+ f:["droits = (montant − abattement) × taux"],
+ g:"Attendre la succession pour transmettre : l'abattement ne joue alors qu'une fois.",
+ r:"100 000 € par parent et par enfant, renouvelés tous les quinze ans."},
+no09:{p:"Nul n'est contraint de rester dans l'indivision.",
+ i:"Un héritier qui veut sortir, et la vente que le juge ordonne.",
+ f:["soulte = valeur nette × (héritiers − 1) / héritiers"],
+ g:"Laisser traîner : charges, travaux non faits et rancunes s'accumulent.",
+ r:"Si personne ne peut payer la soulte, le bien se vend — souvent au mauvais moment."},
+no10:{p:"L'acte vaut entre les parties ; la publication l'oppose aux tiers.",
+ i:"Une signature, puis un registre où l'on prend rang.",
+ f:[],
+ g:"Sauter l'état des lieux d'entrée : le locataire est réputé avoir reçu en bon état.",
+ r:"Entre signature et publication, un créancier inscrit peut encore prendre rang."},
 });
 
 
@@ -21264,6 +21546,26 @@ ol06:{p:"Orienter n'est pas diagnostiquer — ne pas orienter est une faute.",
  f:[],
  g:"Délivrer sur une ordonnance périmée : la validité dépend de l'âge du porteur.",
  r:"Le dossier contient des données de santé : conservation et accès sont encadrés."},
+ol07:{p:"Un progressif dans une monture trop basse perd son couloir.",
+ i:"Une hauteur de cercle qui coupe la vision de près.",
+ f:[],
+ g:"Choisir le diamètre du verre sur la monture seule, sans le décentrement.",
+ r:"Sous la hauteur minimale, on change de monture ou de verre — on ne monte pas."},
+ol08:{p:"Le diamètre du verre intervient au CARRÉ dans l'épaisseur.",
+ i:"Deux verres de même correction, l'un dans une petite monture.",
+ f:["épaisseur ≈ diamètre² × puissance / (8 000 × (n − 1))"],
+ g:"Vendre un indice élevé sans regarder la taille de la monture.",
+ r:"Une monture plus petite amincit plus qu'un indice supérieur, et ne coûte rien."},
+ol09:{p:"Au-delà de 4 dioptries, la puissance en lentille n'est plus celle des lunettes.",
+ i:"Douze millimètres entre le verre et l'œil, et une dioptrie qui change.",
+ f:["P lentille = P / (1 − d × P), d ≈ 12 mm"],
+ g:"Commander la lentille à la puissance des lunettes : le porteur croit que ça ne lui va pas.",
+ r:"L'écart devient sensible dès 4 dioptries et dépasse 0,5 δ à −8."},
+ol10:{p:"L'offre intégralement remboursée doit figurer au devis.",
+ i:"Trois lignes sur un devis : sécurité sociale, mutuelle, client.",
+ f:["reste à charge = prix − sécurité sociale − mutuelle plafonnée"],
+ g:"Ne pas présenter l'équipement pris en charge : c'est un manquement, pas une vente.",
+ r:"La mutuelle paie jusqu'à son plafond, pas au-delà — tout le reste est pour le client."},
 });
 
 
@@ -28792,6 +29094,53 @@ const MODULES_MZ=[
  {k:"c",t:"Contrôle",gen:["mz-cout-dispositif","mz-effectif","mz-conduite","mz-ronde"],n:8}
 ]},
 
+
+{id:"mz07",num:"07",bloc:"Analyser",an:2,titre:"Ce qu'une mesure évite",duree:"18 min",
+ resume:"Une mesure de sûreté se compare à ce qu'elle évite, jamais à ce qu'elle rassure.",
+ steps:[
+ {k:"l",t:"Probabilité, conséquence, réduction",h:`
+  <div class="formule">coût espéré = probabilité annuelle × conséquence</div>
+  <div class="encart e-cle"><span class="chapo">Le chiffre qui fait passer un budget</span><p>Un risque à 10 % par an sur une perte de 80 000 € coûte 8 000 € par an, tous les ans. Une mesure à 5 000 € qui le divise par deux ne « coûte » pas 5 000 € : elle en rapporte 4 000 nets, chaque année.</p></div>
+  <div class="encart e-piege"><span class="chapo">La mesure qu'on contourne</span><p>Un contrôle d'accès calé par un extincteur n'est plus une mesure, c'est une gêne. Elle se conçoit avec ceux qui la vivront, sinon elle ne tiendra pas trois semaines.</p></div>`},
+ {k:"a",t:"Atelier — le risque",gen:["mz-malveillance","mz-criticite","mz-sureté"],but:4},
+ {k:"c",t:"Contrôle",gen:["mz-malveillance","mz-criticite","mz-sureté","mz-cout-dispositif"],n:8}
+]},
+
+{id:"mz08",num:"08",bloc:"Organiser",an:1,titre:"Filtrer sans bloquer",duree:"18 min",
+ resume:"Une file qui déborde sur la voie publique devient elle-même le risque.",
+ steps:[
+ {k:"l",t:"Le débit d'un contrôle",h:`
+  <div class="formule">débit = postes × 3 600 / temps de contrôle</div>
+  <div class="encart e-cle"><span class="chapo">Le débit fait la sécurité de l'accès</span><p>Pas la minutie de la fouille. Une entrée qui met deux heures à absorber le public crée un attroupement dense, immobile et sans protection — exactement ce qu'on voulait éviter à l'intérieur.</p></div>`},
+ {k:"a",t:"Atelier — le flux",gen:["mz-flux","mz-effectif","mz-evacuation"],but:4},
+ {k:"c",t:"Contrôle",gen:["mz-flux","mz-effectif","mz-evacuation","mz-sureté"],n:8}
+]},
+
+{id:"mz09",num:"09",bloc:"Organiser",an:2,titre:"La vidéo et ses limites",duree:"18 min",
+ resume:"Conserver trois mois « au cas où » multiplie le stockage par treize — et expose l'employeur.",
+ steps:[
+ {k:"l",t:"Ce que la vidéo coûte et ce qu'elle prouve",h:`
+  <div class="formule">volume = caméras × débit × durée d'enregistrement × jours conservés</div>
+  <div class="encart e-piege"><span class="chapo">La caméra sans personne derrière</span><p>Elle ne sert qu'après coup, pour la plainte. La sûreté est ce qui EMPÊCHE : elle suppose une levée de doute et quelqu'un qui décide.</p></div>
+  <div class="encart e-cle"><span class="chapo">Une durée se justifie</span><p>Les images sont des données personnelles. Un mois couvre le temps de déposer plainte ; au-delà, il faut une raison précise — et la déclarer.</p></div>`},
+ {k:"a",t:"Atelier — la vidéo",gen:["mz-video","mz-reglementation","mz-cout-dispositif"],but:4},
+ {k:"c",t:"Contrôle",gen:["mz-video","mz-reglementation","mz-cout-dispositif","mz-ronde"],n:8}
+]},
+
+{id:"mz10",num:"10",bloc:"Protéger",an:1,titre:"Incendie : avant, pas pendant",duree:"18 min",
+ resume:"La fumée tue avant les flammes : tout le dispositif est construit contre elle.",
+ steps:[
+ {k:"l",t:"Registre, exercices, désenfumage",h:`
+  <div class="tabl"><table>
+   <tr><th>Ce qu'on tient</th><th>Pourquoi</th></tr>
+   <tr><td class="mono">le registre de sécurité</td><td class="mono">il prouve les vérifications faites</td></tr>
+   <tr><td>deux exercices par an</td><td>on chronomètre, on corrige</td></tr>
+   <tr><td class="mono">le désenfumage</td><td class="mono">il garde les chemins praticables</td></tr>
+  </table></div>
+  <div class="encart e-piege"><span class="chapo">L'issue condamnée contre le vol</span><p>C'est une faute grave. Le risque incendie prime : une porte fermée pour protéger la marchandise a déjà tué des gens qui la cherchaient dans la fumée.</p></div>`},
+ {k:"a",t:"Atelier — l'incendie",gen:["mz-incendie","mz-evacuation","mz-reglementation"],but:4},
+ {k:"c",t:"Contrôle",gen:["mz-incendie","mz-evacuation","mz-reglementation","mz-conduite"],n:8}
+]},
 ];
 const PARCOURS_MZ=MODULES_MZ;
 
@@ -29506,6 +29855,57 @@ const MODULES_NO=[
  {k:"c",t:"Contrôle",gen:["no-famille","no-reserve","no-partage","no-mutation"],n:8}
 ]},
 
+
+{id:"no07",num:"07",bloc:"Transmettre",an:2,titre:"Usufruit et nue-propriété",duree:"18 min",
+ resume:"Un anniversaire franchi la veille de l'acte change la valeur de dix points.",
+ steps:[
+ {k:"l",t:"Le barème fiscal, par tranches d'âge",h:`
+  <div class="tabl"><table>
+   <tr><th>Âge de l'usufruitier</th><th>Part de l'usufruit</th></tr>
+   <tr><td class="mono">51 à 60 ans</td><td class="mono">50 %</td></tr>
+   <tr><td>61 à 70 ans</td><td>40 %</td></tr>
+   <tr><td class="mono">71 à 80 ans</td><td class="mono">30 %</td></tr>
+   <tr><td>81 à 90 ans</td><td>20 %</td></tr>
+  </table></div>
+  <div class="encart e-cle"><span class="chapo">Une règle fiscale, pas une estimation</span><p>Elle ne se négocie pas et ne s'apprécie pas au cas par cas. D'où l'importance de la date de l'acte : de part et d'autre d'un anniversaire décennal, la nue-propriété change de dix points de valeur.</p></div>`},
+ {k:"a",t:"Atelier — l'usufruit",gen:["no-usufruit","no-donation","no-reserve"],but:4},
+ {k:"c",t:"Contrôle",gen:["no-usufruit","no-donation","no-reserve","no-famille"],n:8}
+]},
+
+{id:"no08",num:"08",bloc:"Transmettre",an:2,titre:"Donner de son vivant",duree:"18 min",
+ resume:"L'abattement se reconstitue tous les quinze ans : donner tôt et par tranches coûte bien moins cher.",
+ steps:[
+ {k:"l",t:"Abattement, base taxable, droits",h:`
+  <div class="formule">droits = (montant − abattement) × taux</div>
+  <div class="encart e-cle"><span class="chapo">Le calcul qu'on pose devant des parents</span><p>Cent mille euros par parent et par enfant, tous les quinze ans. Une famille qui commence à cinquante ans transmet deux fois plus, en droits, qu'une famille qui attend soixante-quinze.</p></div>`},
+ {k:"a",t:"Atelier — la donation",gen:["no-donation","no-usufruit","no-partage"],but:4},
+ {k:"c",t:"Contrôle",gen:["no-donation","no-usufruit","no-partage","no-reserve"],n:8}
+]},
+
+{id:"no09",num:"09",bloc:"Régler",an:2,titre:"Sortir de l'indivision",duree:"18 min",
+ resume:"Nul n'est contraint de rester dans l'indivision — un seul héritier peut forcer la vente.",
+ steps:[
+ {k:"l",t:"La soulte, et ce qui arrive si personne ne peut la payer",h:`
+  <div class="formule">soulte = valeur nette × (héritiers − 1) / héritiers</div>
+  <div class="encart e-piege"><span class="chapo">Laisser traîner</span><p>Chaque année d'indivision ajoute des charges, des travaux non faits et des rancunes. Le jour où l'un veut sortir, le juge ordonne la vente — souvent au plus mauvais moment.</p></div>`},
+ {k:"a",t:"Atelier — l'indivision",gen:["no-indivision","no-partage","no-prorata"],but:4},
+ {k:"c",t:"Contrôle",gen:["no-indivision","no-partage","no-prorata","no-plusvalue"],n:8}
+]},
+
+{id:"no10",num:"10",bloc:"L'acte",an:1,titre:"Baux, clauses et formalités",duree:"18 min",
+ resume:"L'acte vaut entre les parties dès la signature ; c'est la publication qui l'oppose aux tiers.",
+ steps:[
+ {k:"l",t:"Ce que la formalité ajoute",h:`
+  <div class="tabl"><table>
+   <tr><th>Étape</th><th>Ce qu'elle produit</th></tr>
+   <tr><td class="mono">signature</td><td class="mono">l'accord entre les parties</td></tr>
+   <tr><td>publication foncière</td><td>l'opposabilité aux tiers</td></tr>
+   <tr><td class="mono">séquestre du prix</td><td class="mono">la protection des deux côtés</td></tr>
+  </table></div>
+  <div class="encart e-piege"><span class="chapo">L'état des lieux qu'on ne fait pas</span><p>Sans lui, le locataire est réputé avoir reçu le logement en bon état. Dix minutes à l'entrée décident de plusieurs milliers d'euros trois ans plus tard.</p></div>`},
+ {k:"a",t:"Atelier — les actes",gen:["no-bail","no-formalite","no-actes"],but:4},
+ {k:"c",t:"Contrôle",gen:["no-bail","no-formalite","no-actes","no-mutation"],n:8}
+]},
 ];
 const PARCOURS_NO=MODULES_NO;
 
@@ -29593,6 +29993,51 @@ const MODULES_OL=[
  {k:"c",t:"Contrôle",gen:["ol-sante","ol-adaptation","ol-equipement","ol-prisme"],n:8}
 ]},
 
+
+{id:"ol07",num:"07",bloc:"Le montage",an:2,titre:"La monture décide du verre",duree:"18 min",
+ resume:"Un progressif dans une monture trop basse perd son couloir : la vision de près disparaît.",
+ steps:[
+ {k:"l",t:"Hauteur, diamètre, décentrement",h:`
+  <div class="encart e-cle"><span class="chapo">Le diamètre se choisit sur le décentrement</span><p>Pas sur la monture seule. Un écart pupillaire étroit dans une monture large oblige à décentrer beaucoup : il faut alors un verre plus grand, donc plus épais au bord.</p></div>
+  <div class="encart e-piege"><span class="chapo">Monter quand même</span><p>Sous la hauteur minimale, le couloir de progression est coupé. On change de monture ou de verre — on ne livre pas un équipement dont on sait qu'il ne servira pas de près.</p></div>`},
+ {k:"a",t:"Atelier — la monture",gen:["ol-hauteur","ol-champ","ol-atelier"],but:4},
+ {k:"c",t:"Contrôle",gen:["ol-hauteur","ol-champ","ol-atelier","ol-prisme"],n:8}
+]},
+
+{id:"ol08",num:"08",bloc:"Le montage",an:2,titre:"Épaisseur et indice",duree:"18 min",
+ resume:"Le diamètre intervient au carré : une monture plus petite amincit plus qu'un indice plus élevé.",
+ steps:[
+ {k:"l",t:"Ce qui fait l'épaisseur d'un verre",h:`
+  <div class="formule">épaisseur au bord ≈ diamètre² × puissance / (8 000 × (n − 1))</div>
+  <div class="encart e-cle"><span class="chapo">Deux leviers, un seul gratuit</span><p>Passer de l'indice 1,5 à 1,67 retire environ un quart de l'épaisseur, et coûte cher. Choisir une monture plus petite en retire davantage, et ne coûte rien — c'est le conseil que le porteur n'attend pas.</p></div>`},
+ {k:"a",t:"Atelier — l'épaisseur",gen:["ol-champ","ol-vergence","ol-equipement"],but:4},
+ {k:"c",t:"Contrôle",gen:["ol-champ","ol-vergence","ol-equipement","ol-atelier"],n:8}
+]},
+
+{id:"ol09",num:"09",bloc:"Le porteur",an:2,titre:"Les lentilles de contact",duree:"18 min",
+ resume:"Au-delà de 4 dioptries, la même puissance en lentille sous-corrige le porteur.",
+ steps:[
+ {k:"l",t:"Du plan des lunettes au plan de l'œil",h:`
+  <div class="formule">P<sub>lentille</sub> = P / (1 − d × P), avec d ≈ 12 mm</div>
+  <div class="encart e-piege"><span class="chapo">« Les lentilles ne me vont pas »</span><p>Souvent, elles ont simplement été commandées à la puissance des lunettes. À −8 dioptries, l'écart dépasse une demi-dioptrie : le porteur voit flou et croit que le produit est en cause.</p></div>`},
+ {k:"a",t:"Atelier — les lentilles",gen:["ol-lentille","ol-vergence","ol-adaptation"],but:4},
+ {k:"c",t:"Contrôle",gen:["ol-lentille","ol-vergence","ol-adaptation","ol-sante"],n:8}
+]},
+
+{id:"ol10",num:"10",bloc:"Le magasin",an:1,titre:"Le devis et le reste à charge",duree:"18 min",
+ resume:"L'équipement intégralement pris en charge doit figurer au devis — ce n'est pas une option commerciale.",
+ steps:[
+ {k:"l",t:"Sécurité sociale, mutuelle, client",h:`
+  <div class="tabl"><table>
+   <tr><th>Qui paie</th><th>Combien</th></tr>
+   <tr><td class="mono">sécurité sociale</td><td class="mono">quelques centimes, sauf cas particuliers</td></tr>
+   <tr><td>mutuelle</td><td>jusqu'à son plafond, pas au-delà</td></tr>
+   <tr><td class="mono">le client</td><td class="mono">tout le reste</td></tr>
+  </table></div>
+  <div class="encart e-cle"><span class="chapo">Le droit du client</span><p>Il a droit à ce qu'on lui présente l'offre intégralement remboursée. La lui cacher n'est pas une stratégie de vente : c'est un manquement, et il se voit sur le devis.</p></div>`},
+ {k:"a",t:"Atelier — le devis",gen:["ol-tiers-payant","ol-equipement","ol-sante"],but:4},
+ {k:"c",t:"Contrôle",gen:["ol-tiers-payant","ol-equipement","ol-sante","ol-adaptation"],n:8}
+]},
 ];
 const PARCOURS_OL=MODULES_OL;
 
