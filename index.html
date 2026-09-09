@@ -25281,6 +25281,7 @@ const MODULES_EB=[
  {k:"l",t:"Mesurer avant les finitions",h:`
   <div class="formule">débit de fuite = Q₄ × surface de parois déperditives</div>
   <div class="encart e-cle"><span class="chapo">L'étanchéité se dessine</span><p>Elle traverse tous les corps d'état : une gaine électrique percée dans la membrane annule le travail du façadier. Le plan d'étanchéité se fait au bureau, avant que quiconque ne perce.</p></div>`},
+ {k:"zb",t:"Banc — l'étanchéité à l'air",q4:0.90,budget:19000},
  {k:"a",t:"Atelier — l'air",gen:["eb-permeabilite","eb-mise-oeuvre","fed-debit-air"],but:4},
  {k:"c",t:"Contrôle",gen:["eb-permeabilite","eb-mise-oeuvre","fed-debit-air","eb-rosee"],n:8}
 ]},
@@ -26397,6 +26398,7 @@ const MODULES_GM=[
  {k:"l",t:"a + b·D, et le reste",h:`
   <div class="formule">incertitude = a + b × D</div>
   <div class="encart e-piege"><span class="chapo">Multiplier les stations courtes</span><p>Cela n'améliore rien : chaque station ajoute son erreur de centrage, qui domine sur les courtes distances. Moins de stations, mieux centrées, valent mieux que beaucoup de stations rapides.</p></div>`},
+ {k:"zg",t:"Banc — implanter le bâtiment",tolerance:0.014,heures:5},
  {k:"a",t:"Atelier — l'incertitude",gen:["gm-precision","gm-fermeture","gm-denivelee"],but:4},
  {k:"c",t:"Contrôle",gen:["gm-precision","gm-fermeture","gm-denivelee","gm-numerique"],n:8}
 ]},
@@ -29960,6 +29962,7 @@ const MODULES_SC=[
  {k:"l",t:"Ventiler, drainer, éloigner",h:`
   <div class="encart e-cle"><span class="chapo">Les trois règles</span><p>Une lame d'air derrière le bardage, un rejet d'eau qui écarte la goutte, un pied de mur au-dessus des projections. Ces trois-là valent tous les traitements du monde.</p></div>
   <div class="encart e-piege"><span class="chapo">Un ouvrage bois « à l'abri » mais confiné</span><p>Il pourrit lentement, à l'endroit qu'on ne voit pas. Le bois n'a pas besoin d'être sec : il a besoin de pouvoir sécher.</p></div>`},
+ {k:"zo",t:"Banc — le mur à ossature",umax:0.20,budget:96},
  {k:"a",t:"Atelier — la durabilité",gen:["sc-bois","sc-humidite","sc-prefabrication"],but:4},
  {k:"c",t:"Contrôle",gen:["sc-bois","sc-humidite","sc-prefabrication","sc-entraxe"],n:8}
 ]},
@@ -34027,6 +34030,254 @@ function rendreCheminement(hote,mi,pi,pas){
        " : fermeture admissible "+nb(1000*r.ferm,1)+" mgon, contrôlée sur point connu, en "+
        nb(r.heures,1)+" h. Un levé sans fermeture n'est pas un levé."};
    },mi,pi,"cheminement");
+}
+
+/* ---- bancs-bati2.js.txt ---- */
+/* ============================================================
+   LES SECONDS BANCS DU GROUPE BÂTI
+   Enveloppe : l'étanchéité à l'air — elle se dessine, se
+     coordonne entre corps d'état, et se mesure AVANT les
+     finitions. Après, il ne reste que la démolition.
+   SCBH : le mur à ossature — la vapeur traverse ; si elle
+     condense DANS l'isolant, le mur pourrit sans rien montrer.
+   Géomètre : implanter — la tolérance d'implantation se tient
+     avec la méthode, pas avec la bonne volonté.
+   ============================================================ */
+const T2C={bleu:"#3f6fa8", vert:"#3f8c66", rouge:"#c0603f", or:"#c2963c", gris:"#8a8f99"};
+
+/* ---------------- 1. L'étanchéité à l'air (Enveloppe) ---------------- */
+const T2_MEMBRANE=[{n:"pare-vapeur agrafé, joints simples",q:1.30,cout:9},
+                   {n:"membrane adhésive, joints collés",q:0.72,cout:16},
+                   {n:"membrane + enduit d'étanchéité au support",q:0.48,cout:24}];
+const T2_GAINES=[{n:"gaines traversantes",q:0.55},
+                 {n:"manchons d'étanchéité",q:0.16},
+                 {n:"vide technique devant la membrane",q:0.04}];
+const T2_MENUIS=[{n:"calfeutrement mousse",q:0.42},{n:"bande adhésive intérieure et extérieure",q:0.12}];
+function calculEtancheite(pas,p){
+  const Q4MAX=(pas&&pas.q4)||0.90, BUDGET=(pas&&pas.budget)||19000;
+  const SURF=420;                                 /* m² de parois froides */
+  const me=T2_MEMBRANE[p.membrane], ga=T2_GAINES[p.gaines], mn=T2_MENUIS[p.menuiseries];
+  const q4=me.q+ga.q+mn.q;
+  const cout=SURF*me.cout+(p.gaines===1?1800:p.gaines===2?4200:0)+(p.menuiseries===1?2600:0)
+             +(p.test===1?1400:p.test===2?900:0);
+  /* le test : à la réception, il ne reste que le constat */
+  const testUtile=p.test===1;
+  return {Q4MAX,BUDGET,SURF,me,ga,mn,q4,cout,testUtile,
+          testTropTard:p.test===2, sansTest:p.test===0};
+}
+function rendreEtancheite(hote,mi,pi,pas){
+  const Q4MAX=(pas&&pas.q4)||0.90, BUDGET=(pas&&pas.budget)||19000;
+  bancATI(hote,"L'étanchéité à l'air — avant les finitions",
+   "420 m² de parois froides. Les fuites ne viennent pas de la membrane elle-même mais de ce qui la traverse : gaines, boîtiers, tableaux de fenêtres. Le test de perméabilité ne sert que s'il a lieu quand les reprises sont encore possibles — à la réception, il ne fait que constater.",
+   "Un Q₄ sous <b>"+nb(Q4MAX,2)+" m³/h·m²</b>, mesuré à temps, pour <b>"+nb(BUDGET,0)+" €</b> au plus.",
+   [{id:"membrane",lib:"Membrane",choix:T2_MEMBRANE.map(x=>x.n),val:0},
+    {id:"gaines",lib:"Traversées électriques",choix:T2_GAINES.map(x=>x.n),val:0},
+    {id:"menuiseries",lib:"Jonction menuiseries",choix:T2_MENUIS.map(x=>x.n),val:0},
+    {id:"test",lib:"Test de perméabilité",choix:["aucun","avant les finitions (1 400 €)","à la réception (900 €)"],val:0}],
+   [["Membrane","ea"],["Traversées","eb"],["Q₄ total","ec"],["Coût","ed"]],
+   (c,w,h,p)=>{
+     const r=calculEtancheite(pas,p);
+     const x0=w*0.32, lg=w*0.48;
+     const parts=[["membrane",r.me.q,T2C.bleu],["traversées",r.ga.q,T2C.rouge],
+                  ["menuiseries",r.mn.q,T2C.or]];
+     const som=r.q4||1;
+     let y=h*0.18;
+     parts.forEach(([nom,v,col])=>{
+       c.fillStyle=CB();c.globalAlpha=.28;c.fillRect(x0,y,lg,14);c.globalAlpha=1;
+       c.fillStyle=col;c.fillRect(x0,y,lg*Math.min(1,v/1.4),14);
+       txt(c,nom,w*0.03,y+7,10.5,CM(),"left");
+       mono(c,nb(v,2),x0+lg+5,y+7,10,CI(),"left");
+       y+=h*0.15;
+     });
+     const y2=h*0.68;
+     c.fillStyle=CB();c.globalAlpha=.28;c.fillRect(x0,y2,lg,20);c.globalAlpha=1;
+     c.fillStyle=r.q4<=r.Q4MAX?T2C.vert:T2C.rouge;
+     c.fillRect(x0,y2,lg*Math.min(1,r.q4/(r.Q4MAX*2.6)),20);
+     const xc=x0+lg*(1/2.6);
+     c.strokeStyle=CI();c.lineWidth=1.6;c.setLineDash([4,3]);
+     c.beginPath();c.moveTo(xc,y2-8);c.lineTo(xc,y2+28);c.stroke();c.setLineDash([]);
+     txt(c,"Q₄ total",w*0.03,y2+10,11,CI(),"left",true);
+     mono(c,nb(r.q4,2),x0+lg+5,y2+10,11,r.q4<=r.Q4MAX?T2C.vert:T2C.rouge,"left");
+     plaque(c,nb(r.cout,0)+" €"+(r.testUtile?"  ·  test avant finitions":""),
+            w*0.5,h*0.92,11,r.cout<=r.BUDGET?T2C.vert:T2C.rouge,"center");
+   },
+   (p)=>{
+     const r=calculEtancheite(pas,p);
+     const ok=r.q4<=r.Q4MAX&&r.cout<=r.BUDGET&&r.testUtile;
+     const L=[["ea",nb(r.me.q,2),""],["eb",nb(r.ga.q,2),""],
+              ["ec",nb(r.q4,2),"",r.q4<=r.Q4MAX?"ok":"ko"],
+              ["ed",nb(r.cout,0),"€",r.cout<=r.BUDGET?"ok":"ko"]];
+     if(r.sansTest) return {ok:false,lectures:L,
+       pourquoi:"Aucun test de perméabilité : on livre un chiffre calculé, jamais mesuré.",
+       indice:"L'étanchéité est le seul poste de l'enveloppe qu'on ne peut pas vérifier à l'œil. Sans mesure, on ne sait pas si la membrane a été percée le jour où l'électricien est passé."};
+     if(r.testTropTard) return {ok:false,lectures:L,
+       pourquoi:"Test à la réception : il constate, il ne corrige rien. La membrane est sous les plaques.",
+       indice:"On mesure AVANT les finitions, quand une reprise coûte un rouleau d'adhésif. Le même test, trois semaines plus tard, coûte une démolition."};
+     if(r.q4>r.Q4MAX) return {ok:false,lectures:L,
+       pourquoi:"Q₄ de "+nb(r.q4,2)+" pour "+nb(r.Q4MAX,2)+" exigé.",
+       indice:"Regarde quelle barre domine : c'est presque toujours les traversées, pas la membrane. Un vide technique devant la membrane supprime le problème au lieu de le rattraper joint par joint."};
+     if(r.cout>r.BUDGET) return {ok:false,lectures:L,
+       pourquoi:nb(r.cout,0)+" € pour "+nb(r.BUDGET,0)+" € budgétés.",
+       indice:"L'enduit d'étanchéité au support coûte le plus cher au mètre carré. Traiter les traversées coûte quelques milliers d'euros et rapporte davantage sur le résultat."};
+     return {ok:true,lectures:L,
+       pourquoi:r.me.n+", "+r.ga.n+" : Q₄ = "+nb(r.q4,2)+", mesuré avant les finitions, pour "+
+       nb(r.cout,0)+" €. Ce qui se reprend encore à l'adhésif ne se reprendra plus après."};
+   },mi,pi,"etancheite");
+}
+
+/* ---------------- 2. Le mur à ossature bois (SCBH) ---------------- */
+const T2_ISO=[{n:"laine de verre λ 0,035",l:0.035,cout:11,mu:1},
+              {n:"laine de bois λ 0,038",l:0.038,cout:26,mu:3},
+              {n:"ouate insufflée λ 0,039",l:0.039,cout:19,mu:2}];
+const T2_FREIN=[{n:"aucun",sd:0.1},{n:"pare-vapeur Sd 18 m",sd:18},{n:"frein-vapeur hygrovariable",sd:6}];
+function calculMurBois(pas,p){
+  const UMAX=(pas&&pas.umax)||0.20, BUDGET=(pas&&pas.budget)||96;
+  const iso=T2_ISO[p.isolant], fr=T2_FREIN[p.frein];
+  const ep=[120,160,200,240][p.epaisseur];
+  /* les montants font pont thermique : 12 % de la surface en bois λ 0,13 */
+  const Riso=ep/1000/iso.l, Rbois=ep/1000/0.13;
+  const R=0.17+1/(0.88/Riso+0.12/Rbois);
+  const u=1/R;
+  const cout=ep/1000*iso.cout*10+(p.frein===1?7:p.frein===2?12:0)+(p.bardage===1?38:22);
+  /* la vapeur : sans frein côté chaud, elle condense dans l'isolant */
+  const risque=fr.sd<1? 3 : fr.sd<10? (p.bardage===1?0:1) : (p.bardage===1?1.6:0.4);
+  return {UMAX,BUDGET,iso,fr,ep,R,u,cout,risque,
+          sansFrein:p.frein===0, pareVapeurEtBardageFerme:p.frein===1&&p.bardage===1};
+}
+function rendreMurBois(hote,mi,pi,pas){
+  const UMAX=(pas&&pas.umax)||0.20, BUDGET=(pas&&pas.budget)||96;
+  bancATI(hote,"Le mur à ossature — laisser sécher vers l'extérieur",
+   "Une paroi ossature bois : isolant entre montants, frein-vapeur côté chaud, bardage dehors. Les montants font pont thermique sur 12 % de la surface — le calcul en tient compte. Et la vapeur traverse : si elle condense DANS l'isolant, le mur pourrit sans rien montrer pendant des années. Un pare-vapeur étanche derrière un bardage fermé enferme l'humidité des deux côtés.",
+   "Un U sous <b>"+nb(UMAX,2)+" W/m²·K</b>, aucun risque de condensation, pour <b>"+
+   nb(BUDGET,0)+" €/m²</b> au plus.",
+   [{id:"isolant",lib:"Isolant",choix:T2_ISO.map(x=>x.n),val:0},
+    {id:"epaisseur",lib:"Épaisseur entre montants",choix:["120 mm","160 mm","200 mm","240 mm"],val:0},
+    {id:"frein",lib:"Côté chaud",choix:T2_FREIN.map(x=>x.n),val:0},
+    {id:"bardage",lib:"Côté extérieur",choix:["bardage ventilé (lame d'air)","enduit sur panneau fermé"],val:0}],
+   [["Résistance","ma"],["U de la paroi","mb"],["Risque vapeur","mc"],["Coût au m²","md"]],
+   (c,w,h,p)=>{
+     const r=calculMurBois(pas,p);
+     /* la coupe du mur, couche par couche */
+     const x0=w*0.10, y0=h*0.24, H2=h*0.44;
+     const couches=[["frein",8,T2C.or],["isolant",r.ep*0.5,T2C.vert],
+                    ["panneau",10,T2C.gris],["bardage",p.bardage===1?12:16,T2C.bleu]];
+     const tot=couches.reduce((s,q)=>s+q[1],0);
+     let x=x0, lg=w*0.52;
+     couches.forEach(([nom,e,col])=>{
+       const L=lg*e/tot;
+       c.fillStyle=col;c.globalAlpha=.45;c.fillRect(x,y0,L-1,H2);c.globalAlpha=1;
+       c.strokeStyle=col;c.lineWidth=1.2;c.strokeRect(x,y0,L-1,H2);
+       x+=L;
+     });
+     /* les montants, en pointillé */
+     c.strokeStyle=T2C.rouge;c.lineWidth=1.4;c.setLineDash([4,3]);
+     for(const t of [0.3,0.7]){ const xm=x0+lg*(0.08+0.62*t);
+       c.beginPath();c.moveTo(xm,y0);c.lineTo(xm,y0+H2);c.stroke(); }
+     c.setLineDash([]);
+     mono(c,r.ep+" mm",x0+lg*0.4,y0-10,11,T2C.vert,"center");
+     const rx=w*0.68;
+     mono(c,"U = "+nb(r.u,3),rx,h*0.36,13,r.u<=r.UMAX?T2C.vert:T2C.rouge,"left");
+     mono(c,nb(r.cout,0)+" €/m²",rx,h*0.54,12,r.cout<=r.BUDGET?T2C.vert:T2C.rouge,"left");
+     plaque(c,r.risque<=1?"la paroi sèche":"l'humidité reste piégée",w*0.5,h*0.90,11.5,
+            r.risque<=1?T2C.vert:T2C.rouge,"center");
+   },
+   (p)=>{
+     const r=calculMurBois(pas,p);
+     const ok=r.u<=r.UMAX&&r.risque<=1&&r.cout<=r.BUDGET;
+     const L=[["ma",nb(r.R,2),"m²·K/W"],["mb",nb(r.u,3),"W/m²·K",r.u<=r.UMAX?"ok":"ko"],
+              ["mc",nb(r.risque,1),"",r.risque<=1?"ok":"ko"],
+              ["md",nb(r.cout,0),"€",r.cout<=r.BUDGET?"ok":"ko"]];
+     if(r.sansFrein) return {ok:false,lectures:L,
+       pourquoi:"Aucun frein-vapeur côté chaud : la vapeur du logement traverse et condense dans l'isolant.",
+       indice:"Le côté chaud retient la vapeur, le côté froid la laisse partir. Sans rien côté chaud, l'isolant se gorge d'eau en un hiver — et rien ne se voit avant que le bois ne travaille."};
+     if(r.pareVapeurEtBardageFerme) return {ok:false,lectures:L,
+       pourquoi:"Pare-vapeur étanche à l'intérieur ET enduit fermé à l'extérieur : ce qui entre malgré tout ne peut plus ressortir.",
+       indice:"Une paroi doit pouvoir sécher d'au moins un côté. Un frein-vapeur hygrovariable se ferme l'hiver et s'ouvre l'été — c'est exactement ce qu'il faut derrière un extérieur fermé."};
+     if(r.u>r.UMAX) return {ok:false,lectures:L,
+       pourquoi:"U de "+nb(r.u,3)+" pour "+nb(r.UMAX,2)+" visé.",
+       indice:"Les montants comptent pour 12 % de la surface et conduisent quatre fois mieux que l'isolant : c'est pour cela que l'épaisseur seule ne suffit pas toujours."};
+     if(r.cout>r.BUDGET) return {ok:false,lectures:L,
+       pourquoi:nb(r.cout,0)+" €/m² pour "+nb(r.BUDGET,0)+" € possibles.",
+       indice:"La laine de bois coûte plus du double de la laine de verre pour un lambda voisin. Elle s'achète pour le déphasage d'été et la vapeur, pas pour le U."};
+     return {ok:true,lectures:L,
+       pourquoi:r.ep+" mm de "+r.iso.n+", "+r.fr.n+" : U = "+nb(r.u,3)+", la paroi sèche, "+
+       nb(r.cout,0)+" €/m². Un mur bois se juge autant sur la vapeur que sur la thermique."};
+   },mi,pi,"murbois");
+}
+
+/* ---------------- 3. Implanter un bâtiment (Géomètre) ---------------- */
+const T2_METHODE=[{n:"chaînage et équerre optique",inc:0.030,h:0.9},
+                  {n:"rayonnement à la station",inc:0.008,h:0.5},
+                  {n:"GNSS RTK",inc:0.020,h:0.3}];
+const T2_APPUI=[{n:"2 points d'appui",k:1.6,h:0.3},{n:"3 points d'appui",k:1.0,h:0.5},
+                {n:"5 points d'appui",k:0.78,h:0.9}];
+function calculImplantation(pas,p){
+  const TOL=(pas&&pas.tolerance)||0.014, HMAX=(pas&&pas.heures)||5;
+  const me=T2_METHODE[p.methode], ap=T2_APPUI[p.appui];
+  const n=p.points;
+  /* l'incertitude d'implantation : la méthode, l'appui, et le contrôle */
+  const inc=me.inc*ap.k*(p.controle===1? 0.72 : 1);
+  const heures=(me.h+ap.h)*1+n*0.12+(p.controle===1? 0.8 : 0);
+  const rtkSousGrue=p.methode===2&&p.site===1;
+  return {TOL,HMAX,me,ap,n,inc,heures,rtkSousGrue,
+          sansControle:p.controle===0};
+}
+function rendreImplantation(hote,mi,pi,pas){
+  const TOL=(pas&&pas.tolerance)||0.014, HMAX=(pas&&pas.heures)||5;
+  bancATI(hote,"Implanter le bâtiment — la tolérance se tient par la méthode",
+   "Les axes d'un bâtiment à poser sur le terrain. Le chaînage et l'équerre optique suffisent pour un abri de jardin, pas pour une trame de poteaux. Le GNSS va vite et perd tout à l'ombre d'une grue. Et un contrôle indépendant — mesurer autrement ce qu'on vient d'implanter — coûte une heure et rattrape l'erreur qu'aucune fermeture ne montre.",
+   "Une incertitude d'implantation sous <b>"+nb(1000*TOL,0)+" mm</b>, contrôlée, en <b>"+
+   nb(HMAX,0)+" heures</b> au plus.",
+   [{id:"methode",lib:"Méthode",choix:T2_METHODE.map(x=>x.n),val:0},
+    {id:"appui",lib:"Canevas d'appui",choix:T2_APPUI.map(x=>x.n),val:0},
+    {id:"points",lib:"Points à implanter",min:4,max:24,pas:4,val:8,u:"points"},
+    {id:"site",lib:"Site",choix:["dégagé","encombré, grue et bâtiments"],val:0},
+    {id:"controle",lib:"Contrôle indépendant",choix:["non","oui (1 h)"],val:0}],
+   [["Incertitude","ia"],["Durée","ib"],["Contrôle","ic"],["Verdict","id"]],
+   (c,w,h,p)=>{
+     const r=calculImplantation(pas,p);
+     /* le bâtiment et ses points implantés */
+     const x0=w*0.12, y0=h*0.24, W=w*0.44, H2=h*0.46;
+     c.strokeStyle=CB();c.lineWidth=1.6;c.strokeRect(x0,y0,W,H2);
+     const n=Math.max(4,Math.min(24,r.n));
+     for(let i=0;i<n;i++){
+       const t=i/n*4;
+       const cote=Math.floor(t), u=t-cote;
+       const px=cote===0? x0+W*u : cote===1? x0+W : cote===2? x0+W*(1-u) : x0;
+       const py=cote===0? y0 : cote===1? y0+H2*u : cote===2? y0+H2 : y0+H2*(1-u);
+       c.fillStyle=T2C.bleu;c.beginPath();c.arc(px,py,3.5,0,6.284);c.fill();
+       /* le halo d'incertitude, à l'échelle */
+       c.strokeStyle=r.inc<=r.TOL?T2C.vert:T2C.rouge;c.lineWidth=1;
+       c.beginPath();c.arc(px,py,Math.max(3,r.inc*600),0,6.284);c.stroke();
+     }
+     const rx=w*0.62;
+     mono(c,"± "+nb(1000*r.inc,1)+" mm",rx,h*0.38,13,r.inc<=r.TOL?T2C.vert:T2C.rouge,"left");
+     mono(c,nb(r.heures,1)+" h",rx,h*0.56,12,r.heures<=r.HMAX?T2C.vert:T2C.rouge,"left");
+     plaque(c,r.me.n,w*0.5,h*0.92,11,CI(),"center");
+   },
+   (p)=>{
+     const r=calculImplantation(pas,p);
+     const ok=r.inc<=r.TOL&&r.heures<=r.HMAX&&!r.sansControle&&!r.rtkSousGrue;
+     const L=[["ia",nb(1000*r.inc,1),"mm",r.inc<=r.TOL?"ok":"ko"],
+              ["ib",nb(r.heures,1),"h",r.heures<=r.HMAX?"ok":"ko"],
+              ["ic",r.sansControle?"aucun":"indépendant","",r.sansControle?"ko":"ok"],
+              ["id",ok?"implanté":"à revoir","",ok?"ok":"ko"]];
+     if(r.rtkSousGrue) return {ok:false,lectures:L,
+       pourquoi:"GNSS sur un site encombré : la grue et les façades masquent les satellites, et la solution part en flottant sans le dire.",
+       indice:"Le RTK sert à rattacher un canevas depuis un point dégagé. L'implantation elle-même, entre des bâtiments, se fait à la station — depuis ce canevas."};
+     if(r.sansControle) return {ok:false,lectures:L,
+       pourquoi:"Aucun contrôle indépendant : une faute de saisie ou de point d'appui ne se verra qu'au coulage.",
+       indice:"Contrôler, c'est mesurer AUTREMENT ce qu'on vient de poser — une diagonale au ruban vaut mieux que rien. Une erreur de méthode ne se voit jamais dans les mesures qui l'ont produite."};
+     if(r.inc>r.TOL) return {ok:false,lectures:L,
+       pourquoi:"Incertitude de "+nb(1000*r.inc,1)+" mm pour "+nb(1000*r.TOL,0)+" admis.",
+       indice:"Le canevas d'appui pèse autant que l'instrument : deux points laissent l'erreur se propager, cinq la répartissent. Et le contrôle indépendant réduit l'incertitude finale d'un quart."};
+     if(r.heures>r.HMAX) return {ok:false,lectures:L,
+       pourquoi:nb(r.heures,1)+" heures pour "+nb(r.HMAX,0)+" disponibles.",
+       indice:"Chaque point d'appui supplémentaire se paie en temps de mise en station. Cinq points sur un petit bâtiment, c'est de la précision qu'on n'utilisera pas."};
+     return {ok:true,lectures:L,
+       pourquoi:r.me.n+" sur "+r.ap.n+", contrôle indépendant : ± "+nb(1000*r.inc,1)+" mm en "+
+       nb(r.heures,1)+" h. Ce qui est implanté est vérifié — sinon ce n'est pas implanté, c'est posé."};
+   },mi,pi,"implantation");
 }
 
 /* ---- bancs-be2.js.txt ---- */
@@ -41985,6 +42236,7 @@ const GENRE={w:"cablage", s:"simu", z:"simu", f:"chaine", g:"auto", h:"ladder",
              /* Beauté */   iu:"institut", zp:"protocole", zc:"couleur",
              /* Agri 2 */   zt:"arrosage", zv:"vigne",
              /* Bâti */     ev:"enveloppe", so:"solive", ck:"cheminement",
+             zb:"etancheite", zo:"murbois", zg:"implantation",
              /* Agri */     jd:"jardin", vd:"vendange",
              /* Transport et VH */ to:"tournee", dg:"diagnostic",
              /* Aéro et mode */ vs:"visite", kt:"collection",
@@ -42047,6 +42299,8 @@ const NOM={cablage:"Câblage",simu:"Simulateur",chaine:"Chaîne fonctionnelle",
            vigne:"Protéger la vigne",
            enveloppe:"Composer l'enveloppe", solive:"Dimensionner le plancher",
            cheminement:"Conduire le cheminement",
+           etancheite:"L'étanchéité à l'air", murbois:"Le mur à ossature",
+           implantation:"Implanter le bâtiment",
            jardin:"Composer le jardin", vendange:"Conduire la vendange",
            tournee:"Bâtir la tournée", diagnostic:"Conduire le diagnostic",
            visite:"Programmer la visite", collection:"Lancer la collection",
@@ -42064,6 +42318,7 @@ const RENDUS={/* le banc de la bioqualité */
               protocole:rendreProtocole, couleur:rendreCouleur,
               arrosage:rendreArrosage, vigne:rendreVigne,
               enveloppe:rendreEnveloppe, solive:rendreSolive, cheminement:rendreCheminement,
+              etancheite:rendreEtancheite, murbois:rendreMurBois, implantation:rendreImplantation,
               jardin:rendreJardin, vendange:rendreVendange,
               tournee:rendreTournee, diagnostic:rendreDiag,
               visite:rendreVisite, collection:rendreCollection,
