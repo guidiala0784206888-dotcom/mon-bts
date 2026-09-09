@@ -31735,6 +31735,419 @@ Object.assign(EXOFIG,{
   mono(c,F(3600/mx*p.ren/100,0)+" pièces/h",w*0.5,h*0.92,13,C2(),"center");
 },
 
+/* ---- Le TRS : trois filtres en série ---- */
+"trs-filtres":(c,w,h,p)=>{
+  const d=(p.ouv-p.arret)/p.ouv, perf=Math.min(p.reel,p.theo)/p.theo, q=1-p.reb/100;
+  const x0=w*0.10, lg=w*0.80, y=h*0.26, bh=h*0.13;
+  let reste=1;
+  [["disponibilité",d,C1()],["performance",perf,C2()],["qualité",q,C3()]].forEach(([nom,t,col],i)=>{
+    const yy=y+i*(bh+h*0.06);
+    c.fillStyle=CB();c.globalAlpha=.24;c.fillRect(x0,yy,lg,bh);c.globalAlpha=1;
+    c.fillStyle=col;c.globalAlpha=.60;c.fillRect(x0,yy,lg*reste,bh);c.globalAlpha=1;
+    reste*=t;
+    c.fillStyle=col;c.fillRect(x0,yy,lg*reste,bh);
+    txt(c,nom,w*0.03,yy+bh/2,10.5,CM(),"left");
+    mono(c,F(t*100,1)+" %",x0+lg+6,yy+bh/2,10.5,col,"left");
+  });
+  mono(c,"TRS "+F(reste*100,1)+" %",w*0.5,h*0.92,14,reste>=0.75?C2():C3(),"center");
+},
+
+/* ---- MTBF et MTTR : ce qui tourne, ce qui répare ---- */
+"mtbf-mttr":(c,w,h,p)=>{
+  const mtbf=p.h/p.n, cycle=mtbf+p.rep;
+  const x0=w*0.08, lg=w*0.84, y=h*0.42, bh=h*0.20;
+  const n=Math.max(1,Math.min(6,Math.round(p.n/2)));
+  for(let i=0;i<n;i++){
+    const bx=x0+lg*i/n, bw=lg/n;
+    const part=mtbf/cycle;
+    c.fillStyle=C2();c.globalAlpha=.55;c.fillRect(bx,y,bw*part-1,bh);c.globalAlpha=1;
+    c.fillStyle=C3();c.globalAlpha=.75;c.fillRect(bx+bw*part,y,bw*(1-part)-1,bh);c.globalAlpha=1;
+  }
+  c.strokeStyle=CB();c.lineWidth=1.2;c.strokeRect(x0,y,lg,bh);
+  mono(c,"MTBF "+F(mtbf,1)+" h",x0,y-14,11.5,C2(),"left");
+  mono(c,"MTTR "+F(p.rep,1)+" h",x0+lg,y-14,11.5,C3(),"right");
+  mono(c,"disponibilité "+F(mtbf/cycle*100,2)+" %",w*0.5,y+bh+30,13,C1(),"center");
+},
+
+/* ---- Le retrait du bois : il se fait en travers ---- */
+"retrait-bois":(c,w,h,p)=>{
+  const r=p.larg*(p.h1-p.h2)*p.coef/100;
+  const ech=(w*0.52)/Math.max(40,p.larg);
+  const x0=w*0.12, y=h*0.34, H2=h*0.30;
+  c.strokeStyle=CM();c.lineWidth=1.6;c.setLineDash([5,3]);
+  c.strokeRect(x0,y,p.larg*ech,H2);c.setLineDash([]);
+  c.fillStyle=C1();c.globalAlpha=.28;c.fillRect(x0,y,(p.larg-r)*ech,H2);c.globalAlpha=1;
+  c.strokeStyle=C1();c.lineWidth=2;c.strokeRect(x0,y,(p.larg-r)*ech,H2);
+  /* les fibres */
+  for(let i=1;i<5;i++){
+    const yy=y+H2*i/5;
+    c.strokeStyle=CB();c.lineWidth=0.8;
+    c.beginPath();c.moveTo(x0+3,yy);c.lineTo(x0+(p.larg-r)*ech-3,yy);c.stroke();
+  }
+  mono(c,F(p.h1,0)+" %",x0,y-12,11,C3(),"left");
+  mono(c,F(p.h2,0)+" %",x0+(p.larg-r)*ech,y-12,11,C2(),"left");
+  fleche(c,x0+p.larg*ech,y+H2+14,x0+(p.larg-r)*ech,y+H2+14,C3(),2);
+  mono(c,"− "+F(r,2)+" mm",w*0.5,h*0.86,13,C3(),"center");
+},
+
+/* ---- L'entraxe : ce que chaque solive reprend ---- */
+"entraxe":(c,w,h,p)=>{
+  const x0=w*0.10, lg=w*0.80, y=h*0.62;
+  const n=Math.max(2,Math.min(8,Math.round(3/p.ent)+2));
+  /* le plancher */
+  c.fillStyle=CB();c.globalAlpha=.18;c.fillRect(x0,y-h*0.28,lg,10);c.globalAlpha=1;
+  for(let i=0;i<n;i++){
+    const x=x0+lg*(i+0.5)/n;
+    c.fillStyle=C1();c.fillRect(x-5,y-h*0.28+10,10,h*0.20);
+    if(i<n-1){
+      const x2=x0+lg*(i+1.5)/n;
+      c.strokeStyle=CM();c.lineWidth=1;c.setLineDash([3,3]);
+      c.beginPath();c.moveTo(x,y+16);c.lineTo(x2,y+16);c.stroke();c.setLineDash([]);
+    }
+  }
+  mono(c,F(p.ent,2)+" m",x0+lg*1/n,y+30,11,CM(),"center");
+  /* la charge */
+  for(let i=0;i<=8;i++) fleche(c,x0+lg*(i+0.5)/9,y-h*0.44,x0+lg*(i+0.5)/9,y-h*0.30,C2(),1.5);
+  mono(c,F(p.g,1)+" + "+F(p.q,1)+" kN/m²",w*0.5,h*0.12,11.5,C2(),"center");
+  mono(c,F((p.g+p.q)*p.ent,2)+" kN/m par solive",w*0.5,h*0.92,13,C1(),"center");
+},
+
+/* ---- La fermeture : la tolérance croît en racine ---- */
+"fermeture":(c,w,h,p)=>{
+  const x0=w*0.12, y0=h*0.80, lg=w*0.74, ht=h*0.58;
+  c.strokeStyle=CB();c.lineWidth=1.4;
+  c.beginPath();c.moveTo(x0,y0);c.lineTo(x0+lg,y0);c.moveTo(x0,y0);c.lineTo(x0,y0-ht);c.stroke();
+  /* la courbe en racine */
+  c.strokeStyle=C1();c.lineWidth=2.4;c.beginPath();
+  for(let i=0;i<=30;i++){const t=i/30, x=x0+lg*t, yv=y0-ht*Math.sqrt(t);
+    i?c.lineTo(x,yv):c.moveTo(x,yv);}
+  c.stroke();
+  /* le point du cheminement */
+  const t=Math.max(0.05,Math.min(1,p.n/25));
+  const px=x0+lg*t, py=y0-ht*Math.sqrt(t);
+  c.strokeStyle=C3();c.lineWidth=1.2;c.setLineDash([3,3]);
+  c.beginPath();c.moveTo(px,y0);c.lineTo(px,py);c.lineTo(x0,py);c.stroke();c.setLineDash([]);
+  c.fillStyle=C3();c.beginPath();c.arc(px,py,4.5,0,6.284);c.fill();
+  mono(c,F(p.n,0)+" stations",px,y0+18,11,CM(),"center");
+  mono(c,F(1000*2.7*p.ecart*Math.sqrt(p.n),1)+" mgon",x0+lg,h*0.16,12.5,C3(),"right");
+},
+
+/* ---- L'emport : le vol, le dégagement, la réserve ---- */
+"emport":(c,w,h,p)=>{
+  const t=[p.duree,p.degag,p.reserve/60], tot=t[0]+t[1]+t[2];
+  const x0=w*0.10, lg=w*0.80, y=h*0.40, bh=h*0.20;
+  let x=x0;
+  [["vol",t[0],C1()],["dégagement",t[1],C2()],["réserve",t[2],C3()]].forEach(([nom,v,col])=>{
+    const L=lg*v/tot;
+    c.fillStyle=col;c.globalAlpha=.60;c.fillRect(x,y,L,bh);c.globalAlpha=1;
+    if(L>62) mono(c,nom,x+L/2,y+bh/2,10.5,CI(),"center");
+    x+=L;
+  });
+  c.strokeStyle=CB();c.lineWidth=1.2;c.strokeRect(x0,y,lg,bh);
+  mono(c,F(tot,2)+" h à couvrir",x0,y-14,11.5,CM(),"left");
+  mono(c,F(p.conso*tot,0)+" kg",w*0.5,h*0.86,14,C1(),"center");
+},
+
+/* ---- Le taux d'occupation : la fenêtre utile ---- */
+"occupation":(c,w,h,p)=>{
+  const ve=Math.min(p.vendues,p.ouv), t=ve/p.ouv;
+  const x0=w*0.12, lg=w*0.76, y=h*0.42, bh=h*0.22;
+  c.fillStyle=CB();c.globalAlpha=.26;c.fillRect(x0,y,lg,bh);c.globalAlpha=1;
+  const bon=t>=0.55&&t<=0.85;
+  c.fillStyle=bon?C2():C3();c.globalAlpha=.75;c.fillRect(x0,y,lg*t,bh);c.globalAlpha=1;
+  [0.55,0.85].forEach(s=>{
+    const x=x0+lg*s;
+    c.strokeStyle=CI();c.lineWidth=1.4;c.setLineDash([4,3]);
+    c.beginPath();c.moveTo(x,y-10);c.lineTo(x,y+bh+10);c.stroke();c.setLineDash([]);
+  });
+  c.strokeStyle=CB();c.lineWidth=1.2;c.strokeRect(x0,y,lg,bh);
+  mono(c,F(ve,0)+" h vendues sur "+F(p.ouv,0),x0,y-18,11,CM(),"left");
+  mono(c,F(t*100,1)+" %",w*0.5,h*0.86,14,bon?C2():C3(),"center");
+},
+
+/* ---- Le rendement d'une parcelle ---- */
+"rendement-vigne":(c,w,h,p)=>{
+  const hl=p.kg*p.ratio/100, r=hl/p.surf;
+  const x0=w*0.12, y0=h*0.74, lg=w*0.34, ht=h*0.50;
+  /* la cuve remplie */
+  c.strokeStyle=CB();c.lineWidth=2;c.strokeRect(x0,y0-ht,lg,ht);
+  const part=Math.max(0.05,Math.min(1,r/90));
+  c.fillStyle=C1();c.globalAlpha=.45;c.fillRect(x0+2,y0-ht*part,lg-4,ht*part-2);c.globalAlpha=1;
+  /* le plafond d'appellation */
+  const yp=y0-ht*(55/90);
+  c.strokeStyle=C3();c.lineWidth=2;c.setLineDash([5,3]);
+  c.beginPath();c.moveTo(x0-8,yp);c.lineTo(x0+lg+8,yp);c.stroke();c.setLineDash([]);
+  mono(c,"55 hL/ha",x0+lg+12,yp,10.5,C3(),"left");
+  mono(c,F(p.kg,0)+" kg sur "+F(p.surf,1)+" ha",x0,h*0.14,11,CM(),"left");
+  mono(c,F(r,1)+" hL/ha",x0+lg/2,y0+22,13.5,r<=55?C2():C3(),"center");
+},
+
+/* ---- Le poids d'un imprimé : la surface × le grammage ---- */
+"poids-imprime":(c,w,h,p)=>{
+  const s=p.l*p.h*1e-6, poids=s*p.g*p.pages/2;
+  const ech=Math.min((w*0.30)/p.l,(h*0.52)/p.h);
+  const x0=w*0.12, y0=h*0.24;
+  /* les feuilles empilées */
+  const n=Math.max(1,Math.min(8,p.pages/4));
+  for(let i=n-1;i>=0;i--){
+    c.fillStyle=CB();c.globalAlpha=.10+0.06*i;c.fillRect(x0+i*3,y0+i*3,p.l*ech,p.h*ech);c.globalAlpha=1;
+    c.strokeStyle=CB();c.lineWidth=1;c.strokeRect(x0+i*3,y0+i*3,p.l*ech,p.h*ech);
+  }
+  mono(c,F(p.l,0)+" × "+F(p.h,0)+" mm",x0,y0-12,10.5,CM(),"left");
+  const rx=w*0.58;
+  mono(c,p.pages+" pages",rx,h*0.32,11.5,C1(),"left");
+  mono(c,p.g+" g/m²",rx,h*0.48,11.5,C1(),"left");
+  mono(c,F(poids,1)+" g",rx,h*0.72,15,poids<=52?C2():C3(),"left");
+},
+
+/* ---- Le débit : ce que la carte avale par minute ---- */
+"debit-carte":(c,w,h,p)=>{
+  const min=p.carte*8192/p.mbps/60;
+  const x0=w*0.12, y0=h*0.30, W=w*0.26, H2=h*0.40;
+  /* la carte */
+  c.fillStyle=C1();c.globalAlpha=.20;c.fillRect(x0,y0,W,H2);c.globalAlpha=1;
+  c.strokeStyle=C1();c.lineWidth=2;c.strokeRect(x0,y0,W,H2);
+  for(let i=0;i<4;i++){c.fillStyle=CB();c.fillRect(x0+8+i*(W-16)/4,y0+6,(W-16)/6,10);}
+  mono(c,p.carte+" Go",x0+W/2,y0+H2+18,12,C1(),"center");
+  /* le débit qui s'écoule */
+  for(let i=0;i<5;i++) fleche(c,x0+W+10,y0+H2*(i+0.5)/5,x0+W+w*0.16,y0+H2*(i+0.5)/5,C2(),1.6);
+  mono(c,p.mbps+" Mbit/s",x0+W+w*0.09,y0-10,11,C2(),"center");
+  mono(c,F(min,1)+" min",w*0.80,h*0.50,15,C3(),"center");
+},
+
+/* ---- Le seuil de rentabilité : deux droites qui se croisent ---- */
+"seuil-rentabilite":(c,w,h,p)=>{
+  const sr=p.cf/(p.tx/100);
+  const x0=w*0.12, y0=h*0.80, lg=w*0.74, ht=h*0.60;
+  c.strokeStyle=CB();c.lineWidth=1.4;
+  c.beginPath();c.moveTo(x0,y0);c.lineTo(x0+lg,y0);c.moveTo(x0,y0);c.lineTo(x0,y0-ht);c.stroke();
+  /* les charges : fixes + variables */
+  const yf=y0-ht*0.30;
+  c.strokeStyle=CM();c.lineWidth=1.6;c.setLineDash([5,3]);
+  c.beginPath();c.moveTo(x0,yf);c.lineTo(x0+lg,yf);c.stroke();c.setLineDash([]);
+  c.strokeStyle=C3();c.lineWidth=2.2;
+  c.beginPath();c.moveTo(x0,yf);c.lineTo(x0+lg,y0-ht*0.86);c.stroke();
+  /* le chiffre d'affaires */
+  c.strokeStyle=C1();c.lineWidth=2.4;
+  c.beginPath();c.moveTo(x0,y0);c.lineTo(x0+lg,y0-ht*0.94);c.stroke();
+  /* le point mort */
+  const t=0.30/(0.94-0.86+0.30);
+  const px=x0+lg*t, py=y0-ht*0.94*t;
+  c.fillStyle=C2();c.beginPath();c.arc(px,py,5,0,6.284);c.fill();
+  c.strokeStyle=C2();c.lineWidth=1.2;c.setLineDash([3,3]);
+  c.beginPath();c.moveTo(px,y0);c.lineTo(px,py);c.stroke();c.setLineDash([]);
+  mono(c,F(sr,0)+" €",px,y0+18,12,C2(),"center");
+  mono(c,"charges fixes "+F(p.cf,0)+" €",x0+6,yf-12,10.5,CM(),"left");
+  mono(c,"taux de marge "+F(p.tx,0)+" %",x0+lg,h*0.14,11,C1(),"right");
+},
+
+/* ---- La rotation du stock : les dents de scie ---- */
+"rotation-stock":(c,w,h,p)=>{
+  const r=p.ca/p.sm;
+  const x0=w*0.10, y0=h*0.74, lg=w*0.80, ht=h*0.46;
+  c.strokeStyle=CB();c.lineWidth=1.4;
+  c.beginPath();c.moveTo(x0,y0);c.lineTo(x0+lg,y0);c.stroke();
+  const n=Math.max(2,Math.min(12,Math.round(r)));
+  c.strokeStyle=C1();c.lineWidth=2.2;c.beginPath();
+  for(let i=0;i<n;i++){
+    const a=x0+lg*i/n, b=x0+lg*(i+1)/n;
+    c.moveTo(a,y0-ht);c.lineTo(b,y0-ht*0.10);c.moveTo(b,y0-ht*0.10);c.lineTo(b,y0-ht);
+  }
+  c.stroke();
+  /* le stock moyen */
+  c.strokeStyle=C2();c.lineWidth=1.8;c.setLineDash([5,3]);
+  c.beginPath();c.moveTo(x0,y0-ht*0.55);c.lineTo(x0+lg,y0-ht*0.55);c.stroke();c.setLineDash([]);
+  mono(c,"stock moyen "+F(p.sm,0)+" €",x0,y0-ht*0.55-12,10.5,C2(),"left");
+  mono(c,F(r,2)+" rotations",w*0.5,h*0.92,13,C1(),"center");
+},
+
+/* ---- L'amortissement linéaire : la valeur qui descend ---- */
+"amortissement":(c,w,h,p)=>{
+  const a=p.vo/p.n;
+  const x0=w*0.12, y0=h*0.78, lg=w*0.76, ht=h*0.56;
+  c.strokeStyle=CB();c.lineWidth=1.4;
+  c.beginPath();c.moveTo(x0,y0);c.lineTo(x0+lg,y0);c.moveTo(x0,y0);c.lineTo(x0,y0-ht);c.stroke();
+  const n=Math.max(1,Math.min(10,p.n));
+  for(let i=0;i<n;i++){
+    const bx=x0+lg*i/n+2, bw=lg/n-4;
+    const hh=ht*(1-i/n);
+    c.fillStyle=C1();c.globalAlpha=.30;c.fillRect(bx,y0-hh,bw,hh);c.globalAlpha=1;
+    c.strokeStyle=C1();c.lineWidth=1;c.strokeRect(bx,y0-hh,bw,hh);
+  }
+  c.strokeStyle=C3();c.lineWidth=2.2;
+  c.beginPath();c.moveTo(x0,y0-ht);c.lineTo(x0+lg,y0);c.stroke();
+  mono(c,F(p.vo,0)+" €",x0,y0-ht-12,11,C1(),"left");
+  mono(c,n+" ans",x0+lg,y0+18,11,CM(),"right");
+  mono(c,"annuité "+F(a,0)+" €",w*0.5,h*0.94,12.5,C3(),"center");
+},
+
+/* ---- Le fonds de roulement : haut de bilan ---- */
+"bilan-fr":(c,w,h,p)=>{
+  const fr=p.cp+p.dlt-p.imm;
+  const tot=Math.max(p.cp+p.dlt,p.imm)||1;
+  const x0=w*0.14, W=w*0.28, y0=h*0.20, H2=h*0.58;
+  /* actif immobilisé */
+  c.fillStyle=CM();c.globalAlpha=.35;c.fillRect(x0,y0+H2*(1-p.imm/tot),W,H2*p.imm/tot);c.globalAlpha=1;
+  c.strokeStyle=CM();c.lineWidth=1.4;c.strokeRect(x0,y0,W,H2);
+  mono(c,"immobilisé",x0+W/2,y0-10,10.5,CM(),"center");
+  /* ressources stables */
+  const x1=x0+W+w*0.14;
+  c.fillStyle=C1();c.globalAlpha=.30;
+  c.fillRect(x1,y0+H2*(1-(p.cp+p.dlt)/tot),W,H2*(p.cp+p.dlt)/tot);c.globalAlpha=1;
+  c.strokeStyle=C1();c.lineWidth=1.4;c.strokeRect(x1,y0,W,H2);
+  mono(c,"stables",x1+W/2,y0-10,10.5,C1(),"center");
+  /* l'écart */
+  const ya=y0+H2*(1-p.imm/tot), yb=y0+H2*(1-(p.cp+p.dlt)/tot);
+  c.strokeStyle=fr>=0?C2():C3();c.lineWidth=2;
+  c.beginPath();c.moveTo(x0+W+6,ya);c.lineTo(x1-6,ya);c.moveTo(x0+W+6,yb);c.lineTo(x1-6,yb);c.stroke();
+  mono(c,(fr>=0?"+":"")+F(fr,0)+" €",w*0.5,h*0.92,13.5,fr>=0?C2():C3(),"center");
+},
+
+/* ---- La trésorerie : encaissements moins décaissements ---- */
+"tresorerie":(c,w,h,p)=>{
+  const fin=p.s+p.e-p.d;
+  const x0=w*0.12, y=h*0.46, lg=w*0.76, bh=h*0.18;
+  const ech=Math.max(p.s,p.e,p.d,Math.abs(fin))||1;
+  const barre=(v,i,col,lib)=>{
+    const bx=x0+lg*i/4+6, bw=lg/4-12;
+    const hh=Math.max(3,bh*Math.abs(v)/ech);
+    c.fillStyle=col;c.globalAlpha=.60;c.fillRect(bx,v>=0?y-hh:y,bw,hh);c.globalAlpha=1;
+    mono(c,lib,bx+bw/2,y+bh+16,10,CM(),"center");
+    mono(c,F(v,0),bx+bw/2,v>=0? y-hh-10 : y+hh+10,10,col,"center");
+  };
+  c.strokeStyle=CB();c.lineWidth=1.2;
+  c.beginPath();c.moveTo(x0,y);c.lineTo(x0+lg,y);c.stroke();
+  barre(p.s,0,CM(),"début"); barre(p.e,1,C2(),"encaissé");
+  barre(-p.d,2,C3(),"décaissé"); barre(fin,3,fin>=0?C1():C3(),"fin");
+},
+
+/* ---- La cubature : déblai d'un côté, remblai de l'autre ---- */
+"cubature":(c,w,h,p)=>{
+  const x0=w*0.10, lg=w*0.80, sol=h*0.50;
+  c.strokeStyle=CB();c.lineWidth=1.6;
+  c.beginPath();c.moveTo(x0,sol);c.lineTo(x0+lg,sol);c.stroke();
+  const ech=h*0.30/Math.max(1,Math.max(p.p1,p.p2));
+  c.fillStyle=C3();c.globalAlpha=.30;
+  c.beginPath();c.moveTo(x0,sol);c.lineTo(x0,sol+p.p1*ech);
+  c.lineTo(x0+lg,sol+p.p2*ech);c.lineTo(x0+lg,sol);c.closePath();c.fill();c.globalAlpha=1;
+  c.strokeStyle=C3();c.lineWidth=2;
+  c.beginPath();c.moveTo(x0,sol+p.p1*ech);c.lineTo(x0+lg,sol+p.p2*ech);c.stroke();
+  mono(c,F(p.p1,1)+" m",x0-6,sol+p.p1*ech/2,10.5,C3(),"right");
+  mono(c,F(p.p2,1)+" m",x0+lg+6,sol+p.p2*ech/2,10.5,C3(),"left");
+  mono(c,F(p.l,0)+" × "+F(p.la,0)+" m",w*0.5,h*0.18,11.5,CM(),"center");
+  mono(c,F(p.l*p.la*(p.p1+p.p2)/2,0)+" m³",w*0.5,h*0.92,13.5,C1(),"center");
+},
+
+/* ---- La descente de charge : ce qui arrive au poteau ---- */
+"descente-charge":(c,w,h,p)=>{
+  const x0=w*0.22, W=w*0.46, y0=h*0.22, H2=h*0.16;
+  /* la dalle */
+  c.fillStyle=CB();c.globalAlpha=.22;c.fillRect(x0,y0,W,H2);c.globalAlpha=1;
+  c.strokeStyle=CB();c.lineWidth=1.6;c.strokeRect(x0,y0,W,H2);
+  /* les charges */
+  for(let i=0;i<=5;i++) fleche(c,x0+W*(i+0.5)/6,y0-h*0.14,x0+W*(i+0.5)/6,y0-4,C2(),1.6);
+  mono(c,F(p.g,1)+" + "+F(p.q,1)+" kN/m²",x0+W/2,y0-h*0.20,11.5,C2(),"center");
+  mono(c,F(p.s,0)+" m² repris",x0+W/2,y0+H2/2,11,CI(),"center");
+  /* le poteau */
+  const px=x0+W/2;
+  c.fillStyle=C1();c.globalAlpha=.35;c.fillRect(px-14,y0+H2,28,h*0.36);c.globalAlpha=1;
+  c.strokeStyle=C1();c.lineWidth=1.6;c.strokeRect(px-14,y0+H2,28,h*0.36);
+  fleche(c,px,y0+H2+h*0.36+6,px,y0+H2+h*0.36+h*0.14,C3(),3);
+  mono(c,F(1.35*p.g*p.s+1.5*p.q*p.s,0)+" kN",px,h*0.94,13,C3(),"center");
+},
+
+/* ---- Le nivellement : arrière, avant, altitude ---- */
+"nivellement":(c,w,h,p)=>{
+  const sol=h*0.82, x0=w*0.10, x1=w*0.50, x2=w*0.88;
+  const ech=14;
+  c.strokeStyle=CB();c.lineWidth=1.4;
+  c.beginPath();c.moveTo(x0-20,sol);c.lineTo(w*0.96,sol);c.stroke();
+  /* la mire arrière et la mire avant */
+  const hA=p.ar*ech, hB=p.av*ech;
+  [[x0,hA,"AR "+F(p.ar,3),C2()],[x2,hB,"AV "+F(p.av,3),C3()]].forEach(([x,hh,lib,col])=>{
+    c.strokeStyle=col;c.lineWidth=4;
+    c.beginPath();c.moveTo(x,sol);c.lineTo(x,sol-hh);c.stroke();
+    mono(c,lib,x,sol-hh-12,11,col,"center");
+  });
+  /* le niveau, au milieu */
+  c.fillStyle=C1();c.fillRect(x1-12,sol-h*0.40,24,10);
+  c.strokeStyle=CM();c.lineWidth=1.2;
+  c.beginPath();c.moveTo(x1-14,sol-h*0.40);c.lineTo(x1+14,sol-h*0.40);c.stroke();
+  c.strokeStyle=CM();c.lineWidth=1;c.setLineDash([4,3]);
+  c.beginPath();c.moveTo(x0,sol-h*0.40);c.lineTo(x2,sol-h*0.40);c.stroke();c.setLineDash([]);
+  mono(c,"altitude "+F(p.alt+p.ar-p.av,3)+" m",w*0.5,h*0.14,12.5,C1(),"center");
+},
+
+/* ---- La surface Carrez : ce qui compte et ce qui ne compte pas ---- */
+"carrez":(c,w,h,p)=>{
+  const x0=w*0.14, y0=h*0.22, W=w*0.42, H2=h*0.52;
+  c.strokeStyle=CB();c.lineWidth=1.6;c.strokeRect(x0,y0,W,H2);
+  c.fillStyle=C1();c.globalAlpha=.22;c.fillRect(x0,y0,W,H2*0.72);c.globalAlpha=1;
+  /* la partie sous 1,80 m */
+  c.fillStyle=C3();c.globalAlpha=.28;c.fillRect(x0,y0+H2*0.72,W,H2*0.28);c.globalAlpha=1;
+  c.strokeStyle=C3();c.lineWidth=1.2;c.setLineDash([4,3]);
+  c.beginPath();c.moveTo(x0,y0+H2*0.72);c.lineTo(x0+W,y0+H2*0.72);c.stroke();c.setLineDash([]);
+  mono(c,"sous 1,80 m",x0+W/2,y0+H2*0.86,10,C3(),"center");
+  const rx=x0+W+w*0.06;
+  mono(c,"annoncé "+F(p.ann,2)+" m²",rx,h*0.36,11.5,CM(),"left");
+  mono(c,"mesuré "+F(p.reel,2)+" m²",rx,h*0.52,11.5,C1(),"left");
+  const ecart=(p.ann-p.reel)/p.ann*100;
+  mono(c,F(ecart,2)+" %",rx,h*0.74,14,Math.abs(ecart)>5?C3():C2(),"left");
+},
+
+/* ---- Le taux d'occupation d'un hôtel ---- */
+"occupation-hotel":(c,w,h,p)=>{
+  const x0=w*0.12, y0=h*0.22, W=w*0.72, H2=h*0.50;
+  const cols=10, lignes=4;
+  const total=cols*lignes;
+  const pris=Math.round(total*Math.min(1,p.occ/100));
+  for(let i=0;i<total;i++){
+    const cx=x0+W*(i%cols)/cols, cy=y0+H2*Math.floor(i/cols)/lignes;
+    const bw=W/cols-4, bh=H2/lignes-4;
+    c.fillStyle=i<pris?C2():CB();c.globalAlpha=i<pris?.60:.22;
+    c.fillRect(cx,cy,bw,bh);c.globalAlpha=1;
+  }
+  mono(c,F(p.ch,0)+" chambres · "+F(p.j,0)+" nuits",x0,y0-10,11,CM(),"left");
+  mono(c,F(p.occ,0)+" %",w*0.5,h*0.90,14,C1(),"center");
+},
+
+/* ---- Le masque : où la frontière tombe dans les bits ---- */
+"masque-cidr":(c,w,h,p)=>{
+  const x0=w*0.06, lg=w*0.88, y=h*0.42, bh=h*0.20;
+  const n=32, bw=lg/n;
+  for(let i=0;i<n;i++){
+    const x=x0+i*bw;
+    c.fillStyle=i<p.cidr?C1():C3();c.globalAlpha=i<p.cidr?.55:.30;
+    c.fillRect(x+0.5,y,bw-1,bh);c.globalAlpha=1;
+    if(i%8===7){c.strokeStyle=CB();c.lineWidth=1.4;
+      c.beginPath();c.moveTo(x+bw,y-6);c.lineTo(x+bw,y+bh+6);c.stroke();}
+  }
+  c.strokeStyle=C2();c.lineWidth=2.4;
+  c.beginPath();c.moveTo(x0+p.cidr*bw,y-12);c.lineTo(x0+p.cidr*bw,y+bh+12);c.stroke();
+  mono(c,"/"+p.cidr,x0+p.cidr*bw,y-22,12.5,C2(),"center");
+  mono(c,"réseau",x0+4,y+bh/2,10.5,CI(),"left");
+  mono(c,"hôtes",x0+lg-4,y+bh/2,10.5,CI(),"right");
+  mono(c,(Math.pow(2,32-p.cidr)-2)+" hôtes",w*0.5,h*0.86,13,C1(),"center");
+},
+
+/* ---- L'IMC : où l'on tombe sur l'échelle ---- */
+"imc":(c,w,h,p)=>{
+  const imc=p.p/(p.t*p.t);
+  const x0=w*0.10, lg=w*0.80, y=h*0.46, bh=h*0.16;
+  const zones=[[0,18.5,C3(),"maigreur"],[18.5,25,C2(),"normal"],[25,30,C1(),"surpoids"],[30,40,C3(),"obésité"]];
+  zones.forEach(([a,b,col,lib])=>{
+    const xa=x0+lg*Math.max(0,(a-14))/26, xb=x0+lg*Math.min(1,(b-14)/26);
+    c.fillStyle=col;c.globalAlpha=.35;c.fillRect(xa,y,xb-xa,bh);c.globalAlpha=1;
+    if(xb-xa>58) mono(c,lib,(xa+xb)/2,y+bh+14,9.5,col,"center");
+  });
+  c.strokeStyle=CB();c.lineWidth=1.2;c.strokeRect(x0,y,lg,bh);
+  const px=x0+lg*Math.max(0,Math.min(1,(imc-14)/26));
+  c.strokeStyle=CI();c.lineWidth=2.6;
+  c.beginPath();c.moveTo(px,y-10);c.lineTo(px,y+bh+10);c.stroke();
+  mono(c,F(imc,1),px,y-20,13,CI(),"center");
+  mono(c,F(p.p,0)+" kg · "+F(p.t,2)+" m",w*0.5,h*0.90,11.5,CM(),"center");
+},
+
 });
 
 /* ---- geo-figures.js.txt ---- */
@@ -40207,6 +40620,29 @@ const ILLUSTRATION={
   "lab-beer":"beer",
   "eb-rosee":"rosee",
   "indus-cadence-poste":"goulot",
+  "crsa-trs":"trs-filtres",
+  "crsa-mtbf":"mtbf-mttr",
+  "sc-humidite":"retrait-bois",
+  "sc-entraxe":"entraxe",
+  "gm-fermeture":"fermeture",
+  "ae-carburant":"emport",
+  "be-occupation":"occupation",
+  "vi-rendement":"rendement-vigne",
+  "er-poids":"poids-imprime",
+  "av-debit":"debit-carte",
+  /* et les parcours plus anciens, qui n'avaient rien */
+  "mco-seuil":"seuil-rentabilite",
+  "mco-rotation":"rotation-stock",
+  "cg-amort-lineaire":"amortissement",
+  "cg-fonds-roulement":"bilan-fr",
+  "gpme-tresorerie":"tresorerie",
+  "bat-cubature":"cubature",
+  "bat-charge":"descente-charge",
+  "bat-nivellement":"nivellement",
+  "pi-carrez":"carrez",
+  "tr-occupation":"occupation-hotel",
+  "si-masque":"masque-cidr",
+  "di-imc":"imc",
 
   /* mécanique */
   "plan-incline":"plan-incline",
