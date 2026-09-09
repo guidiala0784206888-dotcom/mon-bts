@@ -6240,7 +6240,7 @@ Object.assign(GEN,{
   {t:"Trou anionique.",op:F(p.na,0)+" − "+F(p.cl,0)+" − "+F(p.hco,0)+" = "+F(p.na-p.cl-p.hco,0)+" mmol/L"},
   {t:"Normal entre 8 et 16. Augmenté, il signale un acide non dosé : lactates, corps cétoniques, toxiques. Normal avec une acidose, il oriente au contraire vers une perte de bicarbonates — deux causes opposées, une seule soustraction pour les distinguer."}];}},
 
-"abm-controle-qualite":{t:"Contrôle de qualité interne",u:"écarts-types",tol:0.02,
+"abm-controle-qualite":{t:"Contrôle de qualité interne",u:"σ",tol:0.02,
  rappel:"un résultat de contrôle se juge en écarts-types, jamais en pourcentage",
  tirer(){return {cible:R(40,300,5),cv:R(15,80,5),mes:R(30,320,5)};},
  enonce(p){return "Contrôle de cible "+v(F(p.cible/10,1))+", CV = "+v(F(p.cv/10,1)+" %")+
@@ -6325,7 +6325,8 @@ const eur=(x,n=2)=>F(x,n)+" €";
 
 Object.assign(GEN,{
 
-"ae-potentiel":{t:"Potentiel restant d'un équipement",u:"h",tol:0.02,
+/* la question demande dans combien de JOURS la dépose est due. */
+"ae-potentiel":{t:"Potentiel restant d'un équipement",u:"jours",tol:0.02,
  rappel:"potentiel restant = limite de vie − heures déjà effectuées",
  tirer(){return {limite:P([2000,3000,6000,12000]),faites:R(100,11000,50),vol:R(1.5,9,0.5)};},
  enonce(p){const f=Math.min(p.faites,p.limite-50);
@@ -10826,7 +10827,8 @@ Object.assign(GEN,{
   {t:"Coût unitaire complet.",op:eur(p.cal/p.n,3)+" + "+eur(p.u)+" = "+eur(p.cal/p.n+p.u,3)},
   {t:"C'est pourquoi doubler le tirage n'en double jamais le prix. Et pourquoi un tirage trop petit coûte, à l'unité, une fortune."}];}},
 
-"cm-echantillon":{t:"Marge d'erreur d'un sondage",u:"%",tol:0.05,
+/* la question demande une marge en POINTS de pourcentage. */
+"cm-echantillon":{t:"Marge d'erreur d'un sondage",u:"points",tol:0.05,
  rappel:"marge ≈ 1 / √n, à 95 % de confiance",
  tirer(){return {n:P([100,200,400,600,900,1000,1500,2000])};},
  enonce(p){return "Un sondage porte sur "+v(F(p.n,0)+" personnes")+
@@ -12972,7 +12974,8 @@ Object.assign(GEN,{
   {t:"Coût du crédit.",op:eur(tot,0)+" − "+eur(p.c,0)+" = "+eur(tot-p.c,0)},
   {t:"Soit "+F((tot-p.c)/p.c*100,0)+" % du capital emprunté. C'est ce pourcentage, pas la mensualité, qu'il faut poser sur la table — la mensualité rassure, le coût total informe."}];}},
 
-"es-reserve":{t:"Crédit renouvelable",u:"€",tol:0.02,
+/* la question demande une DURÉE ; le champ annonçait des euros. */
+"es-reserve":{t:"Crédit renouvelable",u:"mois",tol:0.02,
  rappel:"les petites mensualités allongent la durée et multiplient le coût",
  tirer(){return {c:R(500,4000,100),tx:R(12,21,0.5),m:R(20,150,5)};},
  enonce(p){const men=Math.max(p.m,p.c*p.tx/100/12*1.15);
@@ -13399,7 +13402,9 @@ Object.assign(GEN,{
 /* ---------------- Hydrogéologie ---------------- */
 Object.assign(GEN,{
 
-"geo-porosite":{t:"Porosité d'une roche",u:"%",tol:0.02,
+/* ⚠️ deux questions dans un seul tirage : la porosité en %, ou le volume
+   de vides en cm³. L'unité suit donc le tirage — voir src/lib/unite.js. */
+"geo-porosite":{t:"Porosité d'une roche",u:(p)=>p.q==="n"?"%":"cm³",tol:0.02,
  rappel:"n = V_vides / V_total × 100",
  tirer(){return {vt:P([100,250,500,1000]),vv:null,q:P(["n","vv"]),n:P([5,8,12,15,20,25,30,35])};},
  enonce(p){return p.q==="n"
@@ -14433,7 +14438,8 @@ Object.assign(GEN,{
   {t:"Ce qu'il reste.",op:eur(p.b,0)+" − "+eur(p.b*p.t/100,2)+" = "+eur(n,2)},
   {t:"Le prélèvement à la source vient ENCORE après : le net imposable n'est pas le net versé. Sur un bulletin, ces trois lignes se suivent et se confondent facilement."}];}},
 
-"gpme-conges":{t:"Les congés payés acquis",u:"jours",tol:0.02,
+/* ⚠️ deux questions dans un seul tirage : des jours, ou un pourcentage. */
+"gpme-conges":{t:"Les congés payés acquis",u:(p)=>p.q==="j"?"jours":"%",tol:0.02,
  rappel:"2,5 jours ouvrables par mois de travail effectif",
  tirer(){return {m:R(1,12),q:P(["j","p"])};},
  enonce(p){return p.q==="j"
@@ -47773,9 +47779,10 @@ function blocCorrection(g,p){
   const liste=g.pas(p),vues=new Set();
   const donnees=(g.enonce(p).match(/<span class='val'>([\s\S]*?)<\/span>/g)||[])
     .map(x=>x.replace(/<[^>]*>/g,"").trim());
-  const rep=g.qcm?g.opts(p)[0]:nb(g.rep(p),Math.abs(g.rep(p))<1?4:2)+(g.u?" "+g.u:"");
+  const uOf=(g,p)=>typeof g.u==="function"?(g.u(p)||""):(g.u||"");
+  const rep=g.qcm?g.opts(p)[0]:nb(g.rep(p),Math.abs(g.rep(p))<1?4:2)+(uOf(g,p)?" "+uOf(g,p):"");
   let h='<div class="corr">';
-  const cible=CIBLES[g.u]||null;
+  const cible=CIBLES[uOf(g,p)]||null;
   h+='<div class="corr-cible"><div class="corr-case corr-cherche"><span class="k">Ce que tu cherches</span>'+
      '<span class="v">'+(cible||g.t)+"</span>"+
      (cible?'<span class="sous">'+g.t+"</span>":"")+"</div>";
@@ -47851,7 +47858,7 @@ function rendreAtelier(hote,mi,pi,pas){
     }else{
       const d=document.createElement("div");d.className="saisie";
       d.innerHTML='<div class="champ"><input type="text" inputmode="decimal" autocomplete="off" placeholder="ta réponse">'+
-        (g.u?'<span class="unite">'+g.u+"</span>":"")+"</div>"+
+        (uOf(g,p)?'<span class="unite">'+uOf(g,p)+"</span>":"")+"</div>"+
         '<button class="btn btn-principal" data-a="ok">Vérifier</button>';
       corps.appendChild(d);
       const inp=d.querySelector("input");
@@ -47882,7 +47889,7 @@ function rendreAtelier(hote,mi,pi,pas){
     serie=ok?serie+1:0;rejouer=!ok;
     box.querySelectorAll(".perles i").forEach((e,i)=>{e.dataset.e=i<serie?"ok":(!ok&&i===0?"ko":"");});
     const r=document.createElement("div");r.className="retour";r.dataset.e=ok?"ok":"ko";
-    const att=g.qcm?g.opts(p)[0]:nb(g.rep(p),g.rep(p)<1?4:2)+(g.u?" "+g.u:"");
+    const att=g.qcm?g.opts(p)[0]:nb(g.rep(p),g.rep(p)<1?4:2)+(uOf(g,p)?" "+uOf(g,p):"");
     r.innerHTML='<div class="bandeau">'+(ok?"Juste.":abandon?"On regarde ensemble.":"Non — la réponse était "+att)+"</div>"+
       '<div class="detail">'+blocCorrection(g,p)+"</div>";
     corps.appendChild(r);
@@ -48729,9 +48736,10 @@ function rendreControle(hote,mi,pi,pas){
         b.addEventListener("click",()=>valider(k===0,d,b,ordre));d.appendChild(b);});
       box.appendChild(d);
     }else{
+      const uOf2=(g,p)=>typeof g.u==="function"?(g.u(p)||""):(g.u||"");
       const d=document.createElement("div");d.className="saisie";
       d.innerHTML='<div class="champ"><input type="text" inputmode="decimal" autocomplete="off" placeholder="ta réponse">'+
-        (g.u?'<span class="unite">'+g.u+"</span>":"")+'</div><button class="btn btn-principal">Valider</button>';
+        (uOf2(g,p)?'<span class="unite">'+uOf2(g,p)+"</span>":"")+'</div><button class="btn btn-principal">Valider</button>';
       box.appendChild(d);
       const inp=d.querySelector("input");
       const v=()=>valider(juste(lireNombre(inp.value),g.rep(p),g.tol),d,inp);
@@ -48747,7 +48755,7 @@ function rendreControle(hote,mi,pi,pas){
     if(ordre&&cont){[...cont.children].forEach((b,k)=>{
       if(ordre[k][1]===0)b.dataset.r="bon";else if(b===cible&&!ok)b.dataset.r="mauvais";});}
     if(cible&&cible.tagName==="INPUT")cible.dataset.e=ok?"ok":"ko";
-    const att=g.qcm?g.opts(p)[0]:nb(g.rep(p),g.rep(p)<1?4:2)+(g.u?" "+g.u:"");
+    const att=g.qcm?g.opts(p)[0]:nb(g.rep(p),g.rep(p)<1?4:2)+(typeof g.u==="function"?(g.u(p)?" "+g.u(p):""):(g.u?" "+g.u:""));
     const r=document.createElement("div");r.className="retour";r.dataset.e=ok?"ok":"ko";
     r.innerHTML='<div class="bandeau">'+(ok?"Juste.":"Non — la réponse était "+att)+"</div>"+
       '<div class="detail">'+blocCorrection(g,p)+"</div>";
