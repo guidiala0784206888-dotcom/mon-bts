@@ -400,6 +400,14 @@ tr:last-child td{border-bottom:0}
 .page[data-vue="connexion"] .portail-marque h1{font-size:clamp(30px,4vw,42px);letter-spacing:-.02em}
 .page[data-vue="connexion"] .portail-marque p{max-width:34em;margin-inline:auto;line-height:1.55}
 
+/* hors accueil, mais c'est ici que le site ajoute son style */
+/* ⚠️ LE BOUTON CHOISI SE VOIT. Aucune règle ne marquait l'état
+   aria-pressed des boutons à choix, dans les figures comme dans les
+   bancs : quatre boutons gris identiques, et l'élève ne savait pas
+   lequel était actif. */
+.segm button[aria-pressed="true"]{background:var(--primary);color:var(--on-primary);
+  border-color:var(--primary);font-weight:600}
+
 </style>
 <style>
 /* ---- Banc d'essai ---- */
@@ -2855,7 +2863,7 @@ Object.assign(ANIM,{
   txt(c,"Q = "+F(Q2,0),ox+p.p*ech+8,oy-Q2*ech/2,10.5,C3());
   c.setLineDash([5,4]);c.strokeStyle=CM();c.lineWidth=1.6;
   c.beginPath();c.moveTo(ox,oy);c.lineTo(ox+p.p*ech,oy-Q1*ech);c.stroke();c.setLineDash([]);
-  txt(c,"S avant "+F(S1,0)+" kVA",ox+p.p*ech*0.42,oy-Q1*ech*0.46-10,10.5,CM(),"center");
+  plaque(c,"S avant "+F(S1,0)+" kVA",ox+p.p*ech*0.42,oy-Q1*ech*0.46-10,10.5,CM(),"center");
   fleche(c,ox,oy,ox+p.p*ech,oy-Q2*ech,C1(),3);
   txt(c,"S après "+F(S2,0)+" kVA",ox+p.p*ech*0.56,oy-Q2*ech*0.56+14,11,C1(),"center",true);
   /* courants comparés */
@@ -3089,7 +3097,7 @@ Object.assign(ANIM,{
   [["Courant appelé (× In)",gy1,cI,7,C3()],["Vitesse (× nominale)",gy2,cN,1.15,C2()]].forEach(([lab,yy,fn,mx,col])=>{
    c.strokeStyle=CB();c.lineWidth=1;
    c.beginPath();c.moveTo(x0,yy);c.lineTo(x0+lw,yy);c.moveTo(x0,yy-A);c.lineTo(x0,yy+6);c.stroke();
-   txt(c,lab,x0,yy-A-11,11,CM(),"left",true);
+   plaque(c,lab,x0,yy-A-11,11,CM(),"left",true);
    c.strokeStyle=col;c.lineWidth=2.8;c.beginPath();
    for(let i=0;i<=260;i++){const f=i/260;const X=x0+lw*f,Y=yy-A*Math.min(fn(f)/mx,1);i?c.lineTo(X,Y):c.moveTo(X,Y);}
    c.stroke();
@@ -4639,7 +4647,7 @@ Object.assign(ANIM,{
    c.fillStyle=col;c.globalAlpha=.20;
    c.beginPath();c.rect(x-s/2,-Math.min(h*0.30,20+F*0.05)-s,s,s);c.fill();c.globalAlpha=1;
    c.strokeStyle=col;c.beginPath();c.rect(x-s/2,-Math.min(h*0.30,20+F*0.05)-s,s,s);c.stroke();
-   mono(c,F(0)===undefined?"":"",0,0,1,col);
+   /* ⚠️ ligne neutralisée, PAS supprimée : labo.js découpe ce fichier par numéros de ligne. Elle appelait F(0) sur une force et plantait la figure. */
    return [x,-Math.min(h*0.30,20+F*0.05)-s];};
   const g=barre(p.d1,F1,C1(),-1), d=barre(d2,F2,C3(),1);
   c.restore();
@@ -4665,7 +4673,7 @@ Object.assign(ANIM,{
        {id:"s",lib:"Section",min:20,max:600,pas:10,val:200,u:"mm²"},
        {id:"re",lib:"Limite élastique",choix:["S235 · 235 MPa","S355 · 355 MPa","42CrMo4 · 750 MPa"],val:0}],
  dessin(c,w,h,t,p){
-  const Re=[235,355,750][p.re], F=p.f*1000, sig=F/p.s;
+  const Re=[235,355,750][p.re], Fn=p.f*1000, sig=Fn/p.s;   /* ⚠️ pas « F » : masquait le formateur F(), et la figure plantait */
   const taux=sig/Re;
   const y=h*0.40,x0=w*0.12,L0=w*0.52;
   const all=Math.min(0.14,taux*0.10);
@@ -11049,10 +11057,13 @@ Object.assign(GEN,{
  tirer(){return {base:R(2,7,1),cible:R(6,10,1),vol:P([20,30,40])};},
  enonce(p){const cible=Math.max(p.cible,p.base+1);
   return "Base "+v(F(p.base,0))+", objectif "+v(F(cible,0))+", oxydant "+v(F(p.vol,0)+" volumes")+
-  " (1 ton pour 10 vol., 2 pour 20, 3 pour 30, 4 pour 40). Combien de tons restent à gagner après une passe ?";},
- rep(p){const cible=Math.max(p.cible,p.base+1), gain=p.vol/10;
+  " (ton sur ton à 10 vol., 1 ton à 20, 2 à 30, 3 à 40). Combien de tons restent à gagner après une passe ?";},
+ /* ⚠️ MÊME TABLE que cf-volume-oxydant, que la leçon 02 et que le banc
+    « formuler la couleur » : 10 vol. ne lèvent pas. Ce générateur disait
+    « 10 vol. = 1 ton … 40 = 4 », et contredisait tout le reste du parcours. */
+ rep(p){const cible=Math.max(p.cible,p.base+1), gain={10:0,20:1,30:2,40:3}[p.vol];
   return Math.max(0,cible-p.base-gain);},
- pas(p){const cible=Math.max(p.cible,p.base+1), gain=p.vol/10;return [
+ pas(p){const cible=Math.max(p.cible,p.base+1), gain={10:0,20:1,30:2,40:3}[p.vol];return [
   {t:"Tons à gagner.",op:F(cible,0)+" − "+F(p.base,0)+" = "+F(cible-p.base,0)+" tons"},
   {t:"Après une passe.",op:F(cible-p.base,0)+" − "+F(gain,0)+" = "+F(Math.max(0,cible-p.base-gain),0)+" tons"},
   {t:"Reste plus d'un ton : il faut une seconde passe, à distance, sur un cheveu reposé. Forcer en montant le volume brûle la fibre — et un cheveu cassé ne se rattrape pas, il repousse."}];}},
@@ -21280,7 +21291,7 @@ cf07:{p:"Surdoser le correcteur ne neutralise pas mieux : cela ternit.",
  r:"Vert contre rouge · bleu contre orange · violet contre jaune."},
 cf08:{p:"Un cheveu cassé ne se rattrape pas : il repousse.",
  i:"Deux passes espacées, sur un cheveu reposé.",
- f:["10 vol. ≈ 1 ton, 20 ≈ 2, 30 ≈ 3, 40 ≈ 4"],
+ f:["10 vol. : ton sur ton · 20 : 1 ton · 30 : 2 tons · 40 : 3 tons"],
  g:"Monter le volume pour gagner une passe : la fibre brûle.",
  r:"Au-delà de ce qu'un oxydant ouvre, on fait une seconde passe."},
 cf09:{p:"La revente est le seul levier d'un salon déjà plein.",
@@ -26228,6 +26239,7 @@ const MODULES_CF=[
    <tr><td>cheveu vierge</td><td>résiste, demande une pose complète</td></tr>
    <tr><td class="mono">longueur déjà décolorée</td><td class="mono">ne supporte pas un second passage</td></tr>
   </table></div>
+  <figure data-anim="cf-fibre"></figure>
   <div class="encart e-piege"><span class="chapo">Le soin « réparateur »</span><p>Il comble et gaine, ce qui est déjà beaucoup. Il ne reconstitue pas une fibre morte. Le dire à la cliente vaut mieux que promettre l'impossible et la revoir déçue.</p></div>`},
  {k:"a",t:"Atelier — la fibre",gen:["cf-technique","be-hygiene","cf-volume-oxydant"],but:4,h:`
   <p>On commence avec des nombres ronds.</p>`},
@@ -26245,6 +26257,7 @@ const MODULES_CF=[
    <tr><td class="mono">30 volumes</td><td class="mono">deux tons</td></tr>
    <tr><td>40 volumes</td><td>trois tons</td></tr>
   </table></div>
+  <figure data-anim="cf-volumes"></figure>
   <div class="encart e-cle"><span class="chapo">Le fond dégagé décide du résultat</span><p>Orangé vers la hauteur 6, jaune vers 8. Sans neutralisation, la couleur posée par-dessus vire — quel que soit le tube choisi et quel que soit son prix.</p></div>`},
  {k:"zc",t:"Banc — formuler la couleur",cible:8},
  {k:"a",t:"Atelier — la couleur",gen:["cf-volume-oxydant","cf-melange","cf-technique"],but:4},
@@ -26256,6 +26269,7 @@ const MODULES_CF=[
  steps:[
  {k:"l",t:"Un rapport, pas une habitude",h:`
   <div class="formule">volume total = couleur × (1 + rapport)</div>
+  <figure data-anim="cf-rapport"></figure>
   <div class="encart e-piege"><span class="chapo">L'économie qui coûte</span><p>Un mélange allongé monte moins et de façon inégale. La reprise se fait gratuitement, sur une heure de fauteuil qui, elle, se paie.</p></div>`},
  {k:"a",t:"Atelier — le mélange",gen:["cf-melange","cf-volume-oxydant","be-cout-prestation"],but:4},
  {k:"c",t:"Contrôle",gen:["cf-melange","cf-volume-oxydant","be-cout-prestation","cf-technique"],n:8}
@@ -26266,6 +26280,7 @@ const MODULES_CF=[
  steps:[
  {k:"l",t:"Ce que coûte une heure",h:`
   <div class="formule">CA horaire = prix × 60 / durée &nbsp;·&nbsp; coût = produits + durée × charges horaires</div>
+  <figure data-anim="cf-heure"></figure>
   <div class="encart e-cle"><span class="chapo">Le produit pèse un dixième</span><p>Chercher l'économie sur les consommables revient à s'occuper du dixième en négligeant les neuf autres. La durée de la prestation, elle, décide de tout.</p></div>`},
  {k:"iu",t:"Banc — piloter le salon",marge:1200,occmax:88,occmin:50},
  {k:"a",t:"Atelier — l'heure de fauteuil",gen:["be-ca-horaire","be-cout-prestation","be-occupation"],but:4},
@@ -26277,6 +26292,7 @@ const MODULES_CF=[
  steps:[
  {k:"l",t:"Charges fixes et effectif",h:`
   <div class="formule">seuil = charges fixes / taux de marge sur coûts variables</div>
+  <figure data-anim="cf-seuil"></figure>
   <div class="encart e-cle"><span class="chapo">Le chiffre par personne</span><p>Il se compare au coût COMPLET d'un poste, charges comprises — pas au salaire net. Un collaborateur dont le coût dépasse ce qu'il produit ne se rattrape pas au volume.</p></div>
   <div class="encart e-piege"><span class="chapo">Le rendez-vous non honoré</span><p>Il coûte une heure de fauteuil qui ne se rattrape pas. C'est la raison d'être du rappel de la veille — pas une politesse, une mesure de gestion.</p></div>`},
  {k:"a",t:"Atelier — le salon",gen:["cf-salon","cf-equipe","cf-gestion"],but:4},
@@ -26288,6 +26304,7 @@ const MODULES_CF=[
  steps:[
  {k:"l",t:"Ce qui fait revenir",h:`
   <div class="encart e-cle"><span class="chapo">La valeur d'une cliente</span><p>Panier moyen × fréquence × années : le chiffre surprend toujours. Il transforme la façon dont on traite une réclamation.</p></div>
+  <figure data-anim="cf-fidele"></figure>
   <div class="encart e-piege"><span class="chapo">Le coefficient et la marge</span><p>Le coefficient multiplicateur parle en TTC, la marge en HT. Confondre les deux fait croire à un gain d'un cinquième supérieur à la réalité : c'est la TVA, elle ne reste pas dans la caisse.</p></div>`},
  {k:"a",t:"Atelier — la fidélité",gen:["be-fidelite","be-coefficient","be-conseil"],but:4},
  {k:"c",t:"Contrôle",gen:["be-fidelite","be-coefficient","be-conseil","cf-gestion"],n:8}
@@ -26304,6 +26321,7 @@ const MODULES_CF=[
    <tr><td>orange</td><td>bleu</td></tr>
    <tr><td class="mono">jaune</td><td class="mono">violet</td></tr>
   </table></div>
+  <figure data-anim="cf-cercle"></figure>
   <div class="encart e-piege"><span class="chapo">Une couleur éteinte ne se rattrape pas</span><p>Le correcteur se dose au tiers ou au quart. Au-delà, on ne neutralise plus : on grise. Et aucun shampooing ne fait revenir la lumière d'une couleur ternie.</p></div>`},
  {k:"a",t:"Atelier — la neutralisation",gen:["cf-neutralisation","cf-melange","cf-volume-oxydant"],but:4},
  {k:"c",t:"Contrôle",gen:["cf-neutralisation","cf-melange","cf-volume-oxydant","cf-technique"],n:8}
@@ -26313,7 +26331,8 @@ const MODULES_CF=[
  resume:"Un cheveu cassé ne se rattrape pas : il repousse.",
  steps:[
  {k:"l",t:"Ce qu'un oxydant peut ouvrir",h:`
-  <div class="formule">10 vol. ≈ 1 ton · 20 vol. ≈ 2 tons · 30 vol. ≈ 3 tons · 40 vol. ≈ 4 tons</div>
+  <div class="formule">10 vol. : ton sur ton · 20 vol. : 1 ton · 30 vol. : 2 tons · 40 vol. : 3 tons</div>
+  <figure data-anim="cf-passes"></figure>
   <div class="encart e-piege"><span class="chapo">Deux passes valent mieux qu'un volume forcé</span><p>Quand l'écart dépasse ce qu'un oxydant ouvre, on fait une seconde passe à distance, sur un cheveu reposé. Monter le volume pour gagner du temps brûle la fibre — et la cliente le découvre en se coiffant, une semaine plus tard.</p></div>`},
  {k:"a",t:"Atelier — l'éclaircissement",gen:["cf-temps-pose","cf-volume-oxydant","cf-melange"],but:4},
  {k:"c",t:"Contrôle",gen:["cf-temps-pose","cf-volume-oxydant","cf-melange","cf-cuir"],n:8}
@@ -26324,6 +26343,7 @@ const MODULES_CF=[
  steps:[
  {k:"l",t:"Ce qui ne coûte pas de fauteuil",h:`
   <div class="formule">panier moyen = (services + revente) / nombre de clientes</div>
+  <figure data-anim="cf-panier"></figure>
   <div class="encart e-cle"><span class="chapo">De 10 à 25 % de revente</span><p>Quelques euros de plus par cliente, sans une minute de fauteuil supplémentaire. Les autres leviers — ouvrir plus, embaucher — coûtent tous du temps ou du salaire.</p></div>`},
  {k:"a",t:"Atelier — le panier",gen:["cf-panier","cf-equipe","cf-salon"],but:4},
  {k:"c",t:"Contrôle",gen:["cf-panier","cf-equipe","cf-salon","cf-gestion"],n:8}
@@ -26334,6 +26354,7 @@ const MODULES_CF=[
  steps:[
  {k:"l",t:"Deux choses qu'on ne rattrape pas",h:`
   <div class="encart e-piege"><span class="chapo">L'allergie ne prévient pas</span><p>Une cliente qui a supporté un produit dix fois peut réagir violemment la onzième : c'est le principe même de la sensibilisation. Le test se refait, il ne se fait pas une fois pour toutes.</p></div>
+  <figure data-anim="cf-sensib"></figure>
   <div class="encart e-cle"><span class="chapo">Le fichier vaut plus que le mobilier</span><p>Bases, formules, réactions : c'est ce qui permet de refaire exactement la même couleur six mois plus tard. Un salon qui perd son fichier repart de zéro sur chaque tête.</p></div>`},
  {k:"a",t:"Atelier — le salon",gen:["cf-cuir","cf-organisation","cf-gestion"],but:4},
  {k:"c",t:"Contrôle",gen:["cf-cuir","cf-organisation","cf-gestion","cf-technique"],n:8}
@@ -26872,6 +26893,7 @@ const BLOC_CGE=[
    <tr><td>Synthèse de documents</td><td class="mono">40</td><td>confronter les documents, sans donner son avis</td></tr>
    <tr><td>Écriture personnelle</td><td class="mono">20</td><td>répondre à une question, avec ses propres références</td></tr>
   </table></div>
+  <figure data-anim="cge-bareme"></figure>
   <div class="encart e-cle"><span class="chapo">Deux tiers de la note</span><p>La synthèse pèse <strong>deux fois</strong> l'écriture personnelle. C'est pourtant elle qu'on bâcle quand le temps manque, parce qu'elle vient en premier et qu'on la rédige trop lentement.</p></div>
   <div class="encart e-terrain"><span class="chapo">Les thèmes changent, la méthode non</span><p>Deux thèmes sont au programme de la deuxième année ; l'un est renouvelé chaque année et publié au Bulletin officiel — l'animal pour la session 2026, la difficulté de distinguer le vrai du faux pour 2027. Ce module ne traite pas les thèmes : il traite le GESTE, qui sert quel que soit le sujet tombé.</p></div>`},
  {k:"l",t:"Confronter, et ce que ça veut dire",h:`
@@ -26882,6 +26904,7 @@ const BLOC_CGE=[
     <li>La confrontation.<span class="op">Sur ce point, les documents 1 et 3 s'accordent ; le 2 nuance en montrant que…</span></li>
    </ol>
    <div class="final">La seconde est notée, la première plafonne</div></div>
+  <figure data-anim="cge-confronter"></figure>
   <div class="encart e-piege"><span class="chapo">Le test qui ne trompe pas</span><p>Si une partie de ton devoir ne cite qu'un seul document, ce n'est pas une confrontation : c'est un résumé déguisé.</p></div>`},
  {k:"l",t:"Le tableau de confrontation",h:`
   <p>C'est l'outil qui remplace l'inspiration. Une ligne par idée, une colonne par document.</p>
@@ -26891,6 +26914,7 @@ const BLOC_CGE=[
    <tr><td>ses effets sur la société</td><td class="mono">—</td><td class="mono">✓</td><td class="mono">✓ oppose</td></tr>
    <tr><td>ce qu'on peut y faire</td><td class="mono">✓</td><td class="mono">—</td><td class="mono">✓</td></tr>
   </table></div>
+  <figure data-anim="cge-tableau"></figure>
   <div class="encart e-cle"><span class="chapo">Les cases vides parlent aussi</span><p>Un document qui ne dit rien sur une idée, c'est une information : cette idée n'est pas centrale, ou elle divise. Et les lignes les mieux remplies deviennent les parties du plan — le plan se lit dans le tableau, on ne le cherche pas.</p></div>`},
  {k:"a",t:"Atelier — la synthèse",gen:["cge-synthese","cge-confrontation","cge-citation"],but:4,h:`
   <p>Le geste juste, pas la formule.</p>`},
@@ -26904,6 +26928,7 @@ const BLOC_CGE=[
  {k:"l",t:"Un plan par idées",h:`
   <p>Deux ou trois parties, équilibrées, chacune portée par <strong>plusieurs</strong> documents.</p>
   <div class="formule">une partie = une idée + les documents qui l'éclairent</div>
+  <figure data-anim="cge-plan"></figure>
   <div class="encart e-piege"><span class="chapo">Le plan « thèse / antithèse » par réflexe</span><p>Il ne convient que si les documents s'opposent vraiment. Plaqué sur un corpus qui s'accorde, il force à inventer une opposition — et cela se voit.</p></div>`},
  {k:"l",t:"L'introduction, en quatre temps",h:`
   <div class="tabl"><table>
@@ -26913,10 +26938,12 @@ const BLOC_CGE=[
    <tr><td>la problématique</td><td>la question que les documents se posent ENSEMBLE</td></tr>
    <tr><td>l'annonce</td><td>le plan, en une phrase</td></tr>
   </table></div>
+  <figure data-anim="cge-intro"></figure>
   <div class="encart e-terrain"><span class="chapo">Écris-la au brouillon</span><p>Elle est courte et décisive : c'est la première chose que le correcteur lit, et elle donne le ton de toute la copie. C'est la seule partie qui mérite d'être rédigée deux fois.</p></div>`},
  {k:"l",t:"La conclusion",h:`
   <p>Elle <strong>répond à la problématique</strong>. Rien d'autre : pas d'idée nouvelle, pas d'avis, pas d'ouverture sur l'actualité.</p>
-  <div class="encart e-cle"><span class="chapo">Pourquoi pas d'avis</span><p>Parce qu'il est attendu ailleurs. Donner son opinion en synthèse, c'est répondre à côté d'une question de 40 points — et se priver de la seule partie où l'on avait le droit de le faire.</p></div>`},
+  <div class="encart e-cle"><span class="chapo">Pourquoi pas d'avis</span><p>Parce qu'il est attendu ailleurs. Donner son opinion en synthèse, c'est répondre à côté d'une question de 40 points — et se priver de la seule partie où l'on avait le droit de le faire.</p></div>
+  <figure data-anim="cge-conclusion"></figure>`},
  {k:"a",t:"Atelier — plan et introduction",gen:["cge-plan","cge-intro","cge-synthese"],but:4,h:`
   <p>Regarde à chaque fois ce que la question demande VRAIMENT.</p>`},
  {k:"c",t:"Contrôle",gen:["cge-plan","cge-intro","cge-confrontation","cge-synthese"],n:8}
@@ -26928,9 +26955,11 @@ const BLOC_CGE=[
  steps:[
  {k:"l",t:"Ce qu'on te demande",h:`
   <p>Une <strong>réponse argumentée et organisée</strong> à une question précise, liée au thème. Le « je » y est permis — c'est une réflexion personnelle, pas un exposé.</p>
-  <div class="encart e-cle"><span class="chapo">Apporte autre chose</span><p>Les documents du corpus peuvent être réutilisés, mais ils ne suffisent pas. Ce qui fait la note, ce sont les références que le corpus ne contient pas : un livre, un film, un fait précis, une expérience.</p></div>`},
+  <div class="encart e-cle"><span class="chapo">Apporte autre chose</span><p>Les documents du corpus peuvent être réutilisés, mais ils ne suffisent pas. Ce qui fait la note, ce sont les références que le corpus ne contient pas : un livre, un film, un fait précis, une expérience.</p></div>
+  <figure data-anim="cge-ecriture"></figure>`},
  {k:"l",t:"Ce qui fait un argument",h:`
   <div class="formule">une idée + la raison qui la soutient + un exemple + ce qu'il prouve</div>
+  <figure data-anim="cge-argument"></figure>
   <div class="resolu"><span class="chapo">Un paragraphe qui tient</span>
    <ol>
     <li>L'idée.<span class="op">L'image manipulée ne trompe pas seulement l'œil : elle use la confiance.</span></li>
@@ -26956,6 +26985,7 @@ const BLOC_CGE=[
    <tr><td class="mono">ils s'agissent de</td><td class="mono">il s'agit de</td></tr>
    <tr><td>une phrase de six lignes</td><td>deux phrases, et une virgule qui respire</td></tr>
   </table></div>
+  <figure data-anim="cge-fautes"></figure>
   <div class="encart e-piege"><span class="chapo">Pire qu'une faute d'orthographe</span><p>La phrase qu'on doit relire deux fois pour la comprendre. Une idée juste mal écrite se lit comme une idée fausse.</p></div>`},
  {k:"l",t:"Les liens logiques",h:`
   <div class="tabl"><table>
@@ -26965,6 +26995,7 @@ const BLOC_CGE=[
    <tr><td>conséquence</td><td>ainsi · dès lors · par conséquent</td></tr>
    <tr><td>concession</td><td>bien que · certes… mais</td></tr>
   </table></div>
+  <figure data-anim="cge-liens"></figure>
   <div class="encart e-cle"><span class="chapo">Quatre suffisent</span><p>Un devoir se lit par ses articulations. Quatre connecteurs bien placés font paraître un raisonnement là où vingt phrases juxtaposées font une liste.</p></div>`},
  {k:"l",t:"Les quatre heures",h:`
   <div class="tabl"><table>
@@ -26974,6 +27005,7 @@ const BLOC_CGE=[
    <tr><td>écriture personnelle</td><td class="mono">60 min</td><td>20 points</td></tr>
    <tr><td>relecture</td><td class="mono">15 min</td><td>en trois passes séparées</td></tr>
   </table></div>
+  <figure data-anim="cge-heures"></figure>
   <div class="encart e-terrain"><span class="chapo">La relecture se prend AVANT</span><p>Un quart d'heure réservé au départ, pas « le temps qui restera ». Il ne reste jamais rien.</p></div>`},
  {k:"cg",t:"Banc — répartir les quatre heures",syn:100,ecr:60,rel:15},
  {k:"a",t:"Atelier — langue et méthode",gen:["cge-langue","cge-connecteurs","cge-relire","cge-temps"],but:5,h:`
@@ -36130,7 +36162,7 @@ Object.assign(ANIM,{
   c.strokeStyle=CB();c.setLineDash([3,3]);c.lineWidth=1.2;
   c.beginPath();c.moveTo(X(p.s),gy);c.lineTo(X(p.s),Y(tau));c.lineTo(X(0),Y(tau));c.stroke();c.setLineDash([]);
   c.fillStyle=C3();c.beginPath();c.arc(X(p.s),Y(tau),8,0,TAU);c.fill();
-  mono(c,F(tau,0)+" kPa",X(p.s)+14,Y(tau)-12,13,C3());
+  plaque(c,F(tau,0)+" kPa",X(p.s)+14,Y(tau)-12,13,C3(),"left");
   mono(c,p.s+"",X(p.s),gy+18,11.5,CM(),"center");
   mono(c,"τ = "+p.c+" + "+p.s+" × tan "+p.phi+"° = "+F(tau,0)+" kPa",w*0.5,h*0.96,12.5,C1(),"center");
  }},
@@ -46763,6 +46795,591 @@ function rendreHotel(hote,mi,pi,pas){
        " € de marge. Rempli ET vendu au bon prix : c'est le RevPAR qui le prouve, pas le taux d'occupation seul."};
    },mi,pi,"hotel");
 }
+
+/* ---- anims-gabarits.js.txt ---- */
+/* =========================================================================
+   LES GABARITS D'ANIMATION
+   Huit cent quarante-cinq leçons étaient immobiles. Écrire autant de
+   moteurs à la main serait des mois, et beaucoup se ressembleraient.
+   Chaque gabarit est donc une FABRIQUE : on lui donne le contenu d'une
+   leçon — ses mots, ses valeurs, sa formule — et il rend une entrée ANIM
+   complète, avec ses curseurs et son mouvement. La fermentation du vin
+   et le cercle chromatique ne partagent que le moteur.
+   Une leçon s'anime par <figure data-anim="id"></figure>, comme avant :
+   ni l'application ni le site n'ont rien à apprendre.
+   ⚠️ Tout texte long passe par gabEcrire, qui coupe à la largeur. Un
+   `fillText` ne coupe jamais : une phrase trop longue sortait du cadre
+   sans que l'épreuve des chevauchements ne s'en aperçoive.
+   ========================================================================= */
+
+/* Écrit s en lignes qui tiennent dans maxw ; rend le nombre de lignes. */
+function gabEcrire(c,s,x,y,maxw,taille,col,al,gras,inter){
+  const t=taille||11, pas=inter||t*1.3;
+  c.font=(gras?"600 ":"")+t+"px Rubik, sans-serif";
+  const mots=String(s).split(" "), lignes=[]; let l="";
+  for(const m of mots){
+    const essai=l?l+" "+m:m;
+    if(c.measureText && c.measureText(essai).width>maxw && l){ lignes.push(l); l=m; }
+    else l=essai;
+  }
+  if(l) lignes.push(l);
+  lignes.forEach((li,i)=>txt(c,li,x,y+i*pas,t,col,al,gras));
+  return lignes.length;
+}
+/* Mélange deux couleurs #rrggbb dans la proportion k (0 → a, 1 → b). */
+function gabMelange(a,b,k){
+  const h=(s)=>[1,3,5].map(i=>parseInt(s.slice(i,i+2),16));
+  const A=h(a),B=h(b),m=A.map((v,i)=>Math.round(v+(B[i]-v)*k));
+  return "#"+m.map(v=>v.toString(16).padStart(2,"0")).join("");
+}
+const gabDoux=(x)=>x<0?0:x>1?1:x*x*(3-2*x);      /* départ et arrivée en douceur */
+
+const GAB={
+
+/* ---------------------------------------------------------------------
+   1. ÉTAPES — une procédure dont les étapes s'allument l'une après
+   l'autre. Un toucher sur une étape la fige pour la lire.
+   --------------------------------------------------------------------- */
+etapes(o){ const n=o.etapes.length, P=o.pas||1.9; return {
+  t:o.t, ratio:o.ratio||1.9, note:o.note, etat:{fige:-1}, clic(p,x,y,w,h,e){
+    const x0=24,x1=w-24,pas=(x1-x0)/Math.max(1,n-1),i=Math.round((x-x0)/pas);
+    if(i<0||i>=n||Math.abs(y-h*0.24)>30) return false;
+    e.fige=(e.fige===i?-1:i); return true; },
+  dessin(c,w,h,t,p,e){
+    const col=o.couleur||C1(), x0=24,x1=w-24,y=h*0.24,pas=(x1-x0)/Math.max(1,n-1);
+    const cur=e.fige>=0?e.fige:Math.floor(t/P)%n, av=e.fige>=0?0:gabDoux((t%P)/P*1.6);
+    c.strokeStyle=CB();c.lineWidth=3;c.lineCap="round";
+    c.beginPath();c.moveTo(x0,y);c.lineTo(x1,y);c.stroke();
+    c.strokeStyle=col;c.beginPath();c.moveTo(x0,y);
+    c.lineTo(x0+pas*Math.min(n-1,cur+(cur<n-1?av:0)),y);c.stroke();
+    for(let i=0;i<n;i++){
+      const x=x0+pas*i, ici=i===cur, fait=i<cur;
+      if(ici){c.globalAlpha=.18+.14*Math.sin(t*4);c.fillStyle=col;
+        c.beginPath();c.arc(x,y,19,0,TAU);c.fill();c.globalAlpha=1;}
+      c.fillStyle=(ici||fait)?col:CS();c.strokeStyle=(ici||fait)?col:CB();c.lineWidth=2;
+      c.beginPath();c.arc(x,y,ici?12:9.5,0,TAU);c.fill();c.stroke();
+      txt(c,String(i+1),x,y,ici?11.5:10,(ici||fait)?"#ffffff":CM(),"center",true);
+    }
+    const s=o.etapes[cur];
+    txt(c,s.nom,w/2,h*0.50,13.5,CI(),"center",true);
+    if(s.dit) gabEcrire(c,s.dit,w/2,h*0.68,w-36,11.5,CM(),"center");
+  }};},
+
+/* ---------------------------------------------------------------------
+   2. ÉCHELLE — une suite de niveaux colorés ; un curseur part d'un
+   niveau et va jusqu'où les réglages le mènent.
+   --------------------------------------------------------------------- */
+echelle(o){ return {
+  t:o.t, ratio:o.ratio||2.3, note:o.note, regl:o.regl,
+  dessin(c,w,h,t,p){
+    const N=o.niveaux, n=N.length, x0=16, lw=(w-32)/n, y=h*0.40, hh=h*0.22;
+    const de=Math.max(0,Math.min(n-1,o.de(p))), a=Math.max(0,Math.min(n-1,o.a(p)));
+    const k=gabDoux(((t%4)/4)*1.35), pos=de+(a-de)*k;
+    N.forEach((nv,i)=>{ c.fillStyle=nv.col; c.fillRect(x0+i*lw+1,y-hh/2,lw-2,hh);
+      txt(c,nv.lib!==undefined?nv.lib:String(i+1),x0+i*lw+lw/2,y,10,
+          nv.clair?"#1a1a1a":"#ffffff","center",true); });
+    const xd=x0+de*lw+lw/2, xc=x0+pos*lw+lw/2;
+    c.strokeStyle=CM();c.lineWidth=2;c.beginPath();c.moveTo(xd,y-hh/2-12);c.lineTo(xd,y-hh/2-2);c.stroke();
+    txt(c,o.libDe||"départ",xd,y-hh/2-21,10.5,CM(),"center");
+    c.fillStyle=o.couleur||C1();c.beginPath();
+    c.moveTo(xc,y+hh/2+2);c.lineTo(xc-7,y+hh/2+13);c.lineTo(xc+7,y+hh/2+13);c.closePath();c.fill();
+    txt(c,o.libA||"atteint",xc,y+hh/2+24,10.5,o.couleur||C1(),"center",true);
+    if(o.legende) gabEcrire(c,o.legende(p,Math.round(pos)),w/2,h*0.86,w-30,11.5,CI(),"center",true);
+  }};},
+
+/* ---------------------------------------------------------------------
+   3. DOSAGE — deux produits versés dans un bol ; le rapport décide des
+   quantités ET de la couleur du mélange.
+   --------------------------------------------------------------------- */
+dosage(o){ return {
+  t:o.t, ratio:o.ratio||1.75, note:o.note, regl:o.regl,
+  dessin(c,w,h,t,p){
+    const qa=o.qa(p), qb=o.qb(p), tot=qa+qb, max=o.max||tot, ph=(t%3.6)/3.6;
+    const verse=gabDoux(Math.min(1,ph/0.62)), k=qb/Math.max(1e-9,tot);
+    const bx=w/2, by=h*0.80, bw=w*0.36, bh=h*0.40;
+    /* les deux flacons */
+    [[w*0.17,o.a,qa],[w*0.83,o.b,qb]].forEach(([x,pr,q],j)=>{
+      const fw=w*0.12, fh=h*0.30, fy=h*0.12, niv=1-verse*0.85;
+      c.strokeStyle=CB();c.lineWidth=1.5;c.strokeRect(x-fw/2,fy,fw,fh);
+      c.fillStyle=pr.col;c.fillRect(x-fw/2+2,fy+fh*(1-niv)+1,fw-4,fh*niv-2);
+      txt(c,pr.nom,x,fy+fh+12,10.5,CI(),"center",true);
+      mono(c,(o.fmt||(v=>Math.round(v)))(q)+" "+(o.u||""),x,fy+fh+25,10.5,CM(),"center");
+      if(ph<0.62){ c.fillStyle=pr.col;
+        for(let g=0;g<5;g++){ const f=((t*1.7+g/5)%1);
+          const gx=x+(bx-x)*f, gy=fy+fh+30+(by-bh*0.45-(fy+fh+30))*f*f;
+          c.beginPath();c.arc(gx,gy,2.6,0,TAU);c.fill(); } }
+    });
+    /* le bol */
+    const rempli=verse*tot/max, col=gabMelange(o.a.col,o.b.col,k);
+    c.fillStyle=col;c.globalAlpha=.9;c.beginPath();
+    c.moveTo(bx-bw/2+bw*0.08,by-bh*rempli*0.8);c.lineTo(bx+bw/2-bw*0.08,by-bh*rempli*0.8);
+    c.lineTo(bx+bw*0.36,by);c.lineTo(bx-bw*0.36,by);c.closePath();c.fill();c.globalAlpha=1;
+    c.strokeStyle=CI();c.lineWidth=2;c.beginPath();
+    c.moveTo(bx-bw/2,by-bh*0.85);c.lineTo(bx-bw*0.36,by);c.lineTo(bx+bw*0.36,by);c.lineTo(bx+bw/2,by-bh*0.85);c.stroke();
+    plaque(c,(o.fmtTot||(v=>Math.round(v)))(tot*verse)+" "+(o.u||""),bx,by-bh*0.36,11.5,CI(),"center",true);
+    if(o.verdict) txt(c,o.verdict(p),bx,h*0.955,11,o.verdictCol?o.verdictCol(p):CM(),"center",true);
+  }};},
+
+/* ---------------------------------------------------------------------
+   4. SEUIL — le chiffre d'affaires et les coûts se croisent ; à gauche
+   on perd, à droite on gagne.
+   --------------------------------------------------------------------- */
+seuil(o){ return {
+  t:o.t, ratio:o.ratio||1.7, note:o.note, regl:o.regl,
+  dessin(c,w,h,t,p){
+    const CF=o.fixes(p),   /* pas « F » : ce nom masquerait le formateur F() — deux figures plantaient ainsi */ pv=o.pv(p), cv=o.cv(p), X=o.xmax(p);
+    const gx=38, gy=h*0.86, gw=w-58, gh=h*0.70;
+    const Y=Math.max(pv*X, CF+cv*X)*1.05, sx=v=>gx+gw*v/X, sy=v=>gy-gh*v/Y;
+    const xs=pv>cv? CF/(pv-cv) : Infinity;
+    /* zones de perte et de gain */
+    for(let i=0;i<60;i++){ const x=X*i/60, x2=X*(i+1)/60, ca=pv*x, ct=CF+cv*x;
+      c.fillStyle=ca<ct?C3():C2(); c.globalAlpha=.10;
+      c.fillRect(sx(x),sy(Math.max(ca,ct)),sx(x2)-sx(x)+0.5,Math.abs(sy(ca)-sy(ct))); }
+    c.globalAlpha=1;
+    c.strokeStyle=CB();c.lineWidth=1;c.beginPath();c.moveTo(gx,gy);c.lineTo(gx+gw,gy);c.moveTo(gx,gy);c.lineTo(gx,gy-gh);c.stroke();
+    c.lineWidth=2.5;
+    c.strokeStyle=C3();c.beginPath();c.moveTo(sx(0),sy(CF));c.lineTo(sx(X),sy(CF+cv*X));c.stroke();
+    c.strokeStyle=C1();c.beginPath();c.moveTo(sx(0),sy(0));c.lineTo(sx(X),sy(pv*X));c.stroke();
+    /* ⚠️ sur plaque opaque : posées au bout des droites, les étiquettes
+       étaient barrées par la droite elle-même dès qu'elle montait. */
+    plaque(c,o.libCA||"chiffre d'affaires",sx(X)-2,sy(pv*X)-12,10,C1(),"right",true);
+    plaque(c,o.libCT||"coûts",sx(X)-2,sy(CF+cv*X)+14,10,C3(),"right",true);
+    /* l'activité qui avance */
+    const xa=X*gabDoux((t%5)/5);
+    c.fillStyle=pv*xa>=CF+cv*xa?C2():C3();c.beginPath();c.arc(sx(xa),sy(pv*xa),5,0,TAU);c.fill();
+    if(xs<X){ c.setLineDash&&c.setLineDash([4,4]);c.strokeStyle=CI();c.lineWidth=1.2;
+      c.beginPath();c.moveTo(sx(xs),gy);c.lineTo(sx(xs),sy(pv*xs));c.stroke();c.setLineDash&&c.setLineDash([]);
+      plaque(c,"seuil : "+(o.fmt||(v=>Math.round(v)))(xs)+" "+(o.ux||""),sx(xs),gy-gh*0.92,11,CI(),"center",true); }
+    else plaque(c,"jamais rentable",gx+gw/2,gy-gh*0.92,11,C3(),"center",true);
+    txt(c,o.axeX||"activité",gx+gw,gy+12,10,CM(),"right");
+  }};},
+
+/* ---------------------------------------------------------------------
+   5. COURBE — une grandeur qui évolue dans le temps ; la courbe se
+   trace sous les yeux, un point en tête donne la valeur.
+   --------------------------------------------------------------------- */
+courbe(o){ return {
+  t:o.t, ratio:o.ratio||1.8, note:o.note, regl:o.regl,
+  dessin(c,w,h,t,p){
+    const X=o.xmax(p), Y=o.ymax(p), gx=40, gy=h*0.84, gw=w-60, gh=h*0.68;
+    const sx=v=>gx+gw*v/X, sy=v=>gy-gh*Math.max(0,Math.min(Y,v))/Y;
+    c.strokeStyle=CB();c.lineWidth=1;c.beginPath();c.moveTo(gx,gy);c.lineTo(gx+gw,gy);c.moveTo(gx,gy);c.lineTo(gx,gy-gh);c.stroke();
+    txt(c,o.axeX||"",gx+gw,gy+12,10,CM(),"right");
+    txt(c,o.axeY||"",gx+4,gy-gh-8,10,CM(),"left");
+    if(o.repere){ const r=o.repere(p); if(r!=null&&r<=Y){
+      c.setLineDash&&c.setLineDash([4,4]);c.strokeStyle=C3();c.lineWidth=1.2;
+      c.beginPath();c.moveTo(gx,sy(r));c.lineTo(gx+gw,sy(r));c.stroke();c.setLineDash&&c.setLineDash([]);
+      plaque(c,o.libRepere||"",gx+gw,sy(r)-10,10,C3(),"right",true); } }
+    const fin=X*gabDoux(((t%6)/6)*1.25);
+    (o.series||[{f:o.f,col:o.col}]).forEach(S=>{
+      c.strokeStyle=S.col||C1();c.lineWidth=2.6;c.beginPath();
+      for(let i=0;i<=90;i++){ const x=fin*i/90, y=S.f(x,p); i?c.lineTo(sx(x),sy(y)):c.moveTo(sx(x),sy(y)); }
+      c.stroke(); });
+    const S0=(o.series||[{f:o.f}])[0], yf=S0.f(fin,p);
+    c.fillStyle=(o.series&&o.series[0].col)||o.col||C1();c.beginPath();c.arc(sx(fin),sy(yf),5,0,TAU);c.fill();
+    plaque(c,(o.fmt||(v=>Math.round(v)))(yf)+" "+(o.uy||""),Math.min(sx(fin),gx+gw-30),Math.max(sy(yf)-15,gy-gh+8),11,CI(),"center",true);
+  }};},
+
+/* ---------------------------------------------------------------------
+   6. PARTS — une barre qui se partage ; les morceaux glissent vers leur
+   taille quand on bouge un réglage.
+   --------------------------------------------------------------------- */
+parts(o){ const mem={}; return {
+  t:o.t, ratio:o.ratio||1.9, note:o.note, regl:o.regl,
+  dessin(c,w,h,t,p){
+    const P=o.parts(p), tot=P.reduce((s,x)=>s+Math.max(0,x.v),0)||1;
+    const x0=16, bw=w-32, y=h*0.16, bh=h*0.20;
+    let x=x0;
+    P.forEach((q,i)=>{ const cible=bw*Math.max(0,q.v)/tot;
+      mem[i]=mem[i]===undefined?cible:mem[i]+(cible-mem[i])*0.12;
+      c.fillStyle=q.col;c.fillRect(x,y,Math.max(0,mem[i]-1.5),bh);
+      if(mem[i]>34) txt(c,Math.round(100*q.v/tot)+" %",x+mem[i]/2,y+bh/2,10.5,"#ffffff","center",true);
+      x+=mem[i]; });
+    const col2=P.length>3, lh=h*0.14;
+    P.forEach((q,i)=>{ const cx=col2&&i%2? w/2+6 : 18, cy=y+bh+lh*0.9+(col2?Math.floor(i/2):i)*lh;
+      c.fillStyle=q.col;c.fillRect(cx,cy-5,10,10);
+      txt(c,q.nom,cx+15,cy,11,CI(),"left");
+      mono(c,(o.fmt||(v=>Math.round(v)))(q.v)+(o.u?" "+o.u:""),(col2&&i%2?w-16:(col2?w/2-8:w-16)),cy,10.5,CM(),"right"); });
+    if(o.total) txt(c,o.total(p,tot),w/2,h*0.95,11.5,CI(),"center",true);
+  }};},
+
+/* ---------------------------------------------------------------------
+   7. CERCLE — une roue de secteurs ; l'aiguille va au secteur choisi,
+   son vis-à-vis s'allume. Cercle chromatique, cycle, saisons.
+   --------------------------------------------------------------------- */
+cercle(o){ return {
+  t:o.t, ratio:o.ratio||1.45, note:o.note, regl:o.regl,
+  dessin(c,w,h,t,p){
+    /* ⚠️ la roue à gauche, la légende à droite, et un vrai couloir entre les
+       deux : l'aiguille vers le secteur de droite traversait « on corrige avec ». */
+    const S=o.secteurs, n=S.length, cx=w*0.28, cy=h*0.52, R=Math.min(w*0.23,h*0.40);
+    const i=Math.max(0,Math.min(n-1,o.choisi(p))), j=o.oppose?o.oppose(i,n):(i+Math.floor(n/2))%n;
+    /* ⚠️ L'aiguille est une fonction du TEMPS, pas d'un état accumulé : elle
+       fait un demi-tour puis se pose sur le secteur choisi. Accumulée d'un
+       dessin à l'autre, elle n'atteignait jamais sa place pendant l'épreuve
+       — qui ne voyait donc pas qu'elle barrait la légende. */
+    const cible=-Math.PI/2+(i+0.5)*TAU/n;
+    const st={ang:cible-(1-gabDoux(Math.min(1,(t%5)/1.3)))*Math.PI};
+    S.forEach((s,k)=>{ const a0=-Math.PI/2+k*TAU/n, a1=a0+TAU/n, fort=k===i||k===j;
+      c.fillStyle=s.col;c.globalAlpha=fort?1:0.42;c.beginPath();c.moveTo(cx,cy);
+      c.arc(cx,cy,fort?R:R*0.9,a0,a1);c.closePath();c.fill(); });
+    c.globalAlpha=1;
+    c.fillStyle=CS();c.beginPath();c.arc(cx,cy,R*0.32,0,TAU);c.fill();
+    const ai=-Math.PI/2+(j+0.5)*TAU/n;
+    c.setLineDash&&c.setLineDash([4,3]);c.strokeStyle=CI();c.lineWidth=1.6;
+    c.beginPath();c.moveTo(cx+Math.cos(st.ang)*R*0.34,cy+Math.sin(st.ang)*R*0.34);
+    c.lineTo(cx+Math.cos(st.ang)*R*1.02,cy+Math.sin(st.ang)*R*1.02);c.stroke();c.setLineDash&&c.setLineDash([]);
+    fleche(c,cx,cy,cx+Math.cos(st.ang)*R*0.30,cy+Math.sin(st.ang)*R*0.30,CI(),2.2);
+    /* la légende à droite : jamais sur la roue */
+    const lx=w*0.77;
+    txt(c,o.libChoisi||"choisi",lx,h*0.22,10,CM(),"center");
+    pastilleTexte(c,S[i].nom,lx,h*0.34,S[i].col);
+    txt(c,o.libOppose||"face à face",lx,h*0.54,10,CM(),"center");
+    pastilleTexte(c,S[j].nom,lx,h*0.66,S[j].col);
+    if(o.verdict) gabEcrire(c,o.verdict(p,i,j),lx,h*0.84,w*0.40,10.5,CI(),"center",true);
+  }};},
+
+/* ---------------------------------------------------------------------
+   8. REMPLISSAGE — une cuve qui monte ; au-delà du seuil, elle change
+   de couleur et le dit.
+   --------------------------------------------------------------------- */
+remplissage(o){ return {
+  t:o.t, ratio:o.ratio||1.8, note:o.note, regl:o.regl,
+  dessin(c,w,h,t,p){
+    const niv=Math.max(0,Math.min(1,o.niveau(p))), s=o.seuil, k=gabDoux(((t%4.5)/4.5)*1.3), v=niv*k;
+    const x=w*0.14, cw=w*0.26, y=h*0.10, ch=h*0.78;
+    c.fillStyle=v>s?C3():(o.col||C1());c.globalAlpha=.85;
+    const vag=Math.sin(t*3)*2;
+    c.beginPath();c.moveTo(x,y+ch*(1-v)+vag);
+    c.quadraticCurveTo(x+cw/2,y+ch*(1-v)-vag,x+cw,y+ch*(1-v)+vag);
+    c.lineTo(x+cw,y+ch);c.lineTo(x,y+ch);c.closePath();c.fill();c.globalAlpha=1;
+    c.strokeStyle=CI();c.lineWidth=2;c.strokeRect(x,y,cw,ch);
+    c.setLineDash&&c.setLineDash([5,4]);c.strokeStyle=C3();c.lineWidth=1.6;
+    c.beginPath();c.moveTo(x-6,y+ch*(1-s));c.lineTo(x+cw+6,y+ch*(1-s));c.stroke();c.setLineDash&&c.setLineDash([]);
+    const lx=w*0.47;
+    txt(c,o.libSeuil||"seuil",lx,y+ch*(1-s),10.5,C3(),"left",true);
+    txt(c,o.libNiveau||"niveau",lx,h*0.62,10,CM(),"left");
+    mono(c,(o.fmt||(v=>Math.round(v*100)+" %"))(v),lx,h*0.73,13,v>s?C3():CI(),"left");
+    if(o.verdict) gabEcrire(c,o.verdict(p,v>s),lx,h*0.88,w*0.50,10.5,v>s?C3():CM(),"left",true);
+  }};},
+
+/* ---------------------------------------------------------------------
+   9. CHRONO — un temps découpé en phases ; l'aiguille tourne, la phase
+   en cours s'allume. Une épreuve de quatre heures, une journée.
+   --------------------------------------------------------------------- */
+chrono(o){ return {
+  t:o.t, ratio:o.ratio||1.55, note:o.note, regl:o.regl,
+  dessin(c,w,h,t,p){
+    const P=o.phases(p), tot=P.reduce((s,x)=>s+x.d,0)||1, cx=w*0.30, cy=h*0.52, R=Math.min(w*0.24,h*0.40);
+    const avance=(t%9)/9, ang=-Math.PI/2+avance*TAU;
+    let a=-Math.PI/2, cur=0, cumul=0;
+    P.forEach((q,i)=>{ const a1=a+TAU*q.d/tot;
+      if(avance*tot>=cumul) cur=i; cumul+=q.d;
+      c.strokeStyle=q.col;c.lineWidth=i===cur?R*0.34:R*0.24;c.globalAlpha=i===cur?1:.5;
+      c.beginPath();c.arc(cx,cy,R*0.78,a+0.02,a1-0.02);c.stroke();a=a1; });
+    c.globalAlpha=1;
+    fleche(c,cx,cy,cx+Math.cos(ang)*R*0.62,cy+Math.sin(ang)*R*0.62,CI(),2.4);
+    c.fillStyle=CI();c.beginPath();c.arc(cx,cy,3.5,0,TAU);c.fill();
+    const lx=w*0.60, lh=Math.min(h*0.17,(h*0.84)/P.length);
+    P.forEach((q,i)=>{ const yy=h*0.14+i*lh;
+      c.fillStyle=q.col;c.globalAlpha=i===cur?1:.45;c.fillRect(lx,yy-5,10,10);c.globalAlpha=1;
+      txt(c,q.nom,lx+16,yy,i===cur?11.5:10.5,i===cur?CI():CM(),"left",i===cur);
+      mono(c,(o.fmt||(v=>v+" min"))(q.d),w-12,yy,10,CM(),"right"); });
+  }};},
+
+/* ---------------------------------------------------------------------
+   10. TRI — des éléments en vrac glissent l'un après l'autre vers leur
+   colonne. Classer des documents par idée, des charges par nature.
+   --------------------------------------------------------------------- */
+tri(o){ return {
+  t:o.t, ratio:o.ratio||1.5, note:o.note,
+  dessin(c,w,h,t,p){
+    const G=o.groupes, E=o.elements, ng=G.length, cw=(w-24)/ng, P=1.1, cyc=E.length*P+2.2;
+    const tt=t%cyc, place=Math.min(E.length,Math.floor(tt/P)), k=gabDoux((tt%P)/P*1.4);
+    G.forEach((g,i)=>{ const x=12+i*cw;
+      c.fillStyle=g.col;c.globalAlpha=.10;c.fillRect(x+3,h*0.20,cw-6,h*0.76);c.globalAlpha=1;
+      gabEcrire(c,g.nom,x+cw/2,h*0.09,cw-10,10.5,g.col,"center",true); });
+    const pile=[0,0,0,0,0,0,0,0];
+    E.forEach((e,i)=>{ const gi=e.g, tx=12+gi*cw+cw/2, ty=h*0.30+pile[gi]*h*0.135;
+      const sx=w/2, sy=h*0.98;
+      let x,y,vis=true;
+      if(i<place){x=tx;y=ty;pile[gi]++;}
+      else if(i===place&&place<E.length){x=sx+(tx-sx)*k;y=sy+(ty-sy)*k;pile[gi]++;}
+      else vis=false;
+      if(!vis) return;
+      c.fillStyle=CS();c.strokeStyle=G[gi].col;c.lineWidth=1.5;
+      const bw=cw-14, bx=x-bw/2;
+      if(c.roundRect){c.beginPath();c.roundRect(bx,y-9,bw,18,6);c.fill();c.stroke();}
+      else{c.fillRect(bx,y-9,bw,18);c.strokeRect(bx,y-9,bw,18);}
+      txt(c,e.nom,x,y,10,CI(),"center"); });
+  }};},
+
+};
+
+/* ---- anims-cge.js.txt ---- */
+/* =========================================================================
+   LES ANIMATIONS DE CULTURE GÉNÉRALE ET EXPRESSION
+   Ces leçons sont PARTAGÉES par les cinquante BTS : chaque animation
+   ici s'allume donc dans tout le catalogue d'un coup.
+   Les valeurs sont celles des leçons : 40 points de synthèse sur 60,
+   45 / 100 / 60 / 15 minutes, les quatre temps de l'introduction.
+   ========================================================================= */
+Object.assign(ANIM,{
+
+/* f1 — ce que le correcteur attend : la note se lit en direct */
+"cge-bareme":GAB.parts({t:"Ce que pèse chaque partie",
+ note:"La synthèse vaut deux fois l'écriture personnelle. C'est pourtant elle qu'on bâcle quand le temps manque, parce qu'elle vient en premier.",
+ regl:[{id:"s",lib:"Points en synthèse",min:0,max:40,pas:2,val:24,u:"/ 40"},
+       {id:"e",lib:"Points en écriture",min:0,max:20,pas:1,val:12,u:"/ 20"}],
+ parts:(p)=>[{nom:"synthèse",v:p.s,col:"#0b7a8c"},{nom:"écriture personnelle",v:p.e,col:"#e67e22"},
+             {nom:"points perdus",v:60-p.s-p.e,col:"#c9d5d9"}],
+ u:"pts",
+ total:(p)=>"note : "+((p.s+p.e)/3).toFixed(1).replace(".",",")+" / 20"}),
+
+/* f1 — confronter : les passages se rangent par idée, pas par document */
+"cge-confronter":GAB.tri({t:"Confronter, pas résumer",
+ note:"Le résumé successif range par document. La confrontation range par IDÉE — et c'est elle qui est notée.",
+ groupes:[{nom:"ils s'accordent",col:"#2f7a4d"},{nom:"l'un nuance",col:"#e67e22"},{nom:"ils s'opposent",col:"#c0392b"}],
+ elements:[{nom:"doc 1 · l'origine",g:0},{nom:"doc 3 · l'origine",g:0},{nom:"doc 2 · l'origine",g:1},
+           {nom:"doc 2 · les effets",g:0},{nom:"doc 3 · les effets",g:2},{nom:"doc 1 · les remèdes",g:1}]}),
+
+/* f1 — le tableau de confrontation, qui se remplit case par case */
+"cge-tableau":{t:"Le tableau de confrontation",ratio:1.7,
+ note:"Une ligne par idée, une colonne par document. Les lignes les mieux remplies deviennent les parties du plan ; une case vide est aussi une information.",
+ dessin(c,w,h,t,p){
+  const I=["l'origine","les effets","les remèdes"], D=["doc 1","doc 2","doc 3"];
+  const V=[["✓","✓","nuance"],["—","✓","oppose"],["✓","—","✓"]];
+  const gx=w*0.30, gy=h*0.20, cw=(w-gx-12)/3, lh=h*0.20, cyc=12, tt=t%cyc, n=Math.min(9,Math.floor(tt/0.8));
+  D.forEach((d,j)=>txt(c,d,gx+cw*j+cw/2,gy-lh*0.45,10.5,CM(),"center",true));
+  I.forEach((idee,i)=>{ const y=gy+lh*i+lh/2, pleine=V[i].filter(x=>x!=="—").length>=2 && n>=9;
+    if(pleine&&tt>8){ c.fillStyle=C2();c.globalAlpha=.12;c.fillRect(8,y-lh/2+2,w-16,lh-4);c.globalAlpha=1; }
+    txt(c,idee,12,y,11,CI(),"left",true);
+    V[i].forEach((v,j)=>{ const k=i*3+j, x=gx+cw*j+cw/2;
+      c.strokeStyle=CB();c.lineWidth=1;c.strokeRect(gx+cw*j+2,y-lh/2+3,cw-4,lh-6);
+      if(k<n) txt(c,v,x,y,v.length>1?10:13,v==="—"?CM():v==="✓"?C2():"#e67e22","center",true); }); });
+  if(tt>8) txt(c,"deux lignes pleines → deux parties",w/2,h*0.93,11,C2(),"center",true);
+ }},
+
+/* f2 — un plan par idées : les documents vont sous l'idée qu'ils éclairent */
+"cge-plan":GAB.tri({t:"Un plan par idées",
+ note:"Une partie, c'est une idée et les documents qui l'éclairent. Jamais « le document 1, puis le document 2 ».",
+ groupes:[{nom:"I · ce qui l'explique",col:"#0b7a8c"},{nom:"II · ce qu'il change",col:"#7d3c98"}],
+ elements:[{nom:"doc 1",g:0},{nom:"doc 3",g:0},{nom:"doc 2",g:1},{nom:"doc 4",g:1},{nom:"doc 3",g:1}]}),
+
+/* f2 — l'introduction en quatre temps */
+"cge-intro":GAB.etapes({t:"L'introduction, en quatre temps",
+ note:"Courte et décisive : c'est la première chose que lit le correcteur. La seule partie qui mérite d'être rédigée deux fois.",
+ etapes:[{nom:"le thème",dit:"une phrase, sans effet d'annonce"},
+         {nom:"le corpus",dit:"nature, auteur, date, idée directrice — brièvement"},
+         {nom:"la problématique",dit:"la question que les documents se posent ENSEMBLE"},
+         {nom:"l'annonce du plan",dit:"le plan, en une seule phrase"}]}),
+
+/* f2 — la conclusion : elle répond, et elle s'arrête */
+"cge-conclusion":GAB.etapes({t:"La conclusion",couleur:"#2f7a4d",
+ note:"Elle répond à la problématique. Rien d'autre : pas d'idée nouvelle, pas d'avis, pas d'ouverture sur l'actualité.",
+ etapes:[{nom:"rappeler la question",dit:"la problématique, reformulée"},
+         {nom:"y répondre",dit:"ce que la confrontation a montré"},
+         {nom:"s'arrêter",dit:"pas d'avis : il est attendu dans l'autre partie"}]}),
+
+/* f3 — ce qu'on te demande en écriture personnelle */
+"cge-ecriture":GAB.etapes({t:"L'écriture personnelle",couleur:"#e67e22",
+ note:"Une réponse argumentée à une question précise. Le « je » est permis ; ce qui fait la note, ce sont les références que le corpus ne contient pas.",
+ etapes:[{nom:"lire la question",dit:"elle est précise : y répondre, pas à côté"},
+         {nom:"prendre position",dit:"le « je » est permis"},
+         {nom:"argumenter",dit:"avec des références hors du corpus"},
+         {nom:"conclure",dit:"la réponse, clairement"}]}),
+
+/* f3 — ce qui fait un argument */
+"cge-argument":GAB.etapes({t:"Ce qui fait un argument",couleur:"#7d3c98",
+ note:"Une idée, la raison qui la soutient, un exemple, et ce qu'il prouve. Sans la dernière pièce, l'exemple décore au lieu de démontrer.",
+ etapes:[{nom:"l'idée",dit:"l'image manipulée use la confiance"},
+         {nom:"la raison",dit:"le doute se porte aussi sur les images vraies"},
+         {nom:"l'exemple",dit:"un épisode précis, daté"},
+         {nom:"ce qu'il prouve",dit:"le soupçon survit au démenti"}]}),
+
+/* f4 — les fautes qui coûtent le plus */
+"cge-fautes":GAB.etapes({t:"Les fautes qui coûtent le plus",couleur:"#c0392b",pas:2.4,
+ note:"Pire qu'une faute d'orthographe : la phrase qu'on doit relire deux fois pour la comprendre. Une idée juste mal écrite se lit comme une idée fausse.",
+ etapes:[{nom:"que j'ai lu → que j'ai lus",dit:"l'accord avec le complément placé avant"},
+         {nom:"malgré que → bien que",dit:"« malgré que » ne s'écrit pas"},
+         {nom:"ils s'agissent → il s'agit",dit:"« il s'agit » ne varie jamais"},
+         {nom:"six lignes → deux phrases",dit:"une virgule qui respire, un point qui tranche"}]}),
+
+/* f4 — les liens logiques : le connecteur change, la flèche aussi */
+"cge-liens":{t:"Les liens logiques",ratio:1.8,
+ note:"Quatre connecteurs bien placés font paraître un raisonnement là où vingt phrases juxtaposées font une liste.",
+ regl:[{id:"r",lib:"Rapport",choix:["opposition","cause","conséquence","concession"],val:0}],
+ dessin(c,w,h,t,p){
+  const R=[
+   {a:"le document 1 défend l'écran",b:"le document 3 en dénonce les excès",m:["en revanche","or","pourtant"],fl:"↔",col:C3()},
+   {a:"la synthèse se soigne d'abord",b:"elle vaut deux tiers de la note",m:["car","en effet","dans la mesure où"],fl:"←",col:C1()},
+   {a:"la synthèse vaut deux tiers",b:"elle mérite le plus de temps",m:["ainsi","dès lors","par conséquent"],fl:"→",col:C2()},
+   {a:"l'écran isole",b:"il relie aussi",m:["certes… mais","bien que"],fl:"⇢",col:"#e67e22"}][p.r];
+  const bw=w*0.40, bh=h*0.34, ya=h*0.30, xa=w*0.05, xb=w*0.55;
+  [[xa,R.a],[xb,R.b]].forEach(([x,s])=>{ c.fillStyle=CS();c.strokeStyle=CB();c.lineWidth=1.4;
+    if(c.roundRect){c.beginPath();c.roundRect(x,ya-bh/2,bw,bh,9);c.fill();c.stroke();}
+    gabEcrire(c,s,x+bw/2,ya-9,bw-14,11,CI(),"center"); });
+  const mid=(xa+bw+xb)/2, k=gabDoux((t%1.6)/0.5);
+  c.globalAlpha=k;txt(c,R.fl,mid,ya,20,R.col,"center",true);c.globalAlpha=1;
+  const mot=R.m[Math.floor(t/1.6)%R.m.length];
+  pastilleTexte(c,mot,w/2,h*0.68,R.col);
+  txt(c,["on oppose deux idées","B est la cause de A","A entraîne B","on accorde, pour mieux nuancer"][p.r],
+      w/2,h*0.88,11,CM(),"center");
+ }},
+
+/* f4 — les quatre heures */
+"cge-heures":GAB.chrono({t:"Les quatre heures",
+ note:"La relecture se prend AVANT : un quart d'heure réservé au départ, pas « le temps qui restera ». Il ne reste jamais rien.",
+ phases:()=>[{nom:"lecture et tableau",d:45,col:"#7d3c98"},{nom:"synthèse",d:100,col:"#0b7a8c"},
+             {nom:"écriture personnelle",d:60,col:"#e67e22"},{nom:"relecture",d:15,col:"#2f7a4d"}]}),
+
+});
+
+/* ---- anims-coiffure.js.txt ---- */
+/* =========================================================================
+   LES ANIMATIONS DE LA COIFFURE — une par leçon
+   Chacune dit ce que dit SA leçon, avec ses valeurs : la table des
+   volumes, les fonds de décoloration, le correcteur au tiers.
+   ⚠️ La règle des volumes est celle du reste du parcours (leçon 02,
+   générateur cf-volume-oxydant, banc « formuler la couleur ») :
+   10 vol. ton sur ton, 20 vol. un ton, 30 vol. deux, 40 vol. trois.
+   ========================================================================= */
+
+/* Les hauteurs de ton 1 → 10, et le fond que chacune dégage à la décoloration. */
+const CF_TONS=[
+  {lib:"1",col:"#1c1410"},{lib:"2",col:"#2e1f17"},{lib:"3",col:"#3d2819"},{lib:"4",col:"#563620"},
+  {lib:"5",col:"#6f4628"},{lib:"6",col:"#8c5a32"},{lib:"7",col:"#a8733f"},{lib:"8",col:"#c49358"},
+  {lib:"9",col:"#d9b77e",clair:true},{lib:"10",col:"#ead3a2",clair:true}];
+const CF_FOND=["rouge sombre","rouge sombre","rouge","rouge","rouge orangé","orangé","orangé",
+               "jaune orangé","jaune","jaune pâle"];
+const CF_GAIN=[0,1,2,3];                          /* 10, 20, 30, 40 volumes */
+
+Object.assign(ANIM,{
+
+/* cf01 — la fibre selon son histoire : une vraie figure, pas un gabarit */
+"cf-fibre":{t:"La fibre, selon ce qu'elle a vécu",ratio:2.05,
+ note:"Poreux : les écailles sont ouvertes, la couleur entre vite et ressort aussi vite. Décoloré puis décoloré encore : la fibre casse.",
+ regl:[{id:"e",lib:"État du cheveu",choix:["vierge","déjà coloré","poreux","second passage"],val:0}],
+ dessin(c,w,h,t,p){
+  const e=p.e, leve=[0.06,0.28,0.62,0.9][e], y=h*0.40, x0=w*0.05, x1=w*0.95, ep=h*0.15;
+  const casse=e===3, xb=casse?x0+(x1-x0)*0.64:x1;
+  const coul=["#6f4628","#8c5a32","#a8733f","#d9b77e"][e];
+  /* la tige, et le morceau tombé si elle casse */
+  c.fillStyle=coul;c.fillRect(x0,y-ep/2,xb-x0,ep);
+  /* ⚠️ la chute est bornée : tombé plus bas, le morceau recouvrait la phrase
+     du dessous — une forme pleine, que l'épreuve des traits ne mesure pas. */
+  if(casse){ const d=Math.min(1,(t%3)/1.2)*h*0.08;
+    c.save();c.translate(xb+14,y+d);c.rotate(0.16*Math.min(1,(t%3)/1.2));
+    c.fillRect(0,-ep/2,x1-xb-14,ep);c.restore();
+    c.strokeStyle=C3();c.lineWidth=2;c.beginPath();
+    c.moveTo(xb,y-ep/2);c.lineTo(xb+5,y-ep/6);c.lineTo(xb-2,y+ep/6);c.lineTo(xb+4,y+ep/2);c.stroke(); }
+  /* les écailles : plus elles se lèvent, plus la fibre est ouverte */
+  c.fillStyle=gabMelange(coul,"#ffffff",0.28);c.strokeStyle=gabMelange(coul,"#000000",0.35);c.lineWidth=1;
+  for(let x=x0+6;x<xb-8;x+=13){ c.save();c.translate(x,y-ep/2);c.rotate(-leve*0.95);
+    c.beginPath();c.moveTo(0,0);c.lineTo(13,0);c.lineTo(10,-5);c.closePath();c.fill();c.stroke();c.restore(); }
+  /* la couleur qui entre, et celle qui ressort */
+  const n=10;
+  for(let k=0;k<n;k++){ const f=((t*(0.35+leve*0.9))+k/n)%1, x=x0+18+(xb-x0-36)*(k/n);
+    const entre=f<0.5, pr=entre?f*2:(f-0.5)*2;
+    const yy=entre? y-ep/2-h*0.20+pr*(h*0.20+ep*0.4) : y+ep*0.1-pr*(leve>0.5?h*0.24:0);
+    if(!entre&&leve<0.5) continue;
+    c.fillStyle=entre?C1():C3();c.globalAlpha=entre?0.85:0.6;
+    c.beginPath();c.arc(x,yy,2.6,0,TAU);c.fill(); }
+  c.globalAlpha=1;
+  const dit=["résiste — demande une pose complète","tient, mais moins qu'un cheveu vierge",
+             "prend vite, perd vite","ne supporte pas un second passage"][e];
+  txt(c,dit,w/2,h*0.80,12.5,e>=2?C3():CI(),"center",true);
+  txt(c,"écailles "+["fermées","entrouvertes","ouvertes","arrachées"][e],w/2,h*0.93,10.5,CM(),"center");
+ }},
+
+/* cf02 — ce que l'oxydant lève, et le fond qu'il dégage */
+"cf-volumes":GAB.echelle({t:"Ce que l'oxydant lève, ce que le fond révèle",
+ note:"10 volumes ne lèvent pas, 20 montent d'un ton, 30 de deux, 40 de trois. Plus on monte, plus le fond dégagé passe du rouge à l'orangé, puis au jaune.",
+ niveaux:CF_TONS, libDe:"base", libA:"atteinte",
+ regl:[{id:"d",lib:"Hauteur de départ",min:1,max:8,pas:1,val:5},
+       {id:"v",lib:"Oxydant",choix:["10 vol.","20 vol.","30 vol.","40 vol."],val:2}],
+ de:(p)=>p.d-1, a:(p)=>Math.min(9,p.d-1+CF_GAIN[p.v]),
+ legende:(p,i)=>"hauteur "+(i+1)+" · fond dégagé : "+CF_FOND[i]}),
+
+/* cf03 — le rapport de mélange */
+"cf-rapport":GAB.dosage({t:"Un rapport, pas une habitude",
+ note:"Le fabricant prescrit 1 pour 1,5. Allonger pour faire durer le tube monte moins, et de façon inégale — la reprise se fait gratuitement.",
+ a:{nom:"couleur",col:"#8c5a32"}, b:{nom:"oxydant",col:"#e9ecef"}, u:"g", max:220,
+ regl:[{id:"q",lib:"Couleur",min:20,max:80,pas:5,val:40,u:"g"},
+       {id:"r",lib:"Rapport",choix:["1 : 1","1 : 1,5","1 : 2","1 : 3"],val:1}],
+ qa:(p)=>p.q, qb:(p)=>p.q*[1,1.5,2,3][p.r],
+ verdict:(p)=>["pas assez d'oxydant : la couleur ne se développe pas","rapport du fabricant",
+               "allongé : monte moins, reprise probable","très allongé : résultat inégal"][p.r],
+ verdictCol:(p)=>p.r===1?C2():C3()}),
+
+/* cf04 — ce que coûte une heure de fauteuil */
+"cf-heure":GAB.parts({t:"Ce que coûte une prestation",
+ note:"Le produit ne pèse qu'un dixième du coût. C'est la DURÉE qui décide de tout : chercher l'économie sur les consommables, c'est soigner le dixième.",
+ regl:[{id:"d",lib:"Durée",min:20,max:120,pas:5,val:60,u:"min"},
+       {id:"ch",lib:"Charges horaires",min:20,max:60,pas:2,val:36,u:"€/h"}],
+ parts:(p)=>[{nom:"produits",v:6,col:"#b4356b"},
+             {nom:"temps de poste",v:p.d/60*p.ch,col:"#0b7a8c"}],
+ fmt:(v)=>v.toFixed(0), u:"€",
+ total:(p,tot)=>"coût de la prestation : "+tot.toFixed(0)+" €"}),
+
+/* cf05 — le seuil de rentabilité du salon */
+"cf-seuil":GAB.seuil({t:"Le seuil du salon",
+ note:"Au-dessous du seuil, chaque cliente coûte ; au-dessus, presque tout ce qu'elle paie reste. Un rendez-vous non honoré, c'est une heure qui ne se rattrape pas.",
+ regl:[{id:"f",lib:"Charges fixes",min:4000,max:14000,pas:500,val:8000,u:"€"},
+       {id:"pv",lib:"Prix moyen",min:30,max:90,pas:5,val:55,u:"€"}],
+ fixes:(p)=>p.f, pv:(p)=>p.pv, cv:()=>8, xmax:()=>400,
+ ux:"clientes", axeX:"clientes par mois", libCA:"ce qu'elles paient", libCT:"ce que coûte le salon"}),
+
+/* cf06 — ce que vaut une cliente qui revient */
+"cf-fidele":GAB.courbe({t:"Ce que vaut une cliente qui revient",
+ note:"Panier moyen × visites par an × années : le chiffre surprend toujours. C'est lui qu'on met en jeu en traitant mal une réclamation.",
+ regl:[{id:"pm",lib:"Panier moyen",min:25,max:90,pas:5,val:45,u:"€"},
+       {id:"n",lib:"Visites par an",min:2,max:12,pas:1,val:6}],
+ xmax:()=>10, ymax:(p)=>p.pm*p.n*10*1.05, axeX:"années", axeY:"€ cumulés", uy:"€",
+ series:[{f:(x,p)=>p.pm*p.n*x,col:"#2f7a4d"},
+         {f:(x,p)=>p.pm*p.n*Math.min(x,1),col:"#b4356b"}],
+ fmt:(v)=>Math.round(v).toLocaleString("fr-FR")}),
+
+/* cf07 — le cercle chromatique */
+"cf-cercle":GAB.cercle({t:"Le cercle chromatique",
+ note:"Chaque reflet se neutralise par la couleur d'en face. Le correcteur se dose au tiers ou au quart : au-delà, on ne neutralise plus, on grise.",
+ secteurs:[{nom:"rouge",col:"#c0392b"},{nom:"orange",col:"#e67e22"},{nom:"jaune",col:"#e8b923"},
+           {nom:"vert",col:"#2f7a4d"},{nom:"bleu",col:"#2f6fb0"},{nom:"violet",col:"#7d3c98"}],
+ libChoisi:"reflet à corriger", libOppose:"on corrige avec",
+ regl:[{id:"r",lib:"Reflet",choix:["rouge","orange","jaune"],val:0},
+       {id:"k",lib:"Dose de correcteur",choix:["un quart","un tiers","la moitié"],val:1}],
+ choisi:(p)=>p.r,
+ verdict:(p)=>p.k<=1?"neutralisé":"surdosé : la couleur grise"}),
+
+/* cf08 — une passe, ou deux */
+"cf-passes":GAB.echelle({t:"Une passe, ou deux",
+ note:"Quand l'écart dépasse ce qu'un oxydant lève, on fait une seconde passe à distance, sur un cheveu reposé. Forcer le volume brûle la fibre.",
+ niveaux:CF_TONS, libDe:"base", libA:"après une passe",
+ regl:[{id:"d",lib:"Base",min:2,max:7,pas:1,val:4},
+       {id:"c",lib:"Cible",min:5,max:10,pas:1,val:8},
+       {id:"v",lib:"Oxydant",choix:["20 vol.","30 vol.","40 vol."],val:0}],
+ de:(p)=>p.d-1, a:(p)=>Math.min(p.c-1,p.d-1+[1,2,3][p.v]),
+ legende:(p,i)=>{const manque=Math.max(0,p.c-(i+1));
+   return manque? "il manque "+manque+" ton"+(manque>1?"s":"")+" : seconde passe, à distance" : "la cible est atteinte en une passe";}}),
+
+/* cf09 — la revente, seul levier sans minute de fauteuil */
+"cf-panier":GAB.parts({t:"Le panier moyen",
+ note:"Passer de 10 à 25 % de revente ajoute des euros par cliente sans une minute de fauteuil en plus. Les autres leviers coûtent du temps ou du salaire.",
+ regl:[{id:"tx",lib:"Clientes qui achètent",min:0,max:40,pas:5,val:15,u:"%"},
+       {id:"pp",lib:"Prix du produit",min:10,max:40,pas:2,val:22,u:"€"}],
+ parts:(p)=>[{nom:"services",v:48,col:"#0b7a8c"},{nom:"revente",v:p.tx/100*p.pp,col:"#e67e22"}],
+ fmt:(v)=>v.toFixed(1), u:"€",
+ total:(p,tot)=>"panier moyen : "+tot.toFixed(2).replace(".",",")+" €"}),
+
+/* cf10 — la sensibilisation, qui ne prévient pas */
+"cf-sensib":GAB.remplissage({t:"L'allergie ne prévient pas",
+ note:"Chaque contact sans protection ajoute un peu. Rien ne se voit — jusqu'au jour où la réaction éclate. On ne revient pas en arrière.",
+ regl:[{id:"n",lib:"Contacts sans protection",min:0,max:30,pas:1,val:12},
+       {id:"g",lib:"Gants",choix:["non","oui"],val:0}],
+ niveau:(p)=>p.n*(p.g?0.012:0.055), seuil:0.7, libSeuil:"réaction", libNiveau:"sensibilisation",
+ verdict:(p,franchi)=>franchi?"allergie déclarée : c'est définitif":"rien ne se voit encore"}),
+
+});
 
 /* ============================================================
    QUELLE ILLUSTRATION POUR QUEL EXERCICE
